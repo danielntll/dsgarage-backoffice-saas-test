@@ -1,6 +1,8 @@
 import {
   home,
   homeOutline,
+  images,
+  imagesOutline,
   logIn,
   logInOutline,
   personAdd,
@@ -9,6 +11,41 @@ import {
   settingsOutline,
 } from "ionicons/icons";
 import { typeRoute } from "../types/typeRoute";
+
+// APP --------------
+export const route_GalleryPage: typeRoute = {
+  path: "/galleria",
+  tab: {
+    it_IT: "Galleria",
+    en_GB: "Galleria",
+  },
+  icons: {
+    active: images,
+    notActive: imagesOutline,
+  },
+};
+export const route_HomePage: typeRoute = {
+  path: "/home",
+  tab: {
+    it_IT: "Home",
+    en_GB: "Home",
+  },
+  icons: {
+    active: home,
+    notActive: homeOutline,
+  },
+};
+export const route_ImpostazioniPage: typeRoute = {
+  path: "/impostazioni",
+  tab: {
+    it_IT: "Impostazioni",
+    en_GB: "Settings",
+  },
+  icons: {
+    active: settings,
+    notActive: settingsOutline,
+  },
+};
 
 // AUTH -----------------
 // Login
@@ -33,29 +70,5 @@ export const route_RegistrazionePage: typeRoute = {
   icons: {
     active: personAdd,
     notActive: personAddOutline,
-  },
-};
-
-// APP --------------
-export const route_HomePage: typeRoute = {
-  path: "/home",
-  tab: {
-    it_IT: "Home",
-    en_GB: "Home",
-  },
-  icons: {
-    active: home,
-    notActive: homeOutline,
-  },
-};
-export const route_ImpostazioniPage: typeRoute = {
-  path: "/impostazioni",
-  tab: {
-    it_IT: "Impostazioni",
-    en_GB: "Settings",
-  },
-  icons: {
-    active: settings,
-    notActive: settingsOutline,
   },
 };

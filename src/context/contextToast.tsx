@@ -54,8 +54,6 @@ export const ProviderContextToast = ({
   };
   // Return ---------------------------
   return (
-    <ContextToast.Provider value={{ toast }}>
-      {children}
-    </ContextToast.Provider>
+    <ContextToast.Provider value={{ toast }}>{children}</ContextToast.Provider>
   );
 };

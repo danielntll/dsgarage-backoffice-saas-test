@@ -32,6 +32,7 @@ import { ProviderContextToast } from "./context/contextToast";
 import { AuthContextProvider } from "./context/contextAuth";
 import Menu from "./components/Menu/Menu";
 import {
+  route_GalleryPage,
   route_HomePage,
   route_ImpostazioniPage,
   route_LoginPage,
@@ -42,6 +43,7 @@ import ImpostazioniPage from "./pages/Impostazioni/ImpostazioniPage";
 import { loginRoutes } from "./routes/routes";
 import LoginPage from "./pages/Auth/Login_Page/LoginPage";
 import RegistrazionePage from "./pages/Auth/Registrazione_Page/RegistrazionePage";
+import GalleryPage from "./pages/Gallery/Gallery";
 
 setupIonicReact({
   rippleEffect: false,
@@ -77,11 +79,10 @@ export const authenticatedRoutesOutlet = () => {
     <IonSplitPane contentId="main">
       <Menu />
       <IonRouterOutlet id="main">
-        {/* --------- REDIRECT --------- */}
-        <Route exact path="/">
-          <Redirect to={route_HomePage.path} />
+        {/* ---- Galleria ---- */}
+        <Route exact path={route_GalleryPage.path}>
+          <GalleryPage />
         </Route>
-
         {/* ---- Home ---- */}
         <Route exact path={route_HomePage.path}>
           <HomePage />
@@ -89,6 +90,11 @@ export const authenticatedRoutesOutlet = () => {
         {/* ---- Impostazioni ---- */}
         <Route exact path={route_ImpostazioniPage.path}>
           <ImpostazioniPage />
+        </Route>
+
+        {/* --------- REDIRECT --------- */}
+        <Route exact path="/">
+          <Redirect to={route_HomePage.path} />
         </Route>
       </IonRouterOutlet>
     </IonSplitPane>
