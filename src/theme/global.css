@@ -1,0 +1,73 @@
+.icon-margin-left {
+  margin-left: 8px;
+}
+
+.icon-margin-right {
+  margin-right: 8px;
+}
+.icon-margin-lef-light {
+  margin-left: 4px;
+}
+
+.icon-margin-right-light {
+  margin-right: 4px;
+}
+
+.info-text {
+  font-size: 12px;
+}
+
+.inline-row-sb {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.inline-row-gap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-ion-datetime {
+  background-color: transparent !important;
+}
+.custom-ion-picker {
+  background-color: transparent !important;
+}
+.custom-picker-column {
+  background-color: transparent !important;
+}
+
+.ion-picker-column-internal {
+  background-color: transparent !important;
+}
+
+.input-bottom {
+  padding-bottom: 8px !important;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.justify-space {
+  justify-content: space-between;
+}
+
+.unread-indicator {
+  background: var(--ion-color-primary);
+
+  width: 10px;
+  height: 10px;
+
+  border-radius: 100%;
+
+  position: absolute;
+
+  inset-inline-start: 12px;
+  top: 12px;
+}

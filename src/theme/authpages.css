@@ -1,0 +1,56 @@
+.container__logo {
+  padding-top: 69px;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  max-width: 230px;
+}
+
+.policy {
+  font-size: 12px;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.forgotTitle {
+  padding-top: 32px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}
+
+.logo {
+  max-width: 230px;
+}
+.termini {
+  padding-top: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.termini a {
+  font-size: 12px;
+}
+
+.passwordInput {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
