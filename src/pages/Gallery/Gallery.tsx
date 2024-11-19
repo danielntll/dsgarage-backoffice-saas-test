@@ -1,4 +1,6 @@
 import {
+  IonButton,
+  IonButtons,
   IonContent,
   IonHeader,
   IonPage,
@@ -14,6 +16,7 @@ import { route_GalleryPage } from "../../routes/singleRoute";
 import PinnedImages from "../../components/PinnedImages/PinnedImages";
 import { GalleryContextProvider } from "../../context/contextGallery";
 import ImagesAll from "../../components/Images__All/ImagesAll";
+import ModalImagesUpload from "../../components/Modal__Images__Upload/ModalImagesUpload";
 
 interface PageProps {}
 
@@ -21,6 +24,7 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
+  const [isModalUploadOpen, setIsModalUploadOpen] = useState<boolean>(false);
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
@@ -29,6 +33,11 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
         <IonHeader>
           <IonToolbar>
             <IonTitle>{route_GalleryPage.tab[l]}</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={()=> setIsModalUploadOpen(true)} color={"primary"}>
+                {text[l].uploadImages}
+              </IonButton>
+            </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
@@ -43,6 +52,10 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
             <ImagesAll />
           </div>
           {/* ----------------- EXTRA UI ----------------------*/}
+          <ModalImagesUpload 
+            isModalOpen={isModalUploadOpen}
+            setIsModalOpen={setIsModalUploadOpen}
+          />
         </IonContent>
       </IonPage>
     </GalleryContextProvider>

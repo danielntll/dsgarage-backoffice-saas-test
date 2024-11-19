@@ -2,10 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { ContextLanguage } from "./contextLanguage";
 import { AuthContext } from "./contextAuth";
 import { ContextToast } from "./contextToast";
-import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
+import { addDoc, collection, doc, getDocs, Timestamp, updateDoc } from "firebase/firestore";
+import { db, storage } from "../firebase/firebaseConfig";
 import { typeImage } from "../types/typeImage";
 import { useIonAlert } from "@ionic/react";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 type galleryContext = {
   galleryData: typeImage[];
@@ -20,6 +21,7 @@ type galleryContext = {
     editedAlt: string,
     editedDescription: string
   ) => Promise<boolean>;
+  handleUploadImages : (files:File[]) => Promise<boolean>
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
@@ -33,6 +35,9 @@ export const GalleryContext = React.createContext<galleryContext>({
   handleSaveEdit: async () => {
     return false;
   },
+  handleUploadImages : async () => {
+    return false;
+  }
 });
 
 export const useGalleryContext = () => React.useContext(GalleryContext);
@@ -58,6 +63,70 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
+  const handleUploadImages = async (
+    imagesToUpload: File[]
+  ) => {
+    if (!imagesToUpload || imagesToUpload.length === 0) {
+      toast("danger", "No images selected");
+      return false;
+    }
+
+    try {
+      const uploadPromises = imagesToUpload.map(async (image) => {
+        const storageRef = ref(storage, `/gallery/${image.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+
+        return new Promise<typeImage>((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {},
+            (error) => {
+              console.error("Upload failed:", error);
+              toast("danger", "Upload failed");
+              reject(error); // Reject the promise if upload fails
+            },
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              const newImage: typeImage = {
+                imageUrl: downloadURL,
+                alt: "",
+                description: "",
+                isVisible: true,
+                isPinned: false,
+                createdAt: Timestamp.now(),
+                uid: "", // This will be populated by Firestore
+              };
+
+              const docRef = await addDoc(collection(db, "gallery"), newImage);
+              newImage.uid = docRef.id;
+
+              resolve(newImage); // Resolve with the image data
+            }
+          );
+        });
+      });
+
+      const uploadedImages = await Promise.all(uploadPromises);
+      toast("success", "Images uploaded successfully");
+
+      
+       // Update local state directly after successful uploads
+       setGalleryData((prevData) => [...prevData, ...uploadedImages]);
+
+       // Update pinned images if any new image is pinned
+       const newPinnedImages = uploadedImages.filter(image => image.isPinned);
+       if (newPinnedImages.length > 0) {
+         setPinnedData((prevData) => [...prevData, ...newPinnedImages]);
+       }
+
+       return true;
+ 
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      return false;
+    }
+  }
+
 
   const fetchGalleryData = async () => {
     try {
@@ -252,6 +321,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         togglePinImage,
         toggleVisibilityImage,
         handleSaveEdit,
+        handleUploadImages,
       }}
     >
       {children}
