@@ -7,6 +7,9 @@ import { db, storage } from "../firebase/firebaseConfig";
 import { typeImage } from "../types/typeImage";
 import { useIonAlert } from "@ionic/react";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { typeImageToUpload } from "../types/typeImageToUpload";
+
+
 
 type galleryContext = {
   galleryData: typeImage[];
@@ -21,7 +24,7 @@ type galleryContext = {
     editedAlt: string,
     editedDescription: string
   ) => Promise<boolean>;
-  handleUploadImages : (files:File[]) => Promise<boolean>
+  handleUploadImages: (toUpload: typeImageToUpload[]) => Promise<boolean>
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
@@ -29,13 +32,13 @@ export const GalleryContext = React.createContext<galleryContext>({
   loading: true,
   error: null,
   pinnedImages: [],
-  fetchGalleryData: async () => {},
-  togglePinImage: async () => {},
-  toggleVisibilityImage: async () => {},
+  fetchGalleryData: async () => { },
+  togglePinImage: async () => { },
+  toggleVisibilityImage: async () => { },
   handleSaveEdit: async () => {
     return false;
   },
-  handleUploadImages : async () => {
+  handleUploadImages: async () => {
     return false;
   }
 });
@@ -64,7 +67,7 @@ export const GalleryContextProvider = ({ children }: any) => {
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
   const handleUploadImages = async (
-    imagesToUpload: File[]
+    imagesToUpload: typeImageToUpload[]
   ) => {
     if (!imagesToUpload || imagesToUpload.length === 0) {
       toast("danger", "No images selected");
@@ -72,14 +75,14 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
 
     try {
-      const uploadPromises = imagesToUpload.map(async (image) => {
-        const storageRef = ref(storage, `/gallery/${image.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, image);
+      const uploadPromises = imagesToUpload.map(async (image: typeImageToUpload) => {
+        const storageRef = ref(storage, `/gallery/${image.file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, image.file);
 
         return new Promise<typeImage>((resolve, reject) => {
           uploadTask.on(
             "state_changed",
-            (snapshot) => {},
+            (snapshot) => { },
             (error) => {
               console.error("Upload failed:", error);
               toast("danger", "Upload failed");
@@ -89,8 +92,8 @@ export const GalleryContextProvider = ({ children }: any) => {
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
               const newImage: typeImage = {
                 imageUrl: downloadURL,
-                alt: "",
-                description: "",
+                alt: image.alt,
+                description: image.description,
                 isVisible: true,
                 isPinned: false,
                 createdAt: Timestamp.now(),
@@ -109,18 +112,18 @@ export const GalleryContextProvider = ({ children }: any) => {
       const uploadedImages = await Promise.all(uploadPromises);
       toast("success", "Images uploaded successfully");
 
-      
-       // Update local state directly after successful uploads
-       setGalleryData((prevData) => [...prevData, ...uploadedImages]);
 
-       // Update pinned images if any new image is pinned
-       const newPinnedImages = uploadedImages.filter(image => image.isPinned);
-       if (newPinnedImages.length > 0) {
-         setPinnedData((prevData) => [...prevData, ...newPinnedImages]);
-       }
+      // Update local state directly after successful uploads
+      setGalleryData((prevData) => [...prevData, ...uploadedImages]);
 
-       return true;
- 
+      // Update pinned images if any new image is pinned
+      const newPinnedImages = uploadedImages.filter(image => image.isPinned);
+      if (newPinnedImages.length > 0) {
+        setPinnedData((prevData) => [...prevData, ...newPinnedImages]);
+      }
+
+      return true;
+
     } catch (error) {
       console.error("Error uploading images:", error);
       return false;
