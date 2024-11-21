@@ -4,6 +4,7 @@ export const text = {
     subtitle: "Queste immagini saranno visualizzabili nella pagina Galleria",
     editButton: "Modifica",
     noImages: "Nessuna immagine caricata",
+    loading: "Salvataggio delle immagini in corso...",
   },
   en_GB: {
     componentTitle: "In evidenza",
@@ -11,5 +12,6 @@ export const text = {
       "Le immagini in evidenza saranno visualizzabili nel carosello nella Home Page.",
     editButton: "Edit",
     noImages: "Nessuna immagine in evidenza",
+    loading: "Salvataggio delle immagini in corso...",
   },
 };

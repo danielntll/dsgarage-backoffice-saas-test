@@ -8,4 +8,5 @@ export type typeImage = {
   description?: string;
   createdAt: Timestamp;
   imageUrl: string;
+  name: string;
 };

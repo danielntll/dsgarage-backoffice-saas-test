@@ -14,7 +14,7 @@ import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { route_GalleryPage } from "../../routes/singleRoute";
 import PinnedImages from "../../components/PinnedImages/PinnedImages";
-import { GalleryContextProvider } from "../../context/contextGallery";
+import { GalleryContextProvider } from "../../context/gallery/contextGallery";
 import ImagesAll from "../../components/Images__All/ImagesAll";
 import ModalImagesUpload from "../../components/Modal__Images__Upload/ModalImagesUpload";
 

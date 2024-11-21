@@ -1,15 +1,27 @@
 import React, { useContext, useEffect, useState } from "react";
-import { ContextLanguage } from "./contextLanguage";
-import { AuthContext } from "./contextAuth";
-import { ContextToast } from "./contextToast";
-import { addDoc, collection, doc, getDocs, Timestamp, updateDoc } from "firebase/firestore";
-import { db, storage } from "../firebase/firebaseConfig";
-import { typeImage } from "../types/typeImage";
-import { useIonAlert } from "@ionic/react";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { typeImageToUpload } from "../types/typeImageToUpload";
-
-
+import { ContextLanguage } from "../contextLanguage";
+import { AuthContext } from "../contextAuth";
+import { ContextToast } from "../contextToast";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  Timestamp,
+  updateDoc,
+} from "firebase/firestore";
+import { db, storage } from "../../firebase/firebaseConfig";
+import { typeImage } from "../../types/typeImage";
+import { useIonAlert, useIonLoading } from "@ionic/react";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { typeImageToUpload } from "../../types/typeImageToUpload";
+import { text } from "./text";
 
 type galleryContext = {
   galleryData: typeImage[];
@@ -24,7 +36,8 @@ type galleryContext = {
     editedAlt: string,
     editedDescription: string
   ) => Promise<boolean>;
-  handleUploadImages: (toUpload: typeImageToUpload[]) => Promise<boolean>
+  handleUploadImages: (toUpload: typeImageToUpload[]) => Promise<boolean>;
+  handleDeleteImage: (image: typeImage) => Promise<void>;
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
@@ -32,15 +45,16 @@ export const GalleryContext = React.createContext<galleryContext>({
   loading: true,
   error: null,
   pinnedImages: [],
-  fetchGalleryData: async () => { },
-  togglePinImage: async () => { },
-  toggleVisibilityImage: async () => { },
+  fetchGalleryData: async () => {},
+  togglePinImage: async () => {},
+  toggleVisibilityImage: async () => {},
   handleSaveEdit: async () => {
     return false;
   },
   handleUploadImages: async () => {
     return false;
-  }
+  },
+  handleDeleteImage: async () => {},
 });
 
 export const useGalleryContext = () => React.useContext(GalleryContext);
@@ -57,6 +71,8 @@ export const GalleryContextProvider = ({ children }: any) => {
 
   const [pinnedImages, setPinnedData] = useState<typeImage[]>([]);
   const [presentAlert] = useIonAlert();
+
+  const [presentLoading, dismissLoading] = useIonLoading();
   // -----------------------------
 
   // USE EFFECT ------------------------------
@@ -66,74 +82,133 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
-  const handleUploadImages = async (
-    imagesToUpload: typeImageToUpload[]
-  ) => {
+
+  const handleDeleteImage = async (image: typeImage) => {
+    presentAlert({
+      header: text[l].alertDeleteTitle,
+      message: text[l].alertDeleteMessage,
+      buttons: [
+        {
+          text: text[l].alertDeleteCancel,
+          role: "cancel",
+        },
+        {
+          text: text[l].alertDeleteConfirm,
+          role: "confirm",
+          handler: async () => {
+            await deleteImage(image); // Call the deleteImage function here
+          },
+        },
+      ],
+    });
+  };
+
+  const deleteImage = async (image: typeImage) => {
+    presentLoading({
+      message: text[l].loading,
+    });
+    try {
+      // 1. Delete from Storage
+      const storagePath = `gallery/${image.name}`;
+      const storageRef = ref(storage, storagePath);
+      await deleteObject(storageRef);
+
+      // 2. Delete from Firestore
+      const imageRef = doc(db, "gallery", image.uid);
+      await deleteDoc(imageRef);
+
+      // 3. Update local state (Important: Update state *after* successful deletion)
+      setGalleryData((prevData) =>
+        prevData.filter((item) => item.uid !== image.uid)
+      );
+      setPinnedData((prevData) =>
+        prevData.filter((item) => item.uid !== image.uid)
+      );
+      dismissLoading();
+      toast("success", "Image deleted successfully");
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      dismissLoading();
+      toast("danger", "Error deleting image");
+    }
+  };
+
+  const handleUploadImages = async (imagesToUpload: typeImageToUpload[]) => {
     if (!imagesToUpload || imagesToUpload.length === 0) {
       toast("danger", "No images selected");
       return false;
     }
-
+    presentLoading({
+      message: text[l].loading,
+    });
     try {
-      const uploadPromises = imagesToUpload.map(async (image: typeImageToUpload) => {
-        const storageRef = ref(storage, `/gallery/${image.file.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, image.file);
+      const uploadPromises = imagesToUpload.map(
+        async (image: typeImageToUpload) => {
+          const storageRef = ref(storage, `/gallery/${image.file.name}`);
+          const uploadTask = uploadBytesResumable(storageRef, image.file);
 
-        return new Promise<typeImage>((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            (snapshot) => { },
-            (error) => {
-              console.error("Upload failed:", error);
-              toast("danger", "Upload failed");
-              reject(error); // Reject the promise if upload fails
-            },
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              const newImage: typeImage = {
-                imageUrl: downloadURL,
-                alt: image.alt,
-                description: image.description,
-                isVisible: true,
-                isPinned: false,
-                createdAt: Timestamp.now(),
-                uid: "", // This will be populated by Firestore
-              };
+          return new Promise<typeImage>((resolve, reject) => {
+            uploadTask.on(
+              "state_changed",
+              (snapshot) => {},
+              (error) => {
+                console.error("Upload failed:", error);
+                toast("danger", "Upload failed");
+                reject(error); // Reject the promise if upload fails
+              },
+              async () => {
+                const downloadURL = await getDownloadURL(
+                  uploadTask.snapshot.ref
+                );
+                const newImage: typeImage = {
+                  imageUrl: downloadURL,
+                  alt: image.alt,
+                  description: image.description,
+                  isVisible: true,
+                  isPinned: false,
+                  name: image.file.name,
+                  createdAt: Timestamp.now(),
+                  uid: "",
+                };
 
-              const docRef = await addDoc(collection(db, "gallery"), newImage);
-              newImage.uid = docRef.id;
+                const docRef = await addDoc(
+                  collection(db, "gallery"),
+                  newImage
+                );
+                newImage.uid = docRef.id;
 
-              resolve(newImage); // Resolve with the image data
-            }
-          );
-        });
-      });
+                resolve(newImage); // Resolve with the image data
+              }
+            );
+          });
+        }
+      );
 
       const uploadedImages = await Promise.all(uploadPromises);
-      toast("success", "Images uploaded successfully");
 
+      toast("success", "Images uploaded successfully");
 
       // Update local state directly after successful uploads
       setGalleryData((prevData) => [...prevData, ...uploadedImages]);
 
       // Update pinned images if any new image is pinned
-      const newPinnedImages = uploadedImages.filter(image => image.isPinned);
+      const newPinnedImages = uploadedImages.filter((image) => image.isPinned);
       if (newPinnedImages.length > 0) {
         setPinnedData((prevData) => [...prevData, ...newPinnedImages]);
       }
-
+      dismissLoading();
       return true;
-
     } catch (error) {
+      dismissLoading();
       console.error("Error uploading images:", error);
       return false;
     }
-  }
-
+  };
 
   const fetchGalleryData = async () => {
     try {
       setLoading(true);
+
       const galleryRef = collection(db, "gallery");
       const gallerySnapshot = await getDocs(galleryRef);
 
@@ -275,7 +350,9 @@ export const GalleryContextProvider = ({ children }: any) => {
     editedDescription: string
   ): Promise<boolean> => {
     if (!editedImage) return false;
-
+    presentLoading({
+      message: text[l].loading,
+    });
     try {
       const imageRef = doc(db, "gallery", editedImage.uid);
       await updateDoc(imageRef, {
@@ -302,10 +379,11 @@ export const GalleryContextProvider = ({ children }: any) => {
           )
         );
       }
-
+      dismissLoading();
       toast("success", "Image updated successfully");
       return false;
     } catch (error) {
+      dismissLoading();
       console.error("Error updating image:", error);
       toast("danger", "Error updating image");
     }
@@ -325,6 +403,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         toggleVisibilityImage,
         handleSaveEdit,
         handleUploadImages,
+        handleDeleteImage,
       }}
     >
       {children}

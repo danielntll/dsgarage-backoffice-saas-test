@@ -20,7 +20,7 @@ import {
   IonToggle,
   IonToolbar,
 } from "@ionic/react";
-import { useGalleryContext } from "../../context/contextGallery";
+import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
 import { eye, eyeOffOutline, star, starOutline } from "ionicons/icons";
 
@@ -36,6 +36,7 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
     togglePinImage,
     toggleVisibilityImage,
     handleSaveEdit,
+    handleDeleteImage,
   } = useGalleryContext();
 
   //CONDITIONS -----------------------
@@ -149,7 +150,12 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
                       </IonButton>
                     </div>
                     <div>
-                      <IonButton fill="clear" color={"danger"} size="small">
+                      <IonButton
+                        onClick={() => handleDeleteImage(item)}
+                        fill="clear"
+                        color={"danger"}
+                        size="small"
+                      >
                         Elimina
                       </IonButton>
                     </div>
@@ -209,13 +215,18 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
 
           <IonButton
             expand="block"
-            onClick={async () =>
-              await handleSaveEdit(
-                editedImage!,
-                editedAlt,
-                editedDescription
-              ).then((val) => setShowModal(val))
-            }
+            onClick={async () => {
+              await handleSaveEdit(editedImage!, editedAlt, editedDescription)
+                .then((val) => {
+                  setShowModal(val);
+                })
+                .catch((e) => {
+                  setShowModal(false);
+                })
+                .finally(() => {
+                  setShowModal(false);
+                });
+            }}
           >
             Save
           </IonButton>

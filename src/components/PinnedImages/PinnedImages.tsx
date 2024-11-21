@@ -10,7 +10,7 @@ import {
   IonListHeader,
   IonThumbnail,
 } from "@ionic/react";
-import { useGalleryContext } from "../../context/contextGallery";
+import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
 
 interface ContainerProps {}
