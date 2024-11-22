@@ -43,62 +43,60 @@ const ImageOverlay: React.FC<ContainerProps> = ({
       {showOverlay && (
         <div className={styles.overlay}>
           <div className={styles.overlayContent}>
+            {/* Immagine */}
             <img
-              src={overlayImage.imageUrl}
+              src={image!.imageUrl}
               alt="Overlay"
               style={{ maxWidth: "90vw", maxHeight: "90vh" }}
             />
-
-            {/* Action Buttons */}
-            <div className={styles.actions}>
-              {" "}
-              {/* Add a container for buttons */}
-              <IonButtons>
-                <IonButton
-                  fill={"outline"}
-                  onClick={closeOverlay}
-                  size="small"
-                  color={"medium"}
-                >
-                  Chiudi immagine
-                </IonButton>
-                <IonButton
-                  className="ion-padding-start"
-                  fill={overlayImage.isPinned ? "solid" : "outline"}
-                  onClick={() => togglePinImage(overlayImage)}
-                  size="small"
-                >
-                  <IonIcon icon={overlayImage.isPinned ? star : starOutline} />
-                  {!overlayImage.isPinned
-                    ? "Metti in evidenza"
-                    : "Togli evidenza"}
-                </IonButton>
-                <IonButton
-                  fill={overlayImage.isVisible ? "solid" : "outline"}
-                  color={"tertiary"}
-                  onClick={() => toggleVisibilityImage(overlayImage)}
-                  size="small"
-                >
-                  <IonIcon
-                    icon={overlayImage.isVisible ? eye : eyeOffOutline}
-                  />
-                  {!overlayImage.isVisible ? "Visualizza" : "Nascondi"}
-                </IonButton>
-                <IonButton
-                  onClick={() => {
-                    handleEditClick(overlayImage);
-                    closeOverlay();
-                  }} // Close overlay after edit click
-                  fill="clear"
-                  size="small"
-                >
-                  Edit
-                </IonButton>
-              </IonButtons>
-            </div>
           </div>
         </div>
       )}
+      {/* Action Buttons */}
+      <div className={styles.actions}>
+        {" "}
+        {/* Add a container for buttons */}
+        <IonButtons>
+          <IonButton
+            fill={"outline"}
+            onClick={closeOverlay}
+            size="small"
+            color={"medium"}
+          >
+            Chiudi immagine
+          </IonButton>
+        </IonButtons>
+        <IonButtons>
+          <IonButton
+            className="ion-padding-start"
+            fill={image!.isPinned ? "solid" : "outline"}
+            onClick={() => togglePinImage(image!)}
+            size="small"
+          >
+            <IonIcon icon={image!.isPinned ? star : starOutline} />
+            {!image!.isPinned ? "Metti in evidenza" : "Togli evidenza"}
+          </IonButton>
+          <IonButton
+            fill={image!.isVisible ? "solid" : "outline"}
+            color={"tertiary"}
+            onClick={() => toggleVisibilityImage(image!)}
+            size="small"
+          >
+            <IonIcon icon={image!.isVisible ? eye : eyeOffOutline} />
+            {!image!.isVisible ? "Visualizza" : "Nascondi"}
+          </IonButton>
+          <IonButton
+            onClick={() => {
+              handleEditClick(image!);
+              closeOverlay();
+            }} // Close overlay after edit click
+            fill="clear"
+            size="small"
+          >
+            Modifica
+          </IonButton>
+        </IonButtons>
+      </div>
     </div>
   );
 };
