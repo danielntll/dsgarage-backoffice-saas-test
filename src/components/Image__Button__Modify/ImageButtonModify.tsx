@@ -11,9 +11,16 @@ import { useContextToast } from "../../context/contextToast";
 interface ContainerProps {
   image: typeImage | null;
   props?: any;
+  fill?: "default" | "clear" | "outline" | "solid" | undefined;
+  onlyIcon?: boolean;
 }
 
-const ImageButtonModify: React.FC<ContainerProps> = ({ image, props }) => {
+const ImageButtonModify: React.FC<ContainerProps> = ({
+  image,
+  props,
+  fill = "clear",
+  onlyIcon = false,
+}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const { toast } = useContextToast();
@@ -30,14 +37,14 @@ const ImageButtonModify: React.FC<ContainerProps> = ({ image, props }) => {
   //RETURN COMPONENT -----------------
   return (
     <IonButton
-      fill={"clear"}
+      fill={fill}
       onClick={onClick}
       size="small"
       {...props}
       expand="block"
     >
       <IonIcon className="ion-margin-end" icon={pencilOutline} />
-      {text[l].text}
+      {onlyIcon ? null : text[l].text}
     </IonButton>
   );
 };

@@ -11,9 +11,16 @@ import { useContextToast } from "../../context/contextToast";
 interface ContainerProps {
   image: typeImage | null;
   props?: any;
+  fill?: "default" | "clear" | "outline" | "solid" | undefined;
+  onlyIcon?: boolean;
 }
 
-const ImageButtonDelete: React.FC<ContainerProps> = ({ image, props }) => {
+const ImageButtonDelete: React.FC<ContainerProps> = ({
+  image,
+  props,
+  fill = "clear",
+  onlyIcon = false,
+}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const { toast } = useContextToast();
@@ -30,7 +37,7 @@ const ImageButtonDelete: React.FC<ContainerProps> = ({ image, props }) => {
   //RETURN COMPONENT -----------------
   return (
     <IonButton
-      fill={"clear"}
+      fill={fill}
       onClick={onClick}
       size="small"
       color={"danger"}
@@ -38,7 +45,7 @@ const ImageButtonDelete: React.FC<ContainerProps> = ({ image, props }) => {
       {...props}
     >
       <IonIcon className="ion-margin-end" icon={trashBinOutline} />
-      {text[l].text}
+      {onlyIcon ? null : text[l].text}
     </IonButton>
   );
 };

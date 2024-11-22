@@ -3,21 +3,38 @@ import styles from "./ImagesAll.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
+  IonButton,
   IonCard,
   IonCardContent,
+  IonContent,
+  IonIcon,
   IonItem,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
   IonLabel,
+  IonList,
+  IonPopover,
   IonSelect,
   IonSelectOption,
+  IonThumbnail,
   IonToggle,
 } from "@ionic/react";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
-import ImageButtonDelete from "../Image__Button__Delete/ImageButtonDelete";
-import ImageButtonModify from "../Image__Button__Modify/ImageButtonModify";
-import ImageButtonVisibility from "../Image__Button__Visibility/ImageButtonVisibility";
-import ImageButtonPin from "../Image__Button__Pin/ImageButtonPin";
 import ImageCard from "../Image__Card/ImageCard";
+import {
+  filterOutline,
+  gridOutline,
+  listOutline,
+  pencilOutline,
+  trashBinOutline,
+} from "ionicons/icons";
+import ImageButtonModify from "../Image__Button__Modify/ImageButtonModify";
+import ImageButtonDelete from "../Image__Button__Delete/ImageButtonDelete";
+import ImageButtonPin from "../Image__Button__Pin/ImageButtonPin";
+import ImageButtonVisibility from "../Image__Button__Visibility/ImageButtonVisibility";
+import ImageItem from "../Image__Item/ImageItem";
 
 interface ContainerProps {
   searchTerm: string;
@@ -26,17 +43,35 @@ interface ContainerProps {
 const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { galleryData, loading, error, handleShowImageOverlay } =
-    useGalleryContext();
+  const {
+    galleryData,
+    loading,
+    error,
+    handleShowImageOverlay,
+    handleDeleteImage,
+    handleEditClick,
+    togglePinImage,
+    toggleVisibilityImage,
+  } = useGalleryContext();
 
   //CONDITIONS -----------------------
-  const [sortBy, setSortBy] = useState<"date" | "alt">("date"); // Add sorting state
+  const [sortBy, setSortBy] = useState<"date" | "alt">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showVisible, setShowVisible] = useState<boolean>(false);
+  const [showPopover, setShowPopover] = useState(false);
+  const [popoverEvent, setPopoverEvent] = useState<any>(null);
+  const [listView, setListView] = useState<boolean>(true);
+
   //FUNCTIONS ------------------------
   const filteredGalleryData = galleryData.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleFilterButtonClick = (e: any) => {
+    e.persist(); // Important to persist the event
+    setPopoverEvent(e);
+    setShowPopover(true);
+  };
 
   //RETURN COMPONENT -----------------
   if (loading) return <div>Loading gallery...</div>;
@@ -49,53 +84,52 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
           <p>{text[l].subtitle}</p>
         </IonLabel>
         <div className={`ion-padding ${styles.sortOptions}`}>
-          <p>Ordina:</p>
-          <IonSelect
-            value={sortBy}
-            onIonChange={(e) => setSortBy(e.detail.value as "date" | "alt")}
-            interface="popover" // or "action-sheet"
+          <IonButton size="small" onClick={handleFilterButtonClick}>
+            <IonIcon className="ion-margin-end" icon={filterOutline} />
+            {text[l].btn__filter}
+          </IonButton>
+          <IonButton
+            fill="clear"
+            size="small"
+            onClick={() => setListView(!listView)}
           >
-            <IonSelectOption value="date">Date</IonSelectOption>
-            <IonSelectOption value="alt">Alt Text</IonSelectOption>
-          </IonSelect>
-          <IonSelect
-            value={sortOrder}
-            onIonChange={(e) =>
-              setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-            }
-            interface="popover" // or "action-sheet"
-          >
-            <IonSelectOption value="asc">Ascending</IonSelectOption>
-            <IonSelectOption value="desc">Descending</IonSelectOption>
-          </IonSelect>
-          <IonToggle
-            checked={showVisible}
-            onIonChange={(e) => setShowVisible(e.detail.checked)}
-          >
-            Show Visible Only
-          </IonToggle>
+            <IonIcon
+              className="ion-margin-end"
+              icon={listView == true ? listOutline : gridOutline}
+            />
+            {listView == true ? text[l].view__list : text[l].view__grid}
+          </IonButton>
         </div>
-        <div className={styles.gallery}>
-          {filteredGalleryData
-            .filter((item) => (showVisible ? item.isVisible : true))
-            .sort((a, b) => {
-              if (sortBy === "date") {
-                const dateA = a.createdAt.toDate();
-                const dateB = b.createdAt.toDate();
-                return sortOrder === "asc"
-                  ? dateA.getTime() - dateB.getTime()
-                  : dateB.getTime() - dateA.getTime();
-              } else {
-                // sortBy === "alt"
-                return sortOrder === "asc"
-                  ? a.alt.localeCompare(b.alt)
-                  : b.alt.localeCompare(a.alt);
-              }
-            })
-            .map((item: typeImage, index: number) => {
-              return <ImageCard key={index + "pinnedImages"} image={item} />;
-            })}
-        </div>
+        {listView === false ? (
+          <div className={styles.gallery}>
+            {filteredGalleryData
+              .filter((item) => (showVisible ? item.isVisible : true))
+              .sort((a, b) => {
+                if (sortBy === "date") {
+                  const dateA = a.createdAt.toDate();
+                  const dateB = b.createdAt.toDate();
+                  return sortOrder === "asc"
+                    ? dateA.getTime() - dateB.getTime()
+                    : dateB.getTime() - dateA.getTime();
+                } else {
+                  return sortOrder === "asc"
+                    ? a.alt.localeCompare(b.alt)
+                    : b.alt.localeCompare(a.alt);
+                }
+              })
+              .map((item: typeImage, index: number) => {
+                return (
+                  <ImageCard key={index + "pinnedImages grid"} image={item} />
+                );
+              })}
+          </div>
+        ) : (
+          <IonList inset>
+            {filteredGalleryData.map((item: typeImage, index: number) => (
+              <ImageItem image={item} key={index + "pinnedImages list"} />
+            ))}
+          </IonList>
+        )}
         {galleryData.length === 0 ? (
           <IonItem>
             <IonLabel>
@@ -107,6 +141,57 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
         )}
       </div>
       {/* ----------------- EXTRA UI ----------------------*/}
+      <IonPopover
+        isOpen={showPopover}
+        event={popoverEvent}
+        onDidDismiss={() => setShowPopover(false)}
+      >
+        <IonContent>
+          <IonList>
+            <IonItem>
+              <IonLabel>
+                <p>Ordina per:</p>
+
+                <IonSelect
+                  value={sortBy}
+                  onIonChange={(e) =>
+                    setSortBy(e.detail.value as "date" | "alt")
+                  }
+                  interface="popover" // or "action-sheet"
+                >
+                  <IonSelectOption value="date">Data</IonSelectOption>
+                  <IonSelectOption value="alt">Testo Alt</IonSelectOption>
+                </IonSelect>
+              </IonLabel>
+            </IonItem>
+
+            <IonItem>
+              <IonLabel>
+                <p>Ordine:</p>
+                <IonSelect
+                  value={sortOrder}
+                  onIonChange={(e) =>
+                    setSortOrder(e.detail.value as "asc" | "desc")
+                  }
+                  interface="popover"
+                >
+                  <IonSelectOption value="asc">Crescente</IonSelectOption>
+                  <IonSelectOption value="desc">Decrescente</IonSelectOption>
+                </IonSelect>
+              </IonLabel>
+            </IonItem>
+            <IonItem>
+              <IonLabel>
+                <p>Mostra solo visibili</p>
+              </IonLabel>
+              <IonToggle
+                checked={showVisible}
+                onIonChange={(e) => setShowVisible(e.detail.checked)}
+              />
+            </IonItem>
+          </IonList>
+        </IonContent>
+      </IonPopover>
     </>
   );
 };

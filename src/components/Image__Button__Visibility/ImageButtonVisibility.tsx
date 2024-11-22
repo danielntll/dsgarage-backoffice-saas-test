@@ -11,9 +11,14 @@ import { useContextToast } from "../../context/contextToast";
 interface ContainerProps {
   image: typeImage | null;
   props?: any;
+  onlyIcon?: boolean;
 }
 
-const ImageButtonVisibility: React.FC<ContainerProps> = ({ image, props }) => {
+const ImageButtonVisibility: React.FC<ContainerProps> = ({
+  image,
+  props,
+  onlyIcon = false,
+}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const { toast } = useContextToast();
@@ -40,7 +45,7 @@ const ImageButtonVisibility: React.FC<ContainerProps> = ({ image, props }) => {
         className="ion-margin-end"
         icon={image!.isVisible ? eye : eyeOffOutline}
       />
-      {image!.isVisible ? text[l].not_active : text[l].active}
+      {onlyIcon ? null : image!.isVisible ? text[l].not_active : text[l].active}
     </IonButton>
   );
 };

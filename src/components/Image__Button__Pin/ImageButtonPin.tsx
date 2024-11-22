@@ -11,9 +11,14 @@ import { useContextToast } from "../../context/contextToast";
 interface ContainerProps {
   image: typeImage | null;
   props?: any;
+  onlyIcon?: boolean;
 }
 
-const ImageButtonPin: React.FC<ContainerProps> = ({ image, props }) => {
+const ImageButtonPin: React.FC<ContainerProps> = ({
+  image,
+  props,
+  onlyIcon = false,
+}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const { toast } = useContextToast();
@@ -40,7 +45,7 @@ const ImageButtonPin: React.FC<ContainerProps> = ({ image, props }) => {
         className="ion-margin-end"
         icon={image!.isPinned ? star : starOutline}
       />
-      {image!.isPinned ? text[l].not_active : text[l].active}
+      {onlyIcon ? null : image!.isPinned ? text[l].not_active : text[l].active}
     </IonButton>
   );
 };

@@ -37,6 +37,27 @@ const ImageOverlay: React.FC<ContainerProps> = ({
 
   return (
     <div className={styles.container}>
+      {/* Action Buttons */}
+      <div className={styles.actions}>
+        {/* Add a container for buttons */}
+        <IonButtons>
+          <IonButton
+            fill={"clear"}
+            onClick={closeOverlay}
+            size="small"
+            color={"primary"}
+          >
+            Chiudi
+          </IonButton>
+        </IonButtons>
+        <IonButtons>
+          <ImageButtonPin image={image} />
+          <ImageButtonVisibility image={image} />
+        </IonButtons>
+        <IonButtons>
+          <ImageButtonModify fill="outline" image={image} />
+        </IonButtons>
+      </div>
       {showOverlay && (
         <div className={styles.overlay}>
           <div className={styles.overlayContent}>
@@ -49,27 +70,6 @@ const ImageOverlay: React.FC<ContainerProps> = ({
           </div>
         </div>
       )}
-      {/* Action Buttons */}
-      <div className={styles.actions}>
-        {/* Add a container for buttons */}
-        <IonButtons>
-          <IonButton
-            fill={"outline"}
-            onClick={closeOverlay}
-            size="small"
-            color={"medium"}
-          >
-            Chiudi immagine
-          </IonButton>
-        </IonButtons>
-        <IonButtons>
-          <ImageButtonPin image={image} />
-          <ImageButtonVisibility image={image} />
-        </IonButtons>
-        <IonButtons>
-          <ImageButtonModify image={image} />
-        </IonButtons>
-      </div>
     </div>
   );
 };

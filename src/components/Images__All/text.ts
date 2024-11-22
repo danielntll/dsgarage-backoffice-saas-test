@@ -5,6 +5,9 @@ export const text = {
     editButton: "Modifica",
     noImages: "Nessuna immagine caricata",
     loading: "Salvataggio delle immagini in corso...",
+    btn__filter: "Filtro",
+    view__grid: "Griglia",
+    view__list: "Lista",
   },
   en_GB: {
     componentTitle: "In evidenza",
@@ -13,5 +16,8 @@ export const text = {
     editButton: "Edit",
     noImages: "Nessuna immagine in evidenza",
     loading: "Salvataggio delle immagini in corso...",
+    btn__filter: "Filtro",
+    view__grid: "Griglia",
+    view__list: "Lista",
   },
 };

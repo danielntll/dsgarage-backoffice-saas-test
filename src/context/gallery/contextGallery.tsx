@@ -139,23 +139,18 @@ export const GalleryContextProvider = ({ children }: any) => {
           text: text[l].alertDeleteConfirm,
           role: "confirm",
           handler: async () => {
-            await deleteImage(image); // Call the deleteImage function here
+            await _deleteImage(image); // Call the deleteImage function here
           },
         },
       ],
     });
   };
 
-  const deleteImage = async (image: typeImage) => {
+  const _deleteImage = async (image: typeImage) => {
     presentLoading({
       message: text[l].loading,
     });
     try {
-      // 1. Delete from Storage
-      const storagePath = `gallery/${image.name}`;
-      const storageRef = ref(storage, storagePath);
-      await deleteObject(storageRef);
-
       // 2. Delete from Firestore
       const imageRef = doc(db, "gallery", image.uid);
       await deleteDoc(imageRef);
@@ -167,13 +162,29 @@ export const GalleryContextProvider = ({ children }: any) => {
       setPinnedData((prevData) =>
         prevData.filter((item) => item.uid !== image.uid)
       );
-      dismissLoading();
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      toast("danger", "Error deleting image");
+    }
+    try {
+      // 1. Delete from Storage
+      const storagePath = `gallery/${image.name}`;
+      const storageRef = ref(storage, storagePath);
+      await deleteObject(storageRef);
+
+      // 3. Update local state (Important: Update state *after* successful deletion)
+      setGalleryData((prevData) =>
+        prevData.filter((item) => item.uid !== image.uid)
+      );
+      setPinnedData((prevData) =>
+        prevData.filter((item) => item.uid !== image.uid)
+      );
       toast("success", "Image deleted successfully");
     } catch (error) {
       console.error("Error deleting image:", error);
-      dismissLoading();
       toast("danger", "Error deleting image");
     }
+    dismissLoading();
   };
 
   const handleUploadImages = async (imagesToUpload: typeImageToUpload[]) => {
