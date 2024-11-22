@@ -289,18 +289,21 @@ export const GalleryContextProvider = ({ children }: any) => {
         // If NOT pinned already
         await updateDoc(imageRef, {
           isPinned: true,
+          isVisible: true,
         });
 
         // Update local state after successful backend update
         setGalleryData((prevData) =>
           prevData.map((item) =>
-            item.uid === image.uid ? { ...item, isPinned: true } : item
+            item.uid === image.uid
+              ? { ...item, isPinned: true, isVisible: true }
+              : item
           )
         );
         setPinnedData((prevData) =>
           prevData
-            ? [...prevData, { ...image, isPinned: true }]
-            : [{ ...image, isPinned: true }]
+            ? [...prevData, { ...image, isPinned: true, isVisible: true }]
+            : [{ ...image, isPinned: true, isVisible: true }]
         );
         toast("success", "Immagine aggiunta");
       } else {
