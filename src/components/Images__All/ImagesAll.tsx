@@ -37,6 +37,7 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
     toggleVisibilityImage,
     handleSaveEdit,
     handleDeleteImage,
+    handleShowImageOverlay,
   } = useGalleryContext();
 
   //CONDITIONS -----------------------
@@ -114,6 +115,7 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
               return (
                 <IonCard className={styles.card} key={index + "pinnedImages"}>
                   <img
+                    onClick={() => handleShowImageOverlay(item)}
                     className={styles.image}
                     src={item.imageUrl}
                     alt={item.alt}

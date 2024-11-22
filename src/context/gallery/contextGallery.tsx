@@ -22,6 +22,7 @@ import {
 } from "firebase/storage";
 import { typeImageToUpload } from "../../types/typeImageToUpload";
 import { text } from "./text";
+import ImageOverlay from "../../components/Image__Overlay/ImageOverlay";
 
 type galleryContext = {
   galleryData: typeImage[];
@@ -38,6 +39,7 @@ type galleryContext = {
   ) => Promise<boolean>;
   handleUploadImages: (toUpload: typeImageToUpload[]) => Promise<boolean>;
   handleDeleteImage: (image: typeImage) => Promise<void>;
+  handleShowImageOverlay: (image: typeImage) => void;
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
@@ -55,6 +57,7 @@ export const GalleryContext = React.createContext<galleryContext>({
     return false;
   },
   handleDeleteImage: async () => {},
+  handleShowImageOverlay: () => {},
 });
 
 export const useGalleryContext = () => React.useContext(GalleryContext);
@@ -73,6 +76,9 @@ export const GalleryContextProvider = ({ children }: any) => {
   const [presentAlert] = useIonAlert();
 
   const [presentLoading, dismissLoading] = useIonLoading();
+
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [overlayImage, setOverlayImage] = useState<typeImage | null>(null);
   // -----------------------------
 
   // USE EFFECT ------------------------------
@@ -82,6 +88,16 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
+
+  const handleShowImageOverlay = (image: typeImage) => {
+    setOverlayImage(image);
+    setShowOverlay(true);
+  };
+
+  const closeOverlay = () => {
+    setShowOverlay(false);
+    setOverlayImage(null);
+  };
 
   const handleDeleteImage = async (image: typeImage) => {
     presentAlert({
@@ -404,9 +420,19 @@ export const GalleryContextProvider = ({ children }: any) => {
         handleSaveEdit,
         handleUploadImages,
         handleDeleteImage,
+        handleShowImageOverlay,
       }}
     >
-      {children}
+      <>
+        {children}
+        {showOverlay && (
+          <ImageOverlay
+            showOverlay={showOverlay}
+            overlayImage={overlayImage}
+            closeOverlay={closeOverlay}
+          />
+        )}
+      </>
     </GalleryContext.Provider>
   );
 };
