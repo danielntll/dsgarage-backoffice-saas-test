@@ -35,28 +35,16 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
     error,
     togglePinImage,
     toggleVisibilityImage,
-    handleSaveEdit,
+    handleEditClick,
     handleDeleteImage,
     handleShowImageOverlay,
   } = useGalleryContext();
 
   //CONDITIONS -----------------------
-  const [showModal, setShowModal] = useState(false);
-  const [editedImage, setEditedImage] = useState<typeImage | null>(null);
-  const [editedAlt, setEditedAlt] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "alt">("date"); // Add sorting state
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showVisible, setShowVisible] = useState<boolean>(false);
   //FUNCTIONS ------------------------
-
-  const handleEditClick = (image: typeImage) => {
-    setEditedImage(image);
-    setEditedAlt(image.alt); // Set initial values for input fields
-    setEditedDescription(image.description || ""); // Handle potentially missing description
-    setShowModal(true);
-  };
-
   //RETURN COMPONENT -----------------
   if (loading) return <div>Loading gallery...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -177,63 +165,6 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
         )}
       </div>
       {/* ----------------- EXTRA UI ----------------------*/}
-      <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>Edit Image</IonTitle> {/* Or translate */}
-            <IonButton slot="end" onClick={() => setShowModal(false)}>
-              Close {/* Or translate */}
-            </IonButton>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          <IonList inset>
-            <IonItem>
-              <IonInput
-                value={editedAlt}
-                label="Alt Text"
-                onIonChange={(e) => setEditedAlt(e.detail.value!)}
-              />
-            </IonItem>
-          </IonList>
-          <IonLabel>
-            <p>
-              Il testo ALT (o alternativo) serve per aumentare le prestazioni
-              del sito Web, permettendo di capire il contenuto dell'Immagine
-              tramite il testo.
-            </p>
-          </IonLabel>
-
-          {/* <IonList>
-            <IonItem>
-              <IonLabel position="floating"></IonLabel>
-              <IonTextarea
-                label="Description"
-                value={editedDescription}
-                onIonChange={(e) => setEditedDescription(e.detail.value!)}
-              />
-            </IonItem>
-          </IonList> */}
-
-          <IonButton
-            expand="block"
-            onClick={async () => {
-              await handleSaveEdit(editedImage!, editedAlt, editedDescription)
-                .then((val) => {
-                  setShowModal(val);
-                })
-                .catch((e) => {
-                  setShowModal(false);
-                })
-                .finally(() => {
-                  setShowModal(false);
-                });
-            }}
-          >
-            Save
-          </IonButton>
-        </IonContent>
-      </IonModal>
     </>
   );
 };

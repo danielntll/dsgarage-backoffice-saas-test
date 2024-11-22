@@ -13,7 +13,21 @@ import {
 } from "firebase/firestore";
 import { db, storage } from "../../firebase/firebaseConfig";
 import { typeImage } from "../../types/typeImage";
-import { useIonAlert, useIonLoading } from "@ionic/react";
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonModal,
+  IonTextarea,
+  IonTitle,
+  IonToolbar,
+  useIonAlert,
+  useIonLoading,
+} from "@ionic/react";
 import {
   deleteObject,
   getDownloadURL,
@@ -40,6 +54,7 @@ type galleryContext = {
   handleUploadImages: (toUpload: typeImageToUpload[]) => Promise<boolean>;
   handleDeleteImage: (image: typeImage) => Promise<void>;
   handleShowImageOverlay: (image: typeImage) => void;
+  handleEditClick: (image: typeImage) => void;
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
@@ -58,6 +73,7 @@ export const GalleryContext = React.createContext<galleryContext>({
   },
   handleDeleteImage: async () => {},
   handleShowImageOverlay: () => {},
+  handleEditClick: () => {},
 });
 
 export const useGalleryContext = () => React.useContext(GalleryContext);
@@ -79,6 +95,12 @@ export const GalleryContextProvider = ({ children }: any) => {
 
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayImage, setOverlayImage] = useState<typeImage | null>(null);
+
+  const [showModalEdit, setShowModalEdit] = useState(false);
+  const [editedImage, setEditedImage] = useState<typeImage | null>(null);
+  const [editedAlt, setEditedAlt] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
+
   // -----------------------------
 
   // USE EFFECT ------------------------------
@@ -88,6 +110,13 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
+
+  const handleEditClick = (image: typeImage) => {
+    setEditedImage(image);
+    setEditedAlt(image.alt); // Set initial values for input fields
+    setEditedDescription(image.description || ""); // Handle potentially missing description
+    setShowModalEdit(true);
+  };
 
   const handleShowImageOverlay = (image: typeImage) => {
     setOverlayImage(image);
@@ -421,6 +450,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         handleUploadImages,
         handleDeleteImage,
         handleShowImageOverlay,
+        handleEditClick,
       }}
     >
       <>
@@ -432,6 +462,66 @@ export const GalleryContextProvider = ({ children }: any) => {
             closeOverlay={closeOverlay}
           />
         )}
+        <IonModal
+          isOpen={showModalEdit}
+          onDidDismiss={() => setShowModalEdit(false)}
+        >
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Edit Image</IonTitle> {/* Or translate */}
+              <IonButton slot="end" onClick={() => setShowModalEdit(false)}>
+                Close {/* Or translate */}
+              </IonButton>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent className="ion-padding">
+            <IonList inset>
+              <IonItem>
+                <IonInput
+                  value={editedAlt}
+                  label="Alt Text"
+                  onIonChange={(e) => setEditedAlt(e.detail.value!)}
+                />
+              </IonItem>
+            </IonList>
+            <IonLabel>
+              <p>
+                Il testo ALT (o alternativo) serve per aumentare le prestazioni
+                del sito Web, permettendo di capire il contenuto dell'Immagine
+                tramite il testo.
+              </p>
+            </IonLabel>
+
+            <IonList>
+              <IonItem>
+                <IonLabel position="floating"></IonLabel>
+                <IonTextarea
+                  label="Description"
+                  value={editedDescription}
+                  onIonChange={(e) => setEditedDescription(e.detail.value!)}
+                />
+              </IonItem>
+            </IonList>
+
+            <IonButton
+              expand="block"
+              onClick={async () => {
+                await handleSaveEdit(editedImage!, editedAlt, editedDescription)
+                  .then((val) => {
+                    setShowModalEdit(val);
+                  })
+                  .catch((e) => {
+                    setShowModalEdit(false);
+                  })
+                  .finally(() => {
+                    setShowModalEdit(false);
+                  });
+              }}
+            >
+              Save
+            </IonButton>
+          </IonContent>
+        </IonModal>
       </>
     </GalleryContext.Provider>
   );

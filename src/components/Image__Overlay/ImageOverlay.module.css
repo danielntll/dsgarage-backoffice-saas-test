@@ -16,6 +16,13 @@
 .overlayContent {
   /* Add any desired styling here */
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
