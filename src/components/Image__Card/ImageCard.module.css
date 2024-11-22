@@ -1,0 +1,18 @@
+.container {
+}
+.card {
+  box-sizing: border-box;
+}
+
+.image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  cursor: pointer;
+}
+.buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}

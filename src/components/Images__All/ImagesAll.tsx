@@ -3,52 +3,41 @@ import styles from "./ImagesAll.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
-  IonButton,
   IonCard,
   IonCardContent,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonInput,
   IonItem,
   IonLabel,
-  IonList,
-  IonModal,
   IonSelect,
   IonSelectOption,
-  IonTitle,
   IonToggle,
-  IonToolbar,
 } from "@ionic/react";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
-import { eye, eyeOffOutline, star, starOutline } from "ionicons/icons";
 import ImageButtonDelete from "../Image__Button__Delete/ImageButtonDelete";
 import ImageButtonModify from "../Image__Button__Modify/ImageButtonModify";
 import ImageButtonVisibility from "../Image__Button__Visibility/ImageButtonVisibility";
 import ImageButtonPin from "../Image__Button__Pin/ImageButtonPin";
+import ImageCard from "../Image__Card/ImageCard";
 
-interface ContainerProps {}
+interface ContainerProps {
+  searchTerm: string;
+}
 
-const ImagesAll: React.FC<ContainerProps> = ({}) => {
+const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const {
-    galleryData,
-    loading,
-    error,
-    togglePinImage,
-    toggleVisibilityImage,
-    handleEditClick,
-    handleDeleteImage,
-    handleShowImageOverlay,
-  } = useGalleryContext();
+  const { galleryData, loading, error, handleShowImageOverlay } =
+    useGalleryContext();
 
   //CONDITIONS -----------------------
   const [sortBy, setSortBy] = useState<"date" | "alt">("date"); // Add sorting state
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showVisible, setShowVisible] = useState<boolean>(false);
   //FUNCTIONS ------------------------
+  const filteredGalleryData = galleryData.filter((item) =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   //RETURN COMPONENT -----------------
   if (loading) return <div>Loading gallery...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -87,7 +76,7 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
           </IonToggle>
         </div>
         <div className={styles.gallery}>
-          {galleryData
+          {filteredGalleryData
             .filter((item) => (showVisible ? item.isVisible : true))
             .sort((a, b) => {
               if (sortBy === "date") {
@@ -104,32 +93,7 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
               }
             })
             .map((item: typeImage, index: number) => {
-              return (
-                <IonCard className={styles.card} key={index + "pinnedImages"}>
-                  <img
-                    onClick={() => handleShowImageOverlay(item)}
-                    className={styles.image}
-                    src={item.imageUrl}
-                    alt={item.alt}
-                  />
-                  <IonCardContent>
-                    <IonLabel>
-                      <h3>{item.alt}</h3>
-                      <p>{item.createdAt.toDate().toLocaleDateString()}</p>
-                    </IonLabel>
-                  </IonCardContent>
-                  <div className={styles.buttons}>
-                    <div>
-                      <ImageButtonPin image={item} />
-                      <ImageButtonVisibility image={item} />
-                    </div>
-                    <div>
-                      <ImageButtonModify image={item} />
-                      <ImageButtonDelete image={item} />
-                    </div>
-                  </div>
-                </IonCard>
-              );
+              return <ImageCard key={index + "pinnedImages"} image={item} />;
             })}
         </div>
         {galleryData.length === 0 ? (

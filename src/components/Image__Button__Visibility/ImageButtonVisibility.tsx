@@ -10,9 +10,10 @@ import { useContextToast } from "../../context/contextToast";
 
 interface ContainerProps {
   image: typeImage | null;
+  props?: any;
 }
 
-const ImageButtonVisibility: React.FC<ContainerProps> = ({ image }) => {
+const ImageButtonVisibility: React.FC<ContainerProps> = ({ image, props }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const { toast } = useContextToast();
@@ -32,8 +33,13 @@ const ImageButtonVisibility: React.FC<ContainerProps> = ({ image }) => {
       fill={image!.isVisible ? "solid" : "outline"}
       onClick={onClick}
       size="small"
+      expand="block"
+      {...props}
     >
-      <IonIcon icon={image!.isVisible ? eye : eyeOffOutline} />
+      <IonIcon
+        className="ion-margin-end"
+        icon={image!.isVisible ? eye : eyeOffOutline}
+      />
       {image!.isVisible ? text[l].not_active : text[l].active}
     </IonButton>
   );

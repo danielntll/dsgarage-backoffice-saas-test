@@ -4,6 +4,7 @@ import {
   IonContent,
   IonHeader,
   IonPage,
+  IonSearchbar,
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
@@ -25,6 +26,7 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
   const [isModalUploadOpen, setIsModalUploadOpen] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
@@ -34,7 +36,10 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
           <IonToolbar>
             <IonTitle>{route_GalleryPage.tab[l]}</IonTitle>
             <IonButtons slot="end">
-              <IonButton onClick={()=> setIsModalUploadOpen(true)} color={"primary"}>
+              <IonButton
+                onClick={() => setIsModalUploadOpen(true)}
+                color={"primary"}
+              >
                 {text[l].uploadImages}
               </IonButton>
             </IonButtons>
@@ -45,14 +50,21 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
             <IonToolbar>
               <IonTitle size="large">{route_GalleryPage.tab[l]}</IonTitle>
             </IonToolbar>
+            <IonToolbar>
+              <IonSearchbar
+                placeholder="Cerca immagine"
+                value={searchTerm}
+                onIonInput={(e) => setSearchTerm(e.detail.value!)}
+              />
+            </IonToolbar>
           </IonHeader>
           {/* ----------------- PAGE CONTENT ------------------*/}
           <div className={styles.content}>
             <PinnedImages />
-            <ImagesAll />
+            <ImagesAll searchTerm={searchTerm} />
           </div>
           {/* ----------------- EXTRA UI ----------------------*/}
-          <ModalImagesUpload 
+          <ModalImagesUpload
             isModalOpen={isModalUploadOpen}
             setIsModalOpen={setIsModalUploadOpen}
           />

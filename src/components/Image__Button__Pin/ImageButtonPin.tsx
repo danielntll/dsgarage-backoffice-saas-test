@@ -10,9 +10,10 @@ import { useContextToast } from "../../context/contextToast";
 
 interface ContainerProps {
   image: typeImage | null;
+  props?: any;
 }
 
-const ImageButtonPin: React.FC<ContainerProps> = ({ image }) => {
+const ImageButtonPin: React.FC<ContainerProps> = ({ image, props }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const { toast } = useContextToast();
@@ -32,8 +33,13 @@ const ImageButtonPin: React.FC<ContainerProps> = ({ image }) => {
       fill={image!.isPinned ? "solid" : "outline"}
       onClick={onClick}
       size="small"
+      expand="block"
+      {...props}
     >
-      <IonIcon icon={image!.isPinned ? star : starOutline} />
+      <IonIcon
+        className="ion-margin-end"
+        icon={image!.isPinned ? star : starOutline}
+      />
       {image!.isPinned ? text[l].not_active : text[l].active}
     </IonButton>
   );

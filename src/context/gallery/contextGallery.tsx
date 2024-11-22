@@ -15,6 +15,7 @@ import { db, storage } from "../../firebase/firebaseConfig";
 import { typeImage } from "../../types/typeImage";
 import {
   IonButton,
+  IonButtons,
   IonContent,
   IonHeader,
   IonInput,
@@ -37,6 +38,7 @@ import {
 import { typeImageToUpload } from "../../types/typeImageToUpload";
 import { text } from "./text";
 import ImageOverlay from "../../components/Image__Overlay/ImageOverlay";
+import ImageModalModify from "../../components/Image__Modal__Modify/ImageModalModify";
 
 type galleryContext = {
   galleryData: typeImage[];
@@ -98,8 +100,6 @@ export const GalleryContextProvider = ({ children }: any) => {
 
   const [showModalEdit, setShowModalEdit] = useState(false);
   const [editedImage, setEditedImage] = useState<typeImage | null>(null);
-  const [editedAlt, setEditedAlt] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
 
   // -----------------------------
 
@@ -113,8 +113,6 @@ export const GalleryContextProvider = ({ children }: any) => {
 
   const handleEditClick = (image: typeImage) => {
     setEditedImage(image);
-    setEditedAlt(image.alt); // Set initial values for input fields
-    setEditedDescription(image.description || ""); // Handle potentially missing description
     setShowModalEdit(true);
   };
 
@@ -465,66 +463,12 @@ export const GalleryContextProvider = ({ children }: any) => {
             closeOverlay={closeOverlay}
           />
         )}
-        <IonModal
-          isOpen={showModalEdit}
-          onDidDismiss={() => setShowModalEdit(false)}
-        >
-          <IonHeader>
-            <IonToolbar>
-              <IonTitle>Edit Image</IonTitle> {/* Or translate */}
-              <IonButton slot="end" onClick={() => setShowModalEdit(false)}>
-                Close {/* Or translate */}
-              </IonButton>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent className="ion-padding">
-            <IonList inset>
-              <IonItem>
-                <IonInput
-                  value={editedAlt}
-                  label="Alt Text"
-                  onIonChange={(e) => setEditedAlt(e.detail.value!)}
-                />
-              </IonItem>
-            </IonList>
-            <IonLabel>
-              <p>
-                Il testo ALT (o alternativo) serve per aumentare le prestazioni
-                del sito Web, permettendo di capire il contenuto dell'Immagine
-                tramite il testo.
-              </p>
-            </IonLabel>
-
-            <IonList>
-              <IonItem>
-                <IonLabel position="floating"></IonLabel>
-                <IonTextarea
-                  label="Description"
-                  value={editedDescription}
-                  onIonChange={(e) => setEditedDescription(e.detail.value!)}
-                />
-              </IonItem>
-            </IonList>
-
-            <IonButton
-              expand="block"
-              onClick={async () => {
-                await handleSaveEdit(editedImage!, editedAlt, editedDescription)
-                  .then((val) => {
-                    setShowModalEdit(val);
-                  })
-                  .catch((e) => {
-                    setShowModalEdit(false);
-                  })
-                  .finally(() => {
-                    setShowModalEdit(false);
-                  });
-              }}
-            >
-              Save
-            </IonButton>
-          </IonContent>
-        </IonModal>
+        <ImageModalModify
+          showModalEdit={showModalEdit}
+          setShowModalEdit={setShowModalEdit}
+          editedImage={editedImage}
+          handleSaveEdit={handleSaveEdit}
+        />
       </>
     </GalleryContext.Provider>
   );
