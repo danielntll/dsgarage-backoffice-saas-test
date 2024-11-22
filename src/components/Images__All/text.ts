@@ -8,6 +8,9 @@ export const text = {
     btn__filter: "Filtro",
     view__grid: "Griglia",
     view__list: "Lista",
+    loading__images: "Caricamento immagini",
+    error__images: "Errore caricamento immagini",
+    btn__load__more: "Carica altro",
   },
   en_GB: {
     componentTitle: "In evidenza",
@@ -19,5 +22,8 @@ export const text = {
     btn__filter: "Filtro",
     view__grid: "Griglia",
     view__list: "Lista",
+    loading__images: "Caricamento immagini",
+    error__images: "Errore caricamento immagini",
+    btn__load__more: "Carica altro",
   },
 };

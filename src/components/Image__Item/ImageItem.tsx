@@ -30,9 +30,6 @@ const ImageItem: React.FC<ContainerProps> = ({ image }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const {
-    galleryData,
-    loading,
-    error,
     handleShowImageOverlay,
     handleDeleteImage,
     handleEditClick,

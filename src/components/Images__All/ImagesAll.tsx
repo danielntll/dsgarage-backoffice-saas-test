@@ -4,36 +4,26 @@ import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
   IonContent,
   IonIcon,
   IonItem,
-  IonItemOption,
-  IonItemOptions,
-  IonItemSliding,
   IonLabel,
   IonList,
   IonPopover,
   IonSelect,
   IonSelectOption,
-  IonThumbnail,
   IonToggle,
 } from "@ionic/react";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
 import ImageCard from "../Image__Card/ImageCard";
 import {
+  downloadOutline,
   filterOutline,
   gridOutline,
   listOutline,
-  pencilOutline,
-  trashBinOutline,
 } from "ionicons/icons";
-import ImageButtonModify from "../Image__Button__Modify/ImageButtonModify";
-import ImageButtonDelete from "../Image__Button__Delete/ImageButtonDelete";
-import ImageButtonPin from "../Image__Button__Pin/ImageButtonPin";
-import ImageButtonVisibility from "../Image__Button__Visibility/ImageButtonVisibility";
+
 import ImageItem from "../Image__Item/ImageItem";
 
 interface ContainerProps {
@@ -43,16 +33,7 @@ interface ContainerProps {
 const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const {
-    galleryData,
-    loading,
-    error,
-    handleShowImageOverlay,
-    handleDeleteImage,
-    handleEditClick,
-    togglePinImage,
-    toggleVisibilityImage,
-  } = useGalleryContext();
+  const { galleryData, loading, error, loadMoreData } = useGalleryContext();
 
   //CONDITIONS -----------------------
   const [sortBy, setSortBy] = useState<"date" | "alt">("date");
@@ -61,6 +42,7 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState<any>(null);
   const [listView, setListView] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   //FUNCTIONS ------------------------
   const filteredGalleryData = galleryData.filter((item) =>
@@ -73,9 +55,15 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
     setShowPopover(true);
   };
 
+  const handleLoadMoreData = async () => {
+    setIsLoading(true);
+    await loadMoreData()
+      .then(() => setIsLoading(false))
+      .catch(() => setIsLoading(false));
+  };
+
   //RETURN COMPONENT -----------------
-  if (loading) return <div>Loading gallery...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div> {error && <p>{text[l].error__images}</p>}</div>;
   return (
     <>
       <div className={`ion-padding ${styles.container}`}>
@@ -130,6 +118,14 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
             ))}
           </IonList>
         )}
+        <IonButton
+          onClick={handleLoadMoreData}
+          disabled={isLoading}
+          expand="block"
+        >
+          <IonIcon icon={downloadOutline} className="ion-margin-end" />
+          {loading ? text[l].loading__images : text[l].btn__load__more}
+        </IonButton>
         {galleryData.length === 0 ? (
           <IonItem>
             <IonLabel>

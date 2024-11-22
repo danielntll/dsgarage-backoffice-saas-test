@@ -8,27 +8,17 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
   Timestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db, storage } from "../../firebase/firebaseConfig";
 import { typeImage } from "../../types/typeImage";
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonModal,
-  IonTextarea,
-  IonTitle,
-  IonToolbar,
-  useIonAlert,
-  useIonLoading,
-} from "@ionic/react";
+import { useIonAlert, useIonLoading } from "@ionic/react";
 import {
   deleteObject,
   getDownloadURL,
@@ -57,6 +47,7 @@ type galleryContext = {
   handleDeleteImage: (image: typeImage) => Promise<void>;
   handleShowImageOverlay: (image: typeImage) => void;
   handleEditClick: (image: typeImage) => void;
+  loadMoreData: () => Promise<void>;
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
@@ -76,12 +67,14 @@ export const GalleryContext = React.createContext<galleryContext>({
   handleDeleteImage: async () => {},
   handleShowImageOverlay: () => {},
   handleEditClick: () => {},
+  loadMoreData: async () => {},
 });
 
 export const useGalleryContext = () => React.useContext(GalleryContext);
 
 export const GalleryContextProvider = ({ children }: any) => {
   // VARIABLES ------------------------------
+  const perPage: number = 10;
   const { l } = useContext(ContextLanguage);
   const { authenticateUser } = useContext(AuthContext);
   const { toast } = useContext(ContextToast);
@@ -101,12 +94,14 @@ export const GalleryContextProvider = ({ children }: any) => {
   const [showModalEdit, setShowModalEdit] = useState(false);
   const [editedImage, setEditedImage] = useState<typeImage | null>(null);
 
+  const [currentPage, setCurrentPage] = useState<number>(2);
   // -----------------------------
 
   // USE EFFECT ------------------------------
   useEffect(() => {
     if (authenticateUser !== undefined) {
       fetchGalleryData();
+      fetchPinnedImages();
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
@@ -259,36 +254,70 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
   };
 
+  const fetchPinnedImages = async () => {
+    try {
+      const pinnedImagesRef = collection(db, "gallery");
+      const q = query(pinnedImagesRef, where("isPinned", "==", true)); // Query for pinned images only
+      const pinnedImagesSnapshot = await getDocs(q);
+
+      const pinnedImagesList: typeImage[] = [];
+      pinnedImagesSnapshot.docs.forEach((doc) => {
+        const data = doc.data() as typeImage; // Type assertion for safety
+        data.uid = doc.id;
+        pinnedImagesList.push(data);
+      });
+
+      setPinnedData(pinnedImagesList);
+    } catch (error) {
+      console.error("Error fetching pinned images:", error);
+      toast("danger", "Error loading pinned images"); // Assuming you have a toast function
+    }
+  };
+
   const fetchGalleryData = async () => {
+    presentLoading({
+      message: text[l].loading,
+      duration: 3000,
+    });
     try {
       setLoading(true);
 
       const galleryRef = collection(db, "gallery");
-      const gallerySnapshot = await getDocs(galleryRef);
+      let q = query(galleryRef, orderBy("createdAt"));
 
-      const galleryDataList: any[] = [];
-      const pinnedImagesList: any[] = [];
+      if (currentPage > 1 && galleryData.length > 0) {
+        const lastVisible = galleryData[galleryData.length - 1];
+        q = query(q, startAfter(lastVisible.createdAt));
+      }
 
-      gallerySnapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        data.uid = doc.id;
+      q = query(q, limit(perPage));
 
-        galleryDataList.push(data);
+      const gallerySnapshot = await getDocs(q);
 
-        if (data.isPinned) {
-          pinnedImagesList.push(data);
-        }
-      });
+      const newData = gallerySnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        uid: doc.id,
+      })) as typeImage[];
 
-      setGalleryData(galleryDataList);
-      setPinnedData(pinnedImagesList);
+      const allGalleryData =
+        currentPage === 1 ? newData : [...galleryData, ...newData];
+      setGalleryData(allGalleryData);
+
+      const allPinnedImages = allGalleryData.filter((item) => item.isPinned);
+      setPinnedData(allPinnedImages);
+      dismissLoading();
+      newData.length === 0 &&
+        toast("success", "Hai scaricato tutte le immagini");
     } catch (err) {
+      dismissLoading();
       setError(err);
       console.error("Error fetching gallery data:", err);
       toast("danger", "Error loading gallery data");
     } finally {
+      dismissLoading();
       setLoading(false);
     }
+    dismissLoading();
   };
 
   const togglePinImage = async (image: typeImage) => {
@@ -447,6 +476,11 @@ export const GalleryContextProvider = ({ children }: any) => {
     return false;
   };
 
+  const loadMoreData = async () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+    await fetchGalleryData();
+  };
+
   // RETURN ---------------------------------
   return (
     <GalleryContext.Provider
@@ -463,6 +497,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         handleDeleteImage,
         handleShowImageOverlay,
         handleEditClick,
+        loadMoreData,
       }}
     >
       <>
