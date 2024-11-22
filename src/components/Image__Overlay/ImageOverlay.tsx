@@ -4,8 +4,10 @@ import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { typeImage } from "../../types/typeImage";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
-import { IonButton, IonButtons, IonIcon } from "@ionic/react";
-import { eye, eyeOffOutline, star, starOutline } from "ionicons/icons";
+import { IonButton, IonButtons } from "@ionic/react";
+import ImageButtonPin from "../Image__Button__Pin/ImageButtonPin";
+import ImageButtonVisibility from "../Image__Button__Visibility/ImageButtonVisibility";
+import ImageButtonModify from "../Image__Button__Modify/ImageButtonModify";
 
 interface ContainerProps {
   showOverlay: boolean;
@@ -20,12 +22,7 @@ const ImageOverlay: React.FC<ContainerProps> = ({
 }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const {
-    togglePinImage,
-    toggleVisibilityImage,
-    handleEditClick,
-    galleryData,
-  } = useGalleryContext();
+  const { galleryData } = useGalleryContext();
 
   //CONDITIONS -----------------------
   const [image, setImage] = useState<typeImage | null>(overlayImage);
@@ -54,7 +51,6 @@ const ImageOverlay: React.FC<ContainerProps> = ({
       )}
       {/* Action Buttons */}
       <div className={styles.actions}>
-        {" "}
         {/* Add a container for buttons */}
         <IonButtons>
           <IonButton
@@ -67,34 +63,11 @@ const ImageOverlay: React.FC<ContainerProps> = ({
           </IonButton>
         </IonButtons>
         <IonButtons>
-          <IonButton
-            className="ion-padding-start"
-            fill={image!.isPinned ? "solid" : "outline"}
-            onClick={() => togglePinImage(image!)}
-            size="small"
-          >
-            <IonIcon icon={image!.isPinned ? star : starOutline} />
-            {!image!.isPinned ? "Metti in evidenza" : "Togli evidenza"}
-          </IonButton>
-          <IonButton
-            fill={image!.isVisible ? "solid" : "outline"}
-            color={"tertiary"}
-            onClick={() => toggleVisibilityImage(image!)}
-            size="small"
-          >
-            <IonIcon icon={image!.isVisible ? eye : eyeOffOutline} />
-            {!image!.isVisible ? "Visualizza" : "Nascondi"}
-          </IonButton>
-          <IonButton
-            onClick={() => {
-              handleEditClick(image!);
-              closeOverlay();
-            }} // Close overlay after edit click
-            fill="clear"
-            size="small"
-          >
-            Modifica
-          </IonButton>
+          <ImageButtonPin image={image} />
+          <ImageButtonVisibility image={image} />
+        </IonButtons>
+        <IonButtons>
+          <ImageButtonModify image={image} />
         </IonButtons>
       </div>
     </div>

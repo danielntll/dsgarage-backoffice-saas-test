@@ -23,6 +23,10 @@ import {
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
 import { eye, eyeOffOutline, star, starOutline } from "ionicons/icons";
+import ImageButtonDelete from "../Image__Button__Delete/ImageButtonDelete";
+import ImageButtonModify from "../Image__Button__Modify/ImageButtonModify";
+import ImageButtonVisibility from "../Image__Button__Visibility/ImageButtonVisibility";
+import ImageButtonPin from "../Image__Button__Pin/ImageButtonPin";
 
 interface ContainerProps {}
 
@@ -116,38 +120,12 @@ const ImagesAll: React.FC<ContainerProps> = ({}) => {
                   </IonCardContent>
                   <div className={styles.buttons}>
                     <div>
-                      <IonButton
-                        fill={item.isPinned ? "solid" : "outline"}
-                        onClick={() => togglePinImage(item)}
-                        size="small"
-                      >
-                        <IonIcon icon={item.isPinned ? star : starOutline} />
-                      </IonButton>
-                      <IonButton
-                        fill={item.isVisible ? "solid" : "outline"}
-                        color={"tertiary"}
-                        onClick={() => toggleVisibilityImage(item)}
-                        size="small"
-                      >
-                        <IonIcon icon={item.isVisible ? eye : eyeOffOutline} />
-                      </IonButton>
-                      <IonButton
-                        onClick={() => handleEditClick(item)}
-                        fill="clear"
-                        size="small"
-                      >
-                        Modifica
-                      </IonButton>
+                      <ImageButtonPin image={item} />
+                      <ImageButtonVisibility image={item} />
                     </div>
                     <div>
-                      <IonButton
-                        onClick={() => handleDeleteImage(item)}
-                        fill="clear"
-                        color={"danger"}
-                        size="small"
-                      >
-                        Elimina
-                      </IonButton>
+                      <ImageButtonModify image={item} />
+                      <ImageButtonDelete image={item} />
                     </div>
                   </div>
                 </IonCard>
