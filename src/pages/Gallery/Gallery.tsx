@@ -3,6 +3,7 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonMenuButton,
   IonPage,
   IonSearchbar,
   IonTitle,
@@ -34,6 +35,9 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
       <IonPage>
         <IonHeader>
           <IonToolbar>
+            <IonButtons slot="start">
+              <IonMenuButton />
+            </IonButtons>
             <IonTitle>{route_GalleryPage.tab[l]}</IonTitle>
             <IonButtons slot="end">
               <IonButton

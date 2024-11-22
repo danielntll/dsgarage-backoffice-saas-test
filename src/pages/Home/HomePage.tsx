@@ -1,10 +1,7 @@
 import {
-  IonBadge,
-  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonMenuButton,
   IonPage,
   IonTitle,
@@ -24,10 +21,6 @@ const HomePage: React.FC<PageProps> = ({}) => {
   const { l } = useContext(ContextLanguage);
   const location = useLocation();
   //CONDITIONS -----------------------
-  const [isModalNotificationsOpen, setIsModalNotificationsOpen] =
-    useState<boolean>(false);
-  const [isModalOrderComponentsOpen, setIsModalOrderComponentsOpen] =
-    useState<boolean>(false);
   const [pageName, setPageName] = useState<string | undefined>("");
 
   useEffect(() => {

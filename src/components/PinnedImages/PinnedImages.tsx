@@ -12,6 +12,7 @@ import {
 } from "@ionic/react";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
+import ImageItem from "../Image__Item/ImageItem";
 
 interface ContainerProps {}
 
@@ -23,16 +24,9 @@ const PinnedImages: React.FC<ContainerProps> = ({}) => {
   const [previewPinned, setPreviewPinned] = useState<typeImage[]>([]);
   //CONDITIONS -----------------------
   useEffect(() => {
-    if (pinnedImages?.length > 3) {
-      setPreviewPinned([pinnedImages[0], pinnedImages[1], pinnedImages[2]]);
-    } else {
-      setPreviewPinned(pinnedImages);
-    }
+    setPreviewPinned(pinnedImages);
   }, [pinnedImages]);
   //FUNCTIONS ------------------------
-  const handleEditPinnedImages = () => {
-    console.log("Edit pinned images clicked");
-  };
   //RETURN COMPONENT -----------------
   if (loading) return <div>Loading gallery...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -44,25 +38,12 @@ const PinnedImages: React.FC<ContainerProps> = ({}) => {
             {text[l].componentTitle}
             <p>{text[l].subtitle}</p>
           </IonLabel>
-          <IonButton onClick={handleEditPinnedImages}>
-            {text[l].editButton}
-          </IonButton>
         </IonListHeader>
 
-        {previewPinned.map((item: typeImage, index: number) => {
-          return (
-            <IonItem key={index + "pinnedImages"}>
-              <IonThumbnail className="ion-margin-end">
-                <img src={item.imageUrl} alt={item.alt} />
-              </IonThumbnail>
-              <IonLabel>
-                <h3>{item.alt}</h3>
-                <p>{item.createdAt.toDate().toLocaleDateString()}</p>
-              </IonLabel>
-            </IonItem>
-          );
+        {pinnedImages.map((item: typeImage, index: number) => {
+          return <ImageItem image={item} key={index + "pinnedImages list"} />;
         })}
-        {previewPinned.length === 0 ? (
+        {pinnedImages.length === 0 ? (
           <IonItem>
             <IonLabel>
               <p>{text[l].noImages}</p>

@@ -71,7 +71,7 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
           {text[l].componentTitle}
           <p>{text[l].subtitle}</p>
         </IonLabel>
-        <div className={`ion-padding ${styles.sortOptions}`}>
+        <div className={` ${styles.sortOptions}`}>
           <IonButton size="small" onClick={handleFilterButtonClick}>
             <IonIcon className="ion-margin-end" icon={filterOutline} />
             {text[l].btn__filter}

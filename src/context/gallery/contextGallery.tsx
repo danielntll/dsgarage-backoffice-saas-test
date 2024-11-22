@@ -400,6 +400,7 @@ export const GalleryContextProvider = ({ children }: any) => {
       toast("danger", "Error pinning image");
     }
   };
+
   const toggleVisibilityImage = async (image: typeImage) => {
     if (image.isPinned && image.isVisible) {
       presentAlert({
