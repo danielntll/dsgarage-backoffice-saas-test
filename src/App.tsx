@@ -36,6 +36,7 @@ import {
   route_HomePage,
   route_ImpostazioniPage,
   route_LoginPage,
+  route_PromotionsPage,
   route_RegistrazionePage,
 } from "./routes/singleRoute";
 import HomePage from "./pages/Home/HomePage";
@@ -44,6 +45,7 @@ import { loginRoutes } from "./routes/routes";
 import LoginPage from "./pages/Auth/Login_Page/LoginPage";
 import RegistrazionePage from "./pages/Auth/Registrazione_Page/RegistrazionePage";
 import GalleryPage from "./pages/Gallery/Gallery";
+import PromotionsPage from "./pages/Promotions/PromotionsPage";
 
 setupIonicReact({
   rippleEffect: false,
@@ -79,6 +81,10 @@ export const authenticatedRoutesOutlet = () => {
     <IonSplitPane contentId="main">
       <Menu />
       <IonRouterOutlet id="main">
+        {/* ---- Promozioni ---- */}
+        <Route exact path={route_PromotionsPage.path}>
+          <PromotionsPage />
+        </Route>
         {/* ---- Galleria ---- */}
         <Route exact path={route_GalleryPage.path}>
           <GalleryPage />

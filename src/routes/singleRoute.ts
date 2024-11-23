@@ -7,12 +7,25 @@ import {
   logInOutline,
   personAdd,
   personAddOutline,
+  pricetags,
+  pricetagsOutline,
   settings,
   settingsOutline,
 } from "ionicons/icons";
 import { typeRoute } from "../types/typeRoute";
 
 // APP --------------
+export const route_PromotionsPage: typeRoute = {
+  path: "/promozioni",
+  tab: {
+    it_IT: "Promozioni",
+    en_GB: "Promotions",
+  },
+  icons: {
+    active: pricetags,
+    notActive: pricetagsOutline,
+  },
+};
 export const route_GalleryPage: typeRoute = {
   path: "/galleria",
   tab: {
