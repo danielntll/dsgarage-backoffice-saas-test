@@ -20,7 +20,7 @@ import { useHistory } from "react-router";
 import { authenticatedRoutesOutlet, loginRoutesOutlet } from "../App";
 import { textAuthContext } from "../text/textAuthContext";
 import { ContextLanguage } from "./contextLanguage";
-import { ContextToast } from "./contextToast";
+import { ContextToast } from "./systemEvents/contextToast";
 import { DataContextProvider } from "./contextData";
 
 type AuthType = {

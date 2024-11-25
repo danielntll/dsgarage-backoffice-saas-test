@@ -46,7 +46,7 @@ import { AuthContext } from "../../context/contextAuth";
 
 import { ContextLanguage } from "../../context/contextLanguage";
 
-import { ContextToast } from "../../context/contextToast";
+import { ContextToast } from "../../context/systemEvents/contextToast";
 import { appRoutes } from "../../routes/routes";
 
 import { useLocation } from "react-router";

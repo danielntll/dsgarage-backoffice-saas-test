@@ -31,7 +31,7 @@ import {
 import { auth } from "../../../firebase/firebaseConfig";
 import { useContext, useState } from "react";
 import { ContextLanguage } from "../../../context/contextLanguage";
-import { ContextToast } from "../../../context/contextToast";
+import { ContextToast } from "../../../context/systemEvents/contextToast";
 
 const LoginPage: React.FC = () => {
   //VARIABLES ------------------------

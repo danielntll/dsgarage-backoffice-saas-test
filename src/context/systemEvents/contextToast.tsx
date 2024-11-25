@@ -1,4 +1,4 @@
-import { ToastOptions, useIonToast } from "@ionic/react";
+import { ToastOptions, useIonLoading, useIonToast } from "@ionic/react";
 import React, { createContext, useContext } from "react";
 import { closeOutline } from "ionicons/icons";
 
@@ -10,11 +10,19 @@ type typeContextToast = {
     button?: ToastOptions["buttons"],
     position?: "top" | "bottom"
   ) => void;
+  loadingAlert: (message: string, duration?: number) => void;
+  dismissLoadingAlert: () => void;
 };
 
 export const ContextToast = createContext<typeContextToast>({
   toast: () => {
     console.log("toast");
+  },
+  loadingAlert: () => {
+    console.log("loading");
+  },
+  dismissLoadingAlert: () => {
+    console.log("dismissLoading");
   },
 });
 
@@ -27,6 +35,7 @@ export const ProviderContextToast = ({
 }) => {
   // Variables ------------------------
   const [present] = useIonToast();
+  const [presentLoadingAlert, dismissLoadingAlert] = useIonLoading();
   // UseStates ------------------------
   // UseEffects -----------------------
   // Functions ------------------------
@@ -52,8 +61,12 @@ export const ProviderContextToast = ({
       ],
     });
   };
+
+  const loadingAlert = (message: string, duration?: number) => {};
   // Return ---------------------------
   return (
-    <ContextToast.Provider value={{ toast }}>{children}</ContextToast.Provider>
+    <ContextToast.Provider value={{ toast, loadingAlert, dismissLoadingAlert }}>
+      {children}
+    </ContextToast.Provider>
   );
 };

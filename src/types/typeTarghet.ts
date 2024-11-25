@@ -1,4 +1,7 @@
+import { Timestamp } from "firebase/firestore";
+
 export type typePromotion = {
+  uid: string;
   target: string;
   title: string;
   subtitle: string;
@@ -7,6 +10,7 @@ export type typePromotion = {
   description: string;
   isVisible: boolean;
   isPinned: boolean;
-  startDate: Date;
-  endDate: Date;
+  startAt: Timestamp;
+  endAt: Timestamp;
+  createdAt: Timestamp;
 };

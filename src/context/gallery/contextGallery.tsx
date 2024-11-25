@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { ContextLanguage } from "../contextLanguage";
 import { AuthContext } from "../contextAuth";
-import { ContextToast } from "../contextToast";
+import { ContextToast } from "../systemEvents/contextToast";
 import {
   addDoc,
   collection,

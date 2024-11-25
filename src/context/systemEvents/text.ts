@@ -2,11 +2,9 @@ import { typeAvailableLanguagesModel } from "../../types/typeAvailableLanguage";
 
 export const text: typeAvailableLanguagesModel = {
   it_IT: {
-    pageTitle: "Promozioni",
-    placeholder__search: "Cerca promozione",
+    loading: "Caricamento in corso...",
   },
   en_GB: {
-    pageTitle: "Promozioni",
-    placeholder__search: "Cerca promozione",
+    loading: "Caricamento in corso...",
   },
 };

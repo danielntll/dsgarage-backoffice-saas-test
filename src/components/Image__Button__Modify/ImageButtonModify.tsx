@@ -6,7 +6,7 @@ import { IonButton, IonIcon } from "@ionic/react";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
 import { pencilOutline } from "ionicons/icons";
-import { useContextToast } from "../../context/contextToast";
+import { useContextToast } from "../../context/systemEvents/contextToast";
 
 interface ContainerProps {
   image: typeImage | null;
