@@ -7,24 +7,31 @@ import { text } from "./text";
 import {
   addDoc,
   collection,
+  doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
   query,
+  setDoc,
   startAfter,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
 type dataContext = {
   promotionsData: typePromotion[];
+  targets: string[];
   loadMoreData: () => Promise<void>;
   handleCreatePromotion: (newPromotion: typePromotion) => Promise<void>;
+  handleAddTarget: (newTarget: string) => Promise<void>;
 };
 
 export const PromotionsContext = React.createContext<dataContext>({
   promotionsData: [],
+  targets: [],
   loadMoreData: async () => {},
   handleCreatePromotion: async () => {},
+  handleAddTarget: async () => {},
 });
 
 export const usePromotionsContext = () => React.useContext(PromotionsContext);
@@ -42,13 +49,37 @@ export const PromotionsContextProvider = ({ children }: any) => {
 
   const [currentPage, setCurrentPage] = useState<number>(2);
 
+  const [targets, setTargets] = useState<string[]>([]); // State to store targets
+  const [loadingTargets, setLoadingTargets] = useState(true); // Loading state for targets
+
   // USE EFFECT ------------------------------
   useEffect(() => {
     if (authenticateUser !== undefined) {
       fetchPromotionsData();
+      fetchTargets();
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
+
+  const fetchTargets = async () => {
+    try {
+      setLoadingTargets(true); // Set loading to true before fetching
+
+      const targetsCollection = collection(db, "customersTarget");
+      const targetsSnapshot = await getDocs(targetsCollection);
+
+      const targetsData = targetsSnapshot.docs.map(
+        (doc) => doc.data().name as string
+      );
+      setTargets(targetsData); // Update the state with fetched targets
+    } catch (error) {
+      console.error("Error fetching targets:", error);
+      toast("danger", text[l].error_target_load);
+      // Handle error as needed (e.g., show error message)
+    } finally {
+      setLoadingTargets(false); // Set loading to false after fetching, regardless of success/failure
+    }
+  };
 
   // ---  initData
   /**
@@ -109,12 +140,42 @@ export const PromotionsContextProvider = ({ children }: any) => {
       toast("danger", text[l].error_creation);
     }
   };
+
+  const handleAddTarget = async (newTarget: string) => {
+    try {
+      loadingAlert(text[l].loading);
+      // 1. Check if target already exists
+      const targetRef = doc(db, "customersTarget", newTarget);
+      const targetSnap = await getDoc(targetRef);
+
+      if (targetSnap.exists()) {
+        // Target already exists, do not add it and throw an error
+        toast("danger", text[l].error_target_exists);
+        throw new Error("Target already exists"); // Or handle differently
+      } else {
+        // 2. Add new target if it doesn't exist
+        await setDoc(targetRef, { name: newTarget }); // Add other fields as needed
+
+        setTargets((prevTargets) => [...prevTargets, newTarget]); // Update targets state
+
+        // 3. Refetch targets and show success toast
+        toast("success", text[l].success_target_add);
+      }
+    } catch (error) {
+      console.error("Error adding target:", error);
+      toast("danger", text[l].error_target_add);
+    } finally {
+      dismissLoadingAlert();
+    }
+  };
   // RETURN ---------------------------------
   return (
     <PromotionsContext.Provider
       value={{
         promotionsData,
         loadMoreData,
+        handleAddTarget,
+        targets,
         handleCreatePromotion,
       }}
     >

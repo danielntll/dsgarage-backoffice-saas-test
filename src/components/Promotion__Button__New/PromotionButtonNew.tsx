@@ -11,6 +11,7 @@ import {
   IonContent,
   IonDatetime,
   IonHeader,
+  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -22,32 +23,26 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
+import { addOutline } from "ionicons/icons";
+import { ContextToast } from "../../context/systemEvents/contextToast";
 
 interface ContainerProps {}
 
 const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { handleCreatePromotion } = usePromotionsContext();
+  const { handleCreatePromotion, handleAddTarget, targets } =
+    usePromotionsContext();
+  const { toast } = useContext(ContextToast);
   //CONDITIONS -----------------------
   const [showModal, setShowModal] = useState(false);
   const [isValid, setIsValid] = useState(false);
-  const [newPromotion, setNewPromotion] = useState<typePromotion>({
-    uid: "",
-    target: "",
-    title: "",
-    subtitle: "",
-    imageUrl: "",
-    category: "",
-    description: "",
-    isVisible: false,
-    isPinned: false,
-    startAt: Timestamp.now(),
-    endAt: Timestamp.now(),
-    createdAt: Timestamp.now(),
-  });
-  //FUNCTIONS ------------------------
+  const [newPromotion, setNewPromotion] = useState<typePromotion>(emptyValue);
 
+  const [newTarget, setNewTarget] = useState(""); // State for new target input
+  const [showNewTargetInput, setShowNewTargetInput] = useState(false); // Toggle visibility
+
+  //FUNCTIONS ------------------------
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     if (name === "startAt" || name === "endAt") {
@@ -71,6 +66,31 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
     );
   };
 
+  const handleSubmit = () => {
+    handleCreatePromotion(newPromotion);
+    setShowModal(false);
+    setNewPromotion(emptyValue);
+  };
+
+  const addTarget = async () => {
+    if (newTarget.trim() !== "") {
+      try {
+        await handleAddTarget(newTarget); // Await the promise
+
+        setNewPromotion((prev) => ({
+          ...prev,
+          target: newTarget, // Set the new target in state
+        }));
+
+        setShowNewTargetInput(false); // Hide the input
+      } catch (error) {
+        // Handle errors (e.g., show a toast)
+        console.error("Error adding target:", error);
+      }
+    } else {
+      toast("danger", text[l].error_target_empty);
+    }
+  };
   //RETURN COMPONENT -----------------
   return (
     <>
@@ -90,8 +110,7 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
               <IonButton
                 disabled={!isValid} // Disable if not valid
                 onClick={() => {
-                  handleCreatePromotion(newPromotion);
-                  setShowModal(false); // Close modal after creation
+                  handleSubmit();
                 }}
               >
                 {text[l].btn__create}
@@ -103,8 +122,10 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
           <IonList inset>
             <IonItem>
               <IonInput
-                label={text[l].title__placeholder}
+                label={text[l].title__label}
                 name="title"
+                labelPlacement="stacked"
+                placeholder={text[l].title__placeholder}
                 value={newPromotion.title}
                 onIonChange={handleInputChange}
               />
@@ -112,8 +133,10 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
 
             <IonItem>
               <IonTextarea
-                label={text[l].description__placeholder}
+                label={text[l].description__label}
                 name="description"
+                labelPlacement="stacked"
+                placeholder={text[l].description__placeholdert}
                 value={newPromotion.description}
                 onIonChange={handleInputChange}
                 rows={4}
@@ -128,11 +151,12 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
           <IonList inset>
             <IonItem>
               <IonSelect
-                label={text[l].category__placeholder}
+                label={text[l].category__label}
                 name="category"
                 value={newPromotion.category}
                 onIonChange={handleInputChange}
-                interface="popover"
+                interface="alert"
+                cancelText={text[l].btn__cancel}
               >
                 <IonSelectOption value="category1">Category 1</IonSelectOption>
                 <IonSelectOption value="category2">Category 2</IonSelectOption>
@@ -148,25 +172,51 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
           <IonList inset>
             <IonItem>
               <IonSelect
-                label={text[l].target__placeholder}
+                label={text[l].target__label}
                 name="target"
                 value={newPromotion.target}
                 onIonChange={handleInputChange}
-                interface="popover"
+                interface="alert"
+                cancelText={text[l].btn__cancel}
               >
-                <IonSelectOption value="target1">target1</IonSelectOption>
-                <IonSelectOption value="target2">target1 2</IonSelectOption>
-                <IonSelectOption value="target3">target1 3</IonSelectOption>
+                {targets.map((target) => (
+                  <IonSelectOption key={target} value={target}>
+                    {target}
+                  </IonSelectOption>
+                ))}
               </IonSelect>
+              <IonButton
+                className="ion-margin-start"
+                slot="end"
+                onClick={() => setShowNewTargetInput(!showNewTargetInput)}
+              >
+                <IonIcon icon={addOutline} />
+              </IonButton>
             </IonItem>
           </IonList>
+          {showNewTargetInput && (
+            <IonList inset>
+              <IonItem>
+                <IonInput
+                  label={text[l].target__new}
+                  value={newTarget}
+                  labelPlacement="stacked"
+                  placeholder={text[l].target__placeholder}
+                  onIonChange={(e) => setNewTarget(e.detail.value!)}
+                />
+                <IonButton slot="end" onClick={addTarget}>
+                  {text[l].btn__add}
+                </IonButton>
+              </IonItem>
+            </IonList>
+          )}
           <IonLabel>
             <p className="ion-padding-horizontal">{text[l].info__target}</p>
           </IonLabel>
 
           {/* <IonItem>
             <IonInput
-              label={text[l].imageurl__placeholder}
+              label={text[l].imageurl__label}
               name="imageUrl"
               value={newPromotion.imageUrl}
               onIonChange={handleInputChange}
@@ -175,9 +225,7 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
 
           <IonList inset>
             <IonItem>
-              <IonLabel position="stacked">
-                {text[l].startAt__placeholder}
-              </IonLabel>
+              <IonLabel position="stacked">{text[l].startAt__label}</IonLabel>
               <IonDatetime
                 name="startAt"
                 value={newPromotion.startAt.toDate().toISOString()}
@@ -189,9 +237,7 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
 
           <IonList inset>
             <IonItem>
-              <IonLabel position="stacked">
-                {text[l].endAt__placeholder}
-              </IonLabel>
+              <IonLabel position="stacked">{text[l].endAt__label}</IonLabel>
               <IonDatetime
                 name="endAt"
                 value={newPromotion.endAt.toDate().toISOString()}
@@ -207,3 +253,18 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
 };
 
 export default PromotionButtonNew;
+
+const emptyValue: typePromotion = {
+  uid: "",
+  target: "",
+  title: "",
+  subtitle: "",
+  imageUrl: "",
+  category: "",
+  description: "",
+  isVisible: false,
+  isPinned: false,
+  startAt: Timestamp.now(),
+  endAt: Timestamp.now(),
+  createdAt: Timestamp.now(),
+};
