@@ -25,6 +25,8 @@ import {
 } from "@ionic/react";
 import { addOutline } from "ionicons/icons";
 import { ContextToast } from "../../context/systemEvents/contextToast";
+import { useServicesContext } from "../../context/services/contextServices";
+import { typeService } from "../../types/typeService";
 
 interface ContainerProps {}
 
@@ -33,6 +35,7 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
   const { l } = useContext(ContextLanguage);
   const { handleCreatePromotion, handleAddTarget, targets } =
     usePromotionsContext();
+  const { services } = useServicesContext();
   const { toast } = useContext(ContextToast);
   //CONDITIONS -----------------------
   const [showModal, setShowModal] = useState(false);
@@ -158,9 +161,11 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
                 interface="alert"
                 cancelText={text[l].btn__cancel}
               >
-                <IonSelectOption value="category1">Category 1</IonSelectOption>
-                <IonSelectOption value="category2">Category 2</IonSelectOption>
-                <IonSelectOption value="category3">Category 3</IonSelectOption>
+                {services.map((service: typeService, index: number) => (
+                  <IonSelectOption key={service.uid} value={service.title}>
+                    {service.title}
+                  </IonSelectOption>
+                ))}
               </IonSelect>
             </IonItem>
           </IonList>

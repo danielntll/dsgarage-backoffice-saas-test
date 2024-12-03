@@ -175,7 +175,6 @@ export const ServicesContextProvider = ({ children }: any) => {
       loadingAlert(text[l].loading);
       await deleteDoc(doc(db, "services", serviceId));
       toast("success", text[l].success_services_delete);
-      // Update state after successful deletion
       setServices((prevServices) =>
         prevServices.filter((service) => service.uid !== serviceId)
       );
