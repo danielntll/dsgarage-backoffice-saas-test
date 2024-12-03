@@ -15,6 +15,7 @@ import { ContextLanguage } from "../../context/contextLanguage";
 import { route_ServicesPage } from "../../routes/singleRoute";
 import ServicesAll from "../../components/Services__All/ServicesAll";
 import { ServicesContextProvider } from "../../context/services/contextServices";
+import ServicesButtonCreate from "../../components/Services__Button__Create/ServicesButtonCreate";
 
 interface PageProps {}
 
@@ -33,6 +34,9 @@ const ServicesPage: React.FC<PageProps> = ({}) => {
               <IonMenuButton />
             </IonButtons>
             <IonTitle>{route_ServicesPage.tab[l]}</IonTitle>
+            <IonButtons slot="end">
+              <ServicesButtonCreate />
+            </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>

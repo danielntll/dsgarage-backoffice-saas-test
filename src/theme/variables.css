@@ -300,3 +300,8 @@ http://ionicframework.com/docs/theming/ */
 html {
   --ion-dynamic-font: var(--ion-default-dynamic-font);
 }
+
+.alert-button-delete {
+  --background: var(--ion-color-danger); /* Use Ionic's danger color */
+  --color: white; /* Set text color to white for contrast */
+}

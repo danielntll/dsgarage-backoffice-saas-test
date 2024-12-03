@@ -62,7 +62,12 @@ export const ProviderContextToast = ({
     });
   };
 
-  const loadingAlert = (message: string, duration?: number) => {};
+  const loadingAlert = (message: string, duration?: number) => {
+    presentLoadingAlert({
+      message: message,
+      duration: duration ? duration : 1500,
+    });
+  };
   // Return ---------------------------
   return (
     <ContextToast.Provider value={{ toast, loadingAlert, dismissLoadingAlert }}>

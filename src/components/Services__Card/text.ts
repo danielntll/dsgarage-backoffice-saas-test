@@ -1,8 +1,10 @@
 export const text = {
   it_IT: {
-    componentTitle: "DefaultComponent",
+    btn__update: "Modifica",
+    btn__delete: "Elimina",
   },
   en_GB: {
-    componentTitle: "DefaultComponent",
+    btn__update: "Modifica",
+    btn__delete: "Elimina",
   },
 };

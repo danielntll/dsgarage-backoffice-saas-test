@@ -17,6 +17,8 @@ import {
 import { db, storage } from "../../firebase/firebaseConfig";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { text } from "./text";
+import ServicesModalUpdate from "../../components/Services__Modal__Update/ServicesModalUpdate";
+import { useIonAlert } from "@ionic/react";
 
 type dataContext = {
   services: typeService[];
@@ -28,6 +30,8 @@ type dataContext = {
     imageFile?: File
   ) => Promise<void>;
   deleteService: (serviceId: string) => Promise<void>;
+  handleUpdateService: (srvToUpdate: typeService) => void;
+  handleDeleteService: (srvToDelete: typeService) => void;
 };
 
 export const ServicesContext = React.createContext<dataContext>({
@@ -37,6 +41,8 @@ export const ServicesContext = React.createContext<dataContext>({
   createService: async () => {},
   updateService: async () => {},
   deleteService: async () => {},
+  handleUpdateService: () => {},
+  handleDeleteService: () => {},
 });
 
 export const useServicesContext = () => React.useContext(ServicesContext);
@@ -50,6 +56,14 @@ export const ServicesContextProvider = ({ children }: any) => {
   // USE STATE ------------------------------
   const [services, setServices] = useState<typeService[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
+  const [presentAlert] = useIonAlert();
+
+  // ------- update service
+  const [showModal, setShowModal] = useState(false);
+  const [serviceToUpdate, setServiceToUpdate] = useState<
+    typeService | undefined
+  >(undefined);
+
   // USE EFFECT -----------------------------
   useEffect(() => {
     if (authenticateUser !== undefined) {
@@ -57,6 +71,13 @@ export const ServicesContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
+  const handleUpdateService = (srvToUpdate: typeService) => {
+    console.log(srvToUpdate);
+    if (srvToUpdate) {
+      setServiceToUpdate(srvToUpdate);
+      setShowModal(true);
+    }
+  };
   const fetchServices = async () => {
     try {
       setLoadingServices(true);
@@ -99,9 +120,9 @@ export const ServicesContextProvider = ({ children }: any) => {
       );
       toast("success", text[l].success_services_creation);
 
-      setServices((prevServices) => [
+      setServices((prevServices: typeService[]) => [
         ...prevServices,
-        { ...serviceWithTimestamp, id: docRef.id },
+        { ...serviceWithTimestamp, uid: docRef.id },
       ]);
     } catch (error) {
       console.error("Error creating service:", error);
@@ -127,12 +148,10 @@ export const ServicesContextProvider = ({ children }: any) => {
         imageUrl = await getDownloadURL(storageRef); // Update URL
       }
 
-      const serviceWithTimestamp = {
+      const serviceWithTimestamp: typeService = {
         ...updatedService,
         imageUrl: imageUrl, // Update with the correct image URL
       };
-
-      // Update in Firestore and update state
 
       const serviceRef = doc(db, "services", updatedService.uid);
       await updateDoc(serviceRef, serviceWithTimestamp);
@@ -168,6 +187,28 @@ export const ServicesContextProvider = ({ children }: any) => {
     }
   };
 
+  const handleDeleteService = (serviceToDelete: typeService) => {
+    presentAlert({
+      header: text[l].delete__alert__header,
+      message: text[l].delete__alert__message,
+      buttons: [
+        {
+          text: text[l].btn__annulla,
+          role: "cancel",
+        },
+        {
+          text: text[l].btn__delete,
+          role: "confirm",
+          cssClass: "alert-button-delete",
+
+          handler: () => {
+            deleteService(serviceToDelete.uid);
+          },
+        },
+      ],
+    });
+  };
+
   // RETURN ---------------------------------
   return (
     <ServicesContext.Provider
@@ -178,9 +219,17 @@ export const ServicesContextProvider = ({ children }: any) => {
         createService,
         updateService,
         deleteService,
+        handleUpdateService,
+        handleDeleteService,
       }}
     >
       {children}
+      {/* ----------- MODALS ------- */}
+      <ServicesModalUpdate
+        showModal={showModal}
+        setShowModal={setShowModal}
+        serviceToUpdate={serviceToUpdate}
+      />
     </ServicesContext.Provider>
   );
 };

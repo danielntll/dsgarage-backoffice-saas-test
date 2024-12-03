@@ -10,6 +10,11 @@ export const text: typeAvailableLanguagesModel = {
     success_services_delete: "Servizio eliminato con successo!",
     error_services_delete: "Errore durante l'eliminazione del servizio.",
     error_services_load: "Errore durante il caricamento dei servizi.",
+    btn__annulla: "Annulla",
+    btn__delete: "Elimina",
+    delete__alert__header: "Elimina Servizio",
+    delete__alert__message:
+      "Sei sicuro di voler eliminare questo servizio? Questa azione è irreversibile.",
   },
   en_GB: {
     loading: "Loading...",
@@ -20,5 +25,10 @@ export const text: typeAvailableLanguagesModel = {
     success_services_delete: "Service deleted successfully!",
     error_services_delete: "Error deleting service.",
     error_services_load: "Error loading services.",
+    btn__annulla: "Annulla",
+    btn__delete: "Elimina",
+    delete__alert__header: "Delete Service",
+    delete__alert__message:
+      "Are you sure you want to delete this service? This action cannot be undone.",
   },
 };

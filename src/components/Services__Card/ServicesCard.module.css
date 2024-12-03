@@ -1,2 +1,11 @@
 .container {
 }
+.image {
+  width: 100px;
+  height: 100px;
+}
+.imageContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

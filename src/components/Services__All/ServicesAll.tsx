@@ -18,9 +18,8 @@ const ServicesAll: React.FC<ContainerProps> = ({}) => {
   //RETURN COMPONENT -----------------
   return (
     <div className={styles.container}>
-      {/* Conditionally render content based on loading state */}
       {loadingServices ? (
-        <p>Loading services...</p> // Or a loading indicator
+        <p>Loading services...</p>
       ) : (
         <IonGrid>
           <IonRow>
