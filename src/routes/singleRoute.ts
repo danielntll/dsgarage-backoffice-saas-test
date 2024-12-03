@@ -11,10 +11,23 @@ import {
   pricetagsOutline,
   settings,
   settingsOutline,
+  storefront,
+  storefrontOutline,
 } from "ionicons/icons";
 import { typeRoute } from "../types/typeRoute";
 
 // APP --------------
+export const route_ServicesPage: typeRoute = {
+  path: "/servizi",
+  tab: {
+    it_IT: "Servizi",
+    en_GB: "Services",
+  },
+  icons: {
+    active: storefront,
+    notActive: storefrontOutline,
+  },
+};
 export const route_PromotionsPage: typeRoute = {
   path: "/promozioni",
   tab: {
