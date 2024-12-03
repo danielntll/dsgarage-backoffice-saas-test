@@ -36,7 +36,7 @@ const PromotionsPage: React.FC<PageProps> = ({}) => {
               <IonMenuButton />
             </IonButtons>
             <IonTitle>{text[l].pageTitle}</IonTitle>
-            <IonButtons>
+            <IonButtons slot="end">
               <PromotionButtonNew />
             </IonButtons>
           </IonToolbar>

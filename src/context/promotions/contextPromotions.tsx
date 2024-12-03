@@ -81,13 +81,12 @@ export const PromotionsContextProvider = ({ children }: any) => {
       setPromotionsData(promotions);
 
       dismissLoadingAlert();
-      newData.length === 0 &&
-        toast("success", "Hai caricato tutte le promozioni");
+      newData.length === 0 && toast("success", text[l].success_loading);
     } catch (err) {
       dismissLoadingAlert();
       setError(err);
       console.error("Error fetching promozioni data:", err);
-      toast("danger", "Error loading promozioni data");
+      toast("danger", text[l].error_loading);
     } finally {
       dismissLoadingAlert();
       setLoading(false);
