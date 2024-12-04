@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import styles from "./PromotionsAll.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
@@ -22,6 +22,7 @@ import {
 } from "ionicons/icons";
 import { usePromotionsContext } from "../../context/promotions/contextPromotions";
 import { typePromotion } from "../../types/typeTarghet";
+import PromotionsItem from "../Promotions__Item/PromotionsItem";
 
 interface ContainerProps {
   searchTerm: string;
@@ -39,11 +40,39 @@ const PromotionsAll: React.FC<ContainerProps> = ({ searchTerm }) => {
   const [popoverEvent, setPopoverEvent] = useState<any>(null);
   const [listView, setListView] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [filtredData, setFiltredData] = useState<typePromotion[]>([]);
   //FUNCTIONS ------------------------
 
-  const filteredGalleryData = promotionsData.filter((item) =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    setFiltredData(
+      promotionsData
+        .sort((a, b) => {
+          if (sortBy === "date") {
+            const dateA = a.createdAt.toDate();
+            const dateB = b.createdAt.toDate();
+            return sortOrder === "asc"
+              ? dateA.getTime() - dateB.getTime()
+              : dateB.getTime() - dateA.getTime();
+          } else if (sortBy === "alt") {
+            return sortOrder === "asc"
+              ? a.title.localeCompare(b.title)
+              : b.title.localeCompare(a.title);
+          } else if (sortBy === "categoria") {
+            return sortOrder === "asc"
+              ? a.category.localeCompare(b.category)
+              : b.category.localeCompare(a.category);
+          } else {
+            return 0;
+          }
+        })
+        .filter((item: typePromotion, index: number) =>
+          showVisible ? item.isVisible : true
+        )
+        .filter((item) =>
+          item.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    );
+  }, [searchTerm, showVisible, sortBy, sortOrder, promotionsData]);
 
   const handleFilterButtonClick = (e: any) => {
     e.persist(); // Important to persist the event
@@ -85,41 +114,18 @@ const PromotionsAll: React.FC<ContainerProps> = ({ searchTerm }) => {
         </div>
         {listView === false ? (
           <div className={styles.gallery}>
-            {filteredGalleryData
-              .filter((item) => (showVisible ? item.isVisible : true))
-              .sort((a, b) => {
-                if (sortBy === "date") {
-                  const dateA = a.createdAt.toDate();
-                  const dateB = b.createdAt.toDate();
-                  return sortOrder === "asc"
-                    ? dateA.getTime() - dateB.getTime()
-                    : dateB.getTime() - dateA.getTime();
-                } else if (sortBy === "alt") {
-                  return sortOrder === "asc"
-                    ? a.title.localeCompare(b.title)
-                    : b.title.localeCompare(a.title);
-                } else if (sortBy === "categoria") {
-                  return sortOrder === "asc"
-                    ? a.category.localeCompare(b.category)
-                    : b.category.localeCompare(a.category);
-                } else {
-                  return 0;
-                }
-              })
-              .map((item: typePromotion, index: number) => {
-                return (
-                  <div>
-                    <p>{item.title}</p>
-                  </div>
-                );
-              })}
+            {filtredData.map((item: typePromotion, index: number) => {
+              return (
+                <div>
+                  <p>{item.title}</p>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <IonList inset>
-            {filteredGalleryData.map((item: typePromotion, index: number) => (
-              <div>
-                <p>{item.title}</p>
-              </div>
+            {filtredData.map((item: typePromotion, index: number) => (
+              <PromotionsItem key={index + item.uid} promotion={item} />
             ))}
           </IonList>
         )}

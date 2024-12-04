@@ -7,6 +7,7 @@ import { text } from "./text";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -15,6 +16,7 @@ import {
   query,
   setDoc,
   startAfter,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
@@ -24,6 +26,10 @@ type dataContext = {
   loadMoreData: () => Promise<void>;
   handleCreatePromotion: (newPromotion: typePromotion) => Promise<void>;
   handleAddTarget: (newTarget: string) => Promise<void>;
+  handleDeletePromotion: (t: typePromotion) => Promise<void>;
+  togglePinPromotion: (t: typePromotion) => Promise<void>;
+  toggleVisibilityPromotion: (t: typePromotion) => Promise<void>;
+  handleEditPromotion: (t: typePromotion) => Promise<void>;
 };
 
 export const PromotionsContext = React.createContext<dataContext>({
@@ -32,6 +38,10 @@ export const PromotionsContext = React.createContext<dataContext>({
   loadMoreData: async () => {},
   handleCreatePromotion: async () => {},
   handleAddTarget: async () => {},
+  handleDeletePromotion: async () => {},
+  togglePinPromotion: async () => {},
+  toggleVisibilityPromotion: async () => {},
+  handleEditPromotion: async () => {},
 });
 
 export const usePromotionsContext = () => React.useContext(PromotionsContext);
@@ -168,6 +178,101 @@ export const PromotionsContextProvider = ({ children }: any) => {
       dismissLoadingAlert();
     }
   };
+
+  const handleDeletePromotion = async (promotionToDelete: typePromotion) => {
+    try {
+      loadingAlert(text[l].deleting); // Show loading alert
+      const promotionRef = doc(db, "promotions", promotionToDelete.uid);
+      await deleteDoc(promotionRef);
+
+      setPromotionsData((prevData) =>
+        prevData.filter((promotion) => promotion.uid !== promotionToDelete.uid)
+      );
+      toast("success", text[l].success_delete);
+    } catch (error) {
+      console.error("Error deleting promotion:", error);
+      toast("danger", text[l].error_delete);
+    } finally {
+      dismissLoadingAlert(); // Dismiss loading alert in all cases
+    }
+  };
+
+  const togglePinPromotion = async (promotionToToggle: typePromotion) => {
+    try {
+      const promotionRef = doc(db, "promotions", promotionToToggle.uid);
+      await updateDoc(promotionRef, { isPinned: !promotionToToggle.isPinned });
+
+      setPromotionsData((prevData) =>
+        prevData.map((promotion) =>
+          promotion.uid === promotionToToggle.uid
+            ? { ...promotion, isPinned: !promotion.isPinned }
+            : promotion
+        )
+      );
+
+      toast(
+        "success",
+        promotionToToggle.isPinned ? text[l].success_unpin : text[l].success_pin
+      ); // Show appropriate toast message
+    } catch (error) {
+      console.error("Error toggling pin on promotion:", error);
+      toast("danger", text[l].error_pin); // Generic error message
+    }
+  };
+
+  const toggleVisibilityPromotion = async (
+    promotionToToggle: typePromotion
+  ) => {
+    try {
+      const promotionRef = doc(db, "promotions", promotionToToggle.uid);
+      await updateDoc(promotionRef, {
+        isVisible: !promotionToToggle.isVisible,
+      });
+
+      setPromotionsData((prevData) =>
+        prevData.map((promotion) =>
+          promotion.uid === promotionToToggle.uid
+            ? { ...promotion, isVisible: !promotion.isVisible }
+            : promotion
+        )
+      );
+
+      toast(
+        "success",
+        promotionToToggle.isVisible
+          ? text[l].success_hide
+          : text[l].success_show
+      ); // Show appropriate toast message
+    } catch (error) {
+      console.error("Error toggling visibility on promotion:", error);
+
+      toast("danger", text[l].error_visibility);
+    }
+  };
+
+  const handleEditPromotion = async (updatedPromotion: typePromotion) => {
+    try {
+      loadingAlert(text[l].updating);
+      const promotionRef = doc(db, "promotions", updatedPromotion.uid);
+      await updateDoc(promotionRef, updatedPromotion); // No need to spread, just pass the updated object
+
+      setPromotionsData((prevData) =>
+        prevData.map((promotion) =>
+          promotion.uid === updatedPromotion.uid
+            ? updatedPromotion // Directly use the updated promotion
+            : promotion
+        )
+      );
+
+      toast("success", text[l].success_update);
+    } catch (error) {
+      console.error("Error updating promotion:", error);
+      toast("danger", text[l].error_update);
+    } finally {
+      dismissLoadingAlert();
+    }
+  };
+
   // RETURN ---------------------------------
   return (
     <PromotionsContext.Provider
@@ -177,6 +282,10 @@ export const PromotionsContextProvider = ({ children }: any) => {
         handleAddTarget,
         targets,
         handleCreatePromotion,
+        handleDeletePromotion,
+        togglePinPromotion,
+        toggleVisibilityPromotion,
+        handleEditPromotion,
       }}
     >
       {children}
