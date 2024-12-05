@@ -33,7 +33,7 @@ const PromotionsAll: React.FC<ContainerProps> = ({ searchTerm }) => {
   const { l } = useContext(ContextLanguage);
   const { promotionsData, loadMoreData } = usePromotionsContext();
   //CONDITIONS -----------------------
-  const [sortBy, setSortBy] = useState<"date" | "alt" | "categoria">("date");
+  const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showVisible, setShowVisible] = useState<boolean>(false);
   const [showPopover, setShowPopover] = useState(false);
@@ -53,14 +53,10 @@ const PromotionsAll: React.FC<ContainerProps> = ({ searchTerm }) => {
             return sortOrder === "asc"
               ? dateA.getTime() - dateB.getTime()
               : dateB.getTime() - dateA.getTime();
-          } else if (sortBy === "alt") {
+          } else if (sortBy === "name") {
             return sortOrder === "asc"
               ? a.title.localeCompare(b.title)
               : b.title.localeCompare(a.title);
-          } else if (sortBy === "categoria") {
-            return sortOrder === "asc"
-              ? a.category.localeCompare(b.category)
-              : b.category.localeCompare(a.category);
           } else {
             return 0;
           }
@@ -162,13 +158,12 @@ const PromotionsAll: React.FC<ContainerProps> = ({ searchTerm }) => {
                 <IonSelect
                   value={sortBy}
                   onIonChange={(e) =>
-                    setSortBy(e.detail.value as "date" | "alt" | "categoria")
+                    setSortBy(e.detail.value as "date" | "name")
                   }
                   interface="popover" // or "action-sheet"
                 >
                   <IonSelectOption value="date">Data</IonSelectOption>
-                  <IonSelectOption value="alt">Titotlo</IonSelectOption>
-                  <IonSelectOption value="categoria">Categoria</IonSelectOption>
+                  <IonSelectOption value="name">Nome</IonSelectOption>
                 </IonSelect>
               </IonLabel>
             </IonItem>

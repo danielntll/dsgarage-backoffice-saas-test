@@ -127,7 +127,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             onClick={(e) => {
               e.stopPropagation();
               handleEditPromotion(promotion);
-              setShowPopover(false); // Close after click
+              setShowPopover(false);
             }}
           >
             <IonIcon icon={pencil} slot="start" />
@@ -138,7 +138,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             onClick={(e) => {
               e.stopPropagation();
               togglePinPromotion(promotion);
-              setShowPopover(false); // Close after click
+              setShowPopover(false);
             }}
           >
             <IonIcon icon={promotion.isPinned ? star : starHalf} slot="start" />
@@ -151,7 +151,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             onClick={(e) => {
               e.stopPropagation();
               toggleVisibilityPromotion(promotion);
-              setShowPopover(false); // Close after click
+              setShowPopover(false);
             }}
           >
             <IonIcon icon={promotion.isVisible ? eye : eyeOff} slot="start" />
@@ -162,7 +162,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             onClick={(e) => {
               e.stopPropagation();
               handleDeletePromotion(promotion);
-              setShowPopover(false); // Close after click
+              setShowPopover(false);
             }}
           >
             <IonIcon icon={trashBinOutline} slot="start" />
