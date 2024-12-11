@@ -25,6 +25,7 @@ import {
   trashBinOutline,
 } from "ionicons/icons";
 import { usePromotionsContext } from "../../context/promotions/contextPromotions";
+import { useServicesContext } from "../../context/services/contextServices";
 
 interface ContainerProps {
   promotion: typePromotion;
@@ -37,8 +38,10 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
     handleDeletePromotion,
     togglePinPromotion,
     toggleVisibilityPromotion,
-    handleEditPromotion,
+    openPromotionModal,
   } = usePromotionsContext();
+
+  const { services } = useServicesContext();
   //CONDITIONS -----------------------
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState<any>(null);
@@ -69,7 +72,14 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
         {/* ----------- ITEM ------- */}
         <IonItem button onClick={handleOptionsClick}>
           <IonThumbnail className="ion-margin-end">
-            <img src={promotion.imageUrl} />
+            <img
+              src={
+                promotion.imageUrl == ""
+                  ? services.find((s) => s.title == promotion.category)
+                      ?.imageUrl
+                  : promotion.imageUrl
+              }
+            />
           </IonThumbnail>
           <IonLabel class="ion-text-nowrap">
             <h3>{promotion.title}</h3>
@@ -107,7 +117,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             color="primary"
             onClick={(e) => {
               e.stopPropagation();
-              handleEditPromotion(promotion);
+              openPromotionModal(promotion);
             }}
           >
             <IonIcon icon={pencil} slot="icon-only" />
@@ -126,7 +136,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             button
             onClick={(e) => {
               e.stopPropagation();
-              handleEditPromotion(promotion);
+              openPromotionModal(promotion);
               setShowPopover(false);
             }}
           >

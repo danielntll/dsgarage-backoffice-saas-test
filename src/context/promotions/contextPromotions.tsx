@@ -16,20 +16,31 @@ import {
   query,
   setDoc,
   startAfter,
+  Timestamp,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../../firebase/firebaseConfig";
+import { db, storage } from "../../firebase/firebaseConfig";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import PromotionsModalUpdate from "../../components/Promotions__Modal__Update/PromotionsModalUpdate";
+import { typePromotionModal } from "../../types/typePromotionModal";
+import { ServicesContextProvider } from "../services/contextServices";
+import { useIonAlert } from "@ionic/react";
 
 type dataContext = {
   promotionsData: typePromotion[];
   targets: string[];
   loadMoreData: () => Promise<void>;
-  handleCreatePromotion: (newPromotion: typePromotion) => Promise<void>;
+  handleCreatePromotion: (
+    newPromotion: typePromotion,
+    imageFile?: File
+  ) => Promise<void>;
   handleAddTarget: (newTarget: string) => Promise<void>;
   handleDeletePromotion: (t: typePromotion) => Promise<void>;
   togglePinPromotion: (t: typePromotion) => Promise<void>;
   toggleVisibilityPromotion: (t: typePromotion) => Promise<void>;
-  handleEditPromotion: (t: typePromotion) => Promise<void>;
+  handleEditPromotion: (t: typePromotion, imageFile?: File) => Promise<void>;
+  openPromotionModal: (t: typePromotion) => void;
+  openCreationModal: () => void;
 };
 
 export const PromotionsContext = React.createContext<dataContext>({
@@ -42,6 +53,8 @@ export const PromotionsContext = React.createContext<dataContext>({
   togglePinPromotion: async () => {},
   toggleVisibilityPromotion: async () => {},
   handleEditPromotion: async () => {},
+  openPromotionModal: () => {},
+  openCreationModal: () => {},
 });
 
 export const usePromotionsContext = () => React.useContext(PromotionsContext);
@@ -62,6 +75,12 @@ export const PromotionsContextProvider = ({ children }: any) => {
   const [targets, setTargets] = useState<string[]>([]); // State to store targets
   const [loadingTargets, setLoadingTargets] = useState(true); // Loading state for targets
 
+  const [isModalOpen, setIsModalOpen] = useState<typePromotionModal>({
+    isOpen: false,
+    mode: "create",
+  });
+
+  const [presentAlert] = useIonAlert();
   // USE EFFECT ------------------------------
   useEffect(() => {
     if (authenticateUser !== undefined) {
@@ -70,6 +89,8 @@ export const PromotionsContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
+
+  const loadMoreData = async () => {};
 
   const fetchTargets = async () => {
     try {
@@ -135,19 +156,77 @@ export const PromotionsContextProvider = ({ children }: any) => {
     dismissLoadingAlert();
   };
 
-  const loadMoreData = async () => {};
-
-  const handleCreatePromotion = async (newPromotion: typePromotion) => {
+  const handleEditPromotion = async (
+    updatedPromotion: typePromotion,
+    imageFile?: File
+  ) => {
     try {
-      const docRef = await addDoc(collection(db, "promotions"), newPromotion);
-      newPromotion.uid = docRef.id;
+      loadingAlert(text[l].updating);
 
-      setPromotionsData((prevData) => [...prevData, newPromotion]);
+      let imageUrl = updatedPromotion.imageUrl; // Keep existing image URL
+
+      if (imageFile) {
+        // If a new image is provided, upload and update
+        const storageRef = ref(storage, `promotions/${imageFile.name}`);
+        await uploadBytes(storageRef, imageFile);
+        imageUrl = await getDownloadURL(storageRef); // Update URL
+      }
+
+      const data: typePromotion = {
+        ...updatedPromotion,
+        imageUrl: imageUrl, // Update with the correct image URL
+      };
+
+      const promotionRef = doc(db, "promotions", data.uid);
+      await updateDoc(promotionRef, data); // No need to spread, just pass the updated object
+
+      setPromotionsData((prevData) =>
+        prevData.map((promotion) =>
+          promotion.uid === data.uid
+            ? data // Directly use the updated promotion
+            : promotion
+        )
+      );
+
+      toast("success", text[l].success_update);
+    } catch (error) {
+      console.error("Error updating promotion:", error);
+      toast("danger", text[l].error_update);
+    } finally {
+      dismissLoadingAlert();
+    }
+  };
+
+  const handleCreatePromotion = async (
+    newPromotion: typePromotion,
+    imageFile?: File
+  ) => {
+    try {
+      loadingAlert(text[l].loading);
+      let imageUrl = "";
+      if (imageFile) {
+        const storageRef = ref(storage, `promotions/${imageFile.name}`);
+        await uploadBytes(storageRef, imageFile);
+        imageUrl = await getDownloadURL(storageRef);
+      }
+
+      const data: typePromotion = {
+        ...newPromotion,
+        imageUrl: imageUrl,
+        createdAt: Timestamp.now(),
+      };
+
+      const docRef = await addDoc(collection(db, "promotions"), data);
+      data.uid = docRef.id;
+
+      setPromotionsData((prevData) => [...prevData, data]);
 
       toast("success", text[l].success_creation);
     } catch (error) {
       console.error("Error creating promotion:", error);
       toast("danger", text[l].error_creation);
+    } finally {
+      dismissLoadingAlert();
     }
   };
 
@@ -179,7 +258,7 @@ export const PromotionsContextProvider = ({ children }: any) => {
     }
   };
 
-  const handleDeletePromotion = async (promotionToDelete: typePromotion) => {
+  const deletePromotion = async (promotionToDelete: typePromotion) => {
     try {
       loadingAlert(text[l].deleting); // Show loading alert
       const promotionRef = doc(db, "promotions", promotionToDelete.uid);
@@ -195,6 +274,27 @@ export const PromotionsContextProvider = ({ children }: any) => {
     } finally {
       dismissLoadingAlert(); // Dismiss loading alert in all cases
     }
+  };
+  const handleDeletePromotion = async (dataToDelete: typePromotion) => {
+    presentAlert({
+      header: text[l].delete__alert__header,
+      message: text[l].delete__alert__message,
+      buttons: [
+        {
+          text: text[l].btn__annulla,
+          role: "cancel",
+        },
+        {
+          text: text[l].btn__delete,
+          role: "confirm",
+          cssClass: "alert-button-delete",
+
+          handler: () => {
+            deletePromotion(dataToDelete);
+          },
+        },
+      ],
+    });
   };
 
   const togglePinPromotion = async (promotionToToggle: typePromotion) => {
@@ -250,45 +350,48 @@ export const PromotionsContextProvider = ({ children }: any) => {
     }
   };
 
-  const handleEditPromotion = async (updatedPromotion: typePromotion) => {
-    try {
-      loadingAlert(text[l].updating);
-      const promotionRef = doc(db, "promotions", updatedPromotion.uid);
-      await updateDoc(promotionRef, updatedPromotion); // No need to spread, just pass the updated object
+  const openPromotionModal = (t: typePromotion) => {
+    setIsModalOpen({ isOpen: true, mode: "update", promotion: t });
+  };
 
-      setPromotionsData((prevData) =>
-        prevData.map((promotion) =>
-          promotion.uid === updatedPromotion.uid
-            ? updatedPromotion // Directly use the updated promotion
-            : promotion
-        )
-      );
-
-      toast("success", text[l].success_update);
-    } catch (error) {
-      console.error("Error updating promotion:", error);
-      toast("danger", text[l].error_update);
-    } finally {
-      dismissLoadingAlert();
-    }
+  const openCreationModal = () => {
+    console.log("openCreationModal");
+    setIsModalOpen({ isOpen: true, mode: "create" });
   };
 
   // RETURN ---------------------------------
   return (
-    <PromotionsContext.Provider
-      value={{
-        promotionsData,
-        loadMoreData,
-        handleAddTarget,
-        targets,
-        handleCreatePromotion,
-        handleDeletePromotion,
-        togglePinPromotion,
-        toggleVisibilityPromotion,
-        handleEditPromotion,
-      }}
-    >
-      {children}
-    </PromotionsContext.Provider>
+    <ServicesContextProvider>
+      <PromotionsContext.Provider
+        value={{
+          promotionsData,
+          loadMoreData,
+          handleAddTarget,
+          targets,
+          handleCreatePromotion,
+          handleDeletePromotion,
+          togglePinPromotion,
+          toggleVisibilityPromotion,
+          handleEditPromotion,
+          openPromotionModal,
+          openCreationModal,
+        }}
+      >
+        {children}
+        {/* ----------- MODALS ------- */}
+        <PromotionsModalUpdate
+          showModal={isModalOpen.isOpen}
+          setShowModal={() =>
+            setIsModalOpen({
+              isOpen: false,
+              mode: "create",
+              promotion: undefined,
+            })
+          }
+          type={isModalOpen.mode}
+          promotionToUpdate={isModalOpen.promotion}
+        />
+      </PromotionsContext.Provider>
+    </ServicesContextProvider>
   );
 };

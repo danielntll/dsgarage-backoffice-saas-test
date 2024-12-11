@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import styles from "./PromotionsModalUpdate.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
@@ -27,11 +27,12 @@ import { useServicesContext } from "../../context/services/contextServices";
 import { ContextToast } from "../../context/systemEvents/contextToast";
 import { typeService } from "../../types/typeService";
 import { addOutline } from "ionicons/icons";
+import { typeModePromotionModal } from "../../types/typePromotionModal";
 
 interface ContainerProps {
   showModal: boolean;
-  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
-  type: "create" | "update";
+  setShowModal: () => void;
+  type: typeModePromotionModal;
   promotionToUpdate?: typePromotion;
 }
 
@@ -43,8 +44,12 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
 }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { handleCreatePromotion, handleAddTarget, targets } =
-    usePromotionsContext();
+  const {
+    handleCreatePromotion,
+    handleAddTarget,
+    targets,
+    handleEditPromotion,
+  } = usePromotionsContext();
   const { services } = useServicesContext();
   const { toast } = useContext(ContextToast);
   //CONDITIONS -----------------------
@@ -55,6 +60,17 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
 
   const [targetSelected, setTargetSelected] = useState<string>("");
   const [showNewTargetInput, setShowNewTargetInput] = useState<boolean>(false);
+
+  const [selectedImage, setSelectedImage] = useState<File | undefined>(
+    undefined
+  );
+
+  //EFFECTS --------------------------
+  useEffect(() => {
+    if (promotionToUpdate) {
+      setPromotionSelected(promotionToUpdate);
+    }
+  }, [promotionToUpdate]);
   //FUNCTIONS ------------------------
 
   const handleInputChange = (e: any) => {
@@ -68,20 +84,26 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
       setPromotionSelected({ ...promotionSelected, [name]: value });
     }
 
-    setIsValid(
-      promotionSelected.title !== "" &&
-        promotionSelected.description !== "" &&
-        promotionSelected.category !== "" &&
-        promotionSelected.target !== "" &&
-        !!promotionSelected.startAt &&
-        !!promotionSelected.endAt
-    );
+    if (type == "create") {
+      setIsValid(
+        promotionSelected.title !== "" &&
+          promotionSelected.description !== "" &&
+          promotionSelected.category !== "" &&
+          promotionSelected.target !== ""
+      );
+    } else {
+      setIsValid(true);
+    }
   };
 
   const handleSubmit = () => {
-    handleCreatePromotion(promotionSelected);
-    setShowModal(false);
+    if (type == "create") {
+      handleCreatePromotion(promotionSelected, selectedImage);
+    } else {
+      handleEditPromotion(promotionSelected, selectedImage);
+    }
     setPromotionSelected(emptyValue);
+    setShowModal();
   };
 
   const addTarget = async () => {
@@ -93,6 +115,15 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
           ...prev,
           target: targetSelected,
         }));
+        if (type == "create") {
+          setIsValid(
+            promotionSelected.title !== "" &&
+              promotionSelected.description !== "" &&
+              promotionSelected.category !== ""
+          );
+        } else {
+          setIsValid(true);
+        }
 
         setShowNewTargetInput(false);
       } catch (error) {
@@ -104,13 +135,32 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
     }
   };
 
+  const handleImageChange = (event: any) => {
+    const file = event.target.files[0];
+    setSelectedImage(file);
+    setIsValid(true);
+  };
+
+  const handleSelectTarget = (e: string) => {
+    setTargetSelected(e);
+    if (type == "create") {
+      setIsValid(
+        promotionSelected.title !== "" &&
+          promotionSelected.description !== "" &&
+          promotionSelected.category !== ""
+      );
+    } else {
+      setIsValid(true);
+    }
+  };
+
   //RETURN COMPONENT -----------------
   return (
-    <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
+    <IonModal isOpen={showModal} onDidDismiss={() => setShowModal()}>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton color="medium" onClick={() => setShowModal(false)}>
+            <IonButton color="medium" onClick={() => setShowModal()}>
               {text[l].btn__cancel}
             </IonButton>
           </IonButtons>
@@ -121,7 +171,7 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
           </IonTitle>
           <IonButtons slot="end">
             <IonButton
-              disabled={!isValid}
+              disabled={!isValid} // Disable if not valid
               onClick={() => {
                 handleSubmit();
               }}
@@ -131,7 +181,9 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
           </IonButtons>
         </IonToolbar>
       </IonHeader>
+
       <IonContent className="ion-padding">
+        {/* -------------- TITOLO ---------- */}
         <IonList inset>
           <IonItem>
             <IonInput
@@ -140,10 +192,11 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
               labelPlacement="stacked"
               placeholder={text[l].title__placeholder}
               value={promotionSelected.title}
-              onIonChange={handleInputChange}
+              onIonInput={handleInputChange}
             />
           </IonItem>
 
+          {/* -------------- DESCRIZIONE ---------- */}
           <IonItem>
             <IonTextarea
               label={text[l].description__label}
@@ -151,7 +204,7 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
               labelPlacement="stacked"
               placeholder={text[l].description__placeholdert}
               value={promotionSelected.description}
-              onIonChange={handleInputChange}
+              onIonInput={handleInputChange}
               rows={4}
             />
           </IonItem>
@@ -160,6 +213,8 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
         <IonLabel>
           <p className="ion-padding-horizontal">{text[l].info__title}</p>
         </IonLabel>
+
+        {/* -------------- CATEGORIA/SERVIZIO ---------- */}
 
         <IonList inset>
           <IonItem>
@@ -172,7 +227,7 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
               cancelText={text[l].btn__cancel}
             >
               {services.map((service: typeService, index: number) => (
-                <IonSelectOption key={service.uid + index} value={service.uid}>
+                <IonSelectOption key={service.uid} value={service.title}>
                   {service.title}
                 </IonSelectOption>
               ))}
@@ -184,6 +239,19 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
           <p className="ion-padding-horizontal">{text[l].info__category}</p>
         </IonLabel>
 
+        {/* -------------- IMMAGINE COPERTINA ---------- */}
+        <IonList inset>
+          <IonItem>
+            <IonLabel>{text[l].image__label}</IonLabel>
+            <input type="file" onChange={handleImageChange} />
+          </IonItem>
+        </IonList>
+
+        <IonLabel>
+          <p className="ion-padding-horizontal">{text[l].image__description}</p>
+        </IonLabel>
+
+        {/* -------------- TARGET ---------- */}
         <IonList inset>
           <IonItem>
             <IonSelect
@@ -194,8 +262,8 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
               interface="alert"
               cancelText={text[l].btn__cancel}
             >
-              {targets.map((target) => (
-                <IonSelectOption key={target} value={target}>
+              {targets.map((target, index) => (
+                <IonSelectOption key={target + index + type} value={target}>
                   {target}
                 </IonSelectOption>
               ))}
@@ -217,7 +285,7 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
                 value={targetSelected}
                 labelPlacement="stacked"
                 placeholder={text[l].target__placeholder}
-                onIonChange={(e) => setTargetSelected(e.detail.value!)}
+                onIonInput={(e) => handleSelectTarget(e.detail.value!)}
               />
               <IonButton slot="end" onClick={addTarget}>
                 {text[l].btn__add}
@@ -229,14 +297,7 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
           <p className="ion-padding-horizontal">{text[l].info__target}</p>
         </IonLabel>
 
-        {/* <IonItem>
-        <IonInput
-          label={text[l].imageurl__label}
-          name="imageUrl"
-          value={promotionSelected.imageUrl}
-          onIonChange={handleInputChange}
-        />
-      </IonItem> */}
+        {/* -------------- DATA INIZIO ---------- */}
 
         <IonList inset>
           <IonItem>
@@ -249,6 +310,7 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
             />
           </IonItem>
         </IonList>
+        {/* -------------- DATA FINE ---------- */}
 
         <IonList inset>
           <IonItem>

@@ -27,6 +27,9 @@ export const text = {
     btn__add: "Aggiungi",
     error_target_empty: "Attenzione, il campo target è vuoto.",
     error_create_target: "Errore durante la creazione del target",
+    image__label: "Immagine copertina",
+    image__description:
+      "Seleziona un'immagine di copertina. Se non selezioni nulla verrà visualizzata in automatico l'immagine di copertina del Servizio.",
   },
   en_GB: {
     create_promotion: "Create Promotion",
@@ -54,5 +57,8 @@ export const text = {
     btn__add: "Aggiungi",
     error_target_empty: "Attenzione, il campo target è vuoto",
     error_create_target: "Errore durante la creazione del target",
+    image__label: "Immagine copertina",
+    image__description:
+      "Seleziona un'immagine di copertina. Se non selezioni nulla verrà visualizzata in automatico l'immagine di copertina del Servizio.",
   },
 };

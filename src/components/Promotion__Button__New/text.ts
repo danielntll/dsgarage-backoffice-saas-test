@@ -25,6 +25,9 @@ export const text = {
       "Seleziona il target di clienti a cui rivolgere la promozione.",
     btn__add: "Aggiungi",
     error_target_empty: "Attenzione, il campo target è vuoto.",
+    image__label: "Immagine copertina",
+    image__description:
+      "Seleziona un'immagine di copertina. Se non selezioni nulla verrà visualizzata in automatico l'immagine di copertina del Servizio.",
   },
   en_GB: {
     create_promotion: "Create Promotion",
@@ -50,5 +53,8 @@ export const text = {
     info__target: "",
     btn__add: "Aggiungi",
     error_target_empty: "Attenzione, il campo target è vuoto",
+    image__label: "Immagine copertina",
+    image__description:
+      "Seleziona un'immagine di copertina. Se non selezioni nulla verrà visualizzata in automatico l'immagine di copertina del Servizio.",
   },
 };
