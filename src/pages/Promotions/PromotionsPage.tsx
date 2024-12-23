@@ -19,9 +19,9 @@ import { PromotionsContextProvider } from "../../context/promotions/contextPromo
 import PromotionButtonNew from "../../components/Promotion__Button__New/PromotionButtonNew";
 import { ServicesContextProvider } from "../../context/services/contextServices";
 
-interface PageProps {}
+interface PageProps { }
 
-const PromotionsPage: React.FC<PageProps> = ({}) => {
+const PromotionsPage: React.FC<PageProps> = ({ }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
@@ -58,7 +58,7 @@ const PromotionsPage: React.FC<PageProps> = ({}) => {
             </IonHeader>
             {/* ----------------- PAGE CONTENT ------------------*/}
             <div className={styles.content + " ion-padding"}>
-              <PromotionsActive />
+              {/* <PromotionsActive /> */}
               <PromotionsAll searchTerm={searchTerm} />
             </div>
             {/* ----------------- EXTRA UI ----------------------*/}

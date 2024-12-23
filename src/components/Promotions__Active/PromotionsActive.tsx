@@ -3,9 +3,9 @@ import styles from "./PromotionsActive.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 
-interface ContainerProps {}
+interface ContainerProps { }
 
-const PromotionsActive: React.FC<ContainerProps> = ({}) => {
+const PromotionsActive: React.FC<ContainerProps> = ({ }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------

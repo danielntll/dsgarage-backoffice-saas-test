@@ -3,6 +3,7 @@ import styles from "./PromotionsItem.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
+  IonBadge,
   IonIcon,
   IonItem,
   IonItemDivider,
@@ -76,7 +77,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
               src={
                 promotion.imageUrl == ""
                   ? services.find((s) => s.title == promotion.category)
-                      ?.imageUrl
+                    ?.imageUrl
                   : promotion.imageUrl
               }
             />
@@ -85,11 +86,33 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             <h3>{promotion.title}</h3>
             <p>{promotion.subtitle}</p>
             <p>{promotion.description}</p>
+            <p>
+              Inizio:{" "}
+              {promotion.startAt.toDate().toLocaleDateString("it-IT", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })} - Fine:{" "}
+              {promotion.endAt.toDate().toLocaleDateString("it-IT", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </p>
           </IonLabel>
+          {promotion.isVisible ?
+            <IonBadge color={promotion.startAt.toDate() <= new Date() && new Date() <= promotion.endAt.toDate() ? 'success' : 'danger'}>
+              {promotion.startAt.toDate() <= new Date() && new Date() <= promotion.endAt.toDate() ? 'In corso' : 'Scaduta'}
+            </IonBadge> :
+            <IonBadge color={"warning"}>
+              Non visibile
+            </IonBadge>
+          }
+
         </IonItem>
         {/* ----------- ACTIONS END ------- */}
         <IonItemOptions side="end">
-          <IonItemOption
+          {/* <IonItemOption
             color={promotion.isPinned ? "primary" : "medium"}
             onClick={(e) => {
               e.stopPropagation();
@@ -100,7 +123,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
               icon={promotion.isPinned ? star : starHalf}
               slot="icon-only"
             />
-          </IonItemOption>
+          </IonItemOption> */}
           <IonItemOption
             color={promotion.isVisible ? "primary" : "medium"}
             onClick={(e) => {
@@ -143,7 +166,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             <IonIcon icon={pencil} slot="start" />
             <IonLabel>Modifica</IonLabel>
           </IonItem>
-          <IonItem
+          {/* <IonItem
             button
             onClick={(e) => {
               e.stopPropagation();
@@ -155,7 +178,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
             <IonLabel>
               {promotion.isPinned ? "Rimuovi Pin" : "Aggiungi Pin"}
             </IonLabel>
-          </IonItem>
+          </IonItem> */}
           <IonItem
             button
             onClick={(e) => {
@@ -164,7 +187,7 @@ const PromotionsItem: React.FC<ContainerProps> = ({ promotion }) => {
               setShowPopover(false);
             }}
           >
-            <IonIcon icon={promotion.isVisible ? eye : eyeOff} slot="start" />
+            <IonIcon icon={!promotion.isVisible ? eye : eyeOff} slot="start" />
             <IonLabel>{promotion.isVisible ? "Nascondi" : "Mostra"}</IonLabel>
           </IonItem>
           <IonItemOption

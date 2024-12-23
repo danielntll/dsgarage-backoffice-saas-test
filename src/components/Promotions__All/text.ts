@@ -1,7 +1,7 @@
 export const text = {
   it_IT: {
-    componentTitle: "DefaultComponent",
-    subtitle: "sottotitolo",
+    componentTitle: "Tutte le promozioni",
+    subtitle: "Attive, scadute e nascoste",
     btn__filter: "Filtro",
     view__list: "Lista",
     view__grid: "Griglia",
@@ -10,8 +10,8 @@ export const text = {
     no__data: "Nessun elemento da visualizzare",
   },
   en_GB: {
-    componentTitle: "DefaultComponent",
-    subtitle: "sottotitolo",
+    componentTitle: "Tutte le promozioni",
+    subtitle: "Attive, scadute e nascoste",
     btn__filter: "Filtro",
     view__list: "Lista",
     view__grid: "Griglia",

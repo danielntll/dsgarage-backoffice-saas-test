@@ -96,7 +96,7 @@ const PromotionsAll: React.FC<ContainerProps> = ({ searchTerm }) => {
             <IonIcon className="ion-margin-end" icon={filterOutline} />
             {text[l].btn__filter}
           </IonButton>
-          <IonButton
+          {/* <IonButton
             fill="clear"
             size="small"
             onClick={() => setListView(!listView)}
@@ -106,7 +106,7 @@ const PromotionsAll: React.FC<ContainerProps> = ({ searchTerm }) => {
               icon={listView == true ? listOutline : gridOutline}
             />
             {listView == true ? text[l].view__list : text[l].view__grid}
-          </IonButton>
+          </IonButton> */}
         </div>
         {listView === false ? (
           <div className={styles.gallery}>
