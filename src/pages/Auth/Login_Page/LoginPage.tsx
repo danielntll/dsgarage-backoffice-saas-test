@@ -1,6 +1,5 @@
 import {
   IonButton,
-  IonButtons,
   IonCard,
   IonCardHeader,
   IonCardSubtitle,
@@ -15,7 +14,6 @@ import {
   IonModal,
   IonPage,
   IonText,
-  IonToolbar,
 } from "@ionic/react";
 import { text } from "./text";
 
@@ -87,26 +85,19 @@ const LoginPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="end">
-            <IonButton fill="clear" onClick={() => openTutorial()}>
-              {text[l].btn_tutorial}
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
-          <IonToolbar></IonToolbar>
+
         </IonHeader>
         {/* ----------------- PAGE CONTENT ------------------*/}
         <div className={styles.content}>
           <div className={"container__logo"}>
-            <img
+            {/* <img
               src="./assets/logo.png"
               alt="MenuShare Logo"
               className={"logo"}
-            />
+            /> */}
           </div>
           <div className="ion-padding ion-text-center">
             <IonText className={"pageSubtitle"}>{text[l].pageSubtitle}</IonText>
@@ -174,16 +165,7 @@ const LoginPage: React.FC = () => {
               </div>
             </IonCard>
           </div>
-          <div className="ion-padding-horizontal">
-            <IonButton
-              expand="block"
-              fill="clear"
-              onClick={handleGoToRegistrazione}
-            >
-              {text[l].btn__registrati}
-              <IonIcon icon={chevronForward} className="icon-margin-left" />
-            </IonButton>
-          </div>
+
         </div>
         {/* ----------------- EXTRA UI ----------------------*/}
         {/* Modale recupera password */}

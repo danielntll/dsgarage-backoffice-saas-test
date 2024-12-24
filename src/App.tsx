@@ -44,7 +44,6 @@ import HomePage from "./pages/Home/HomePage";
 import ImpostazioniPage from "./pages/Impostazioni/ImpostazioniPage";
 import { loginRoutes } from "./routes/routes";
 import LoginPage from "./pages/Auth/Login_Page/LoginPage";
-import RegistrazionePage from "./pages/Auth/Registrazione_Page/RegistrazionePage";
 import GalleryPage from "./pages/Gallery/Gallery";
 import PromotionsPage from "./pages/Promotions/PromotionsPage";
 import ServicesPage from "./pages/Services/ServicesPage";
@@ -130,10 +129,7 @@ export const loginRoutesOutlet = () => {
       <Route exact path={route_LoginPage.path}>
         <LoginPage />
       </Route>
-      {/* ---- Registrazione ---- */}
-      <Route exact path={route_RegistrazionePage.path}>
-        <RegistrazionePage />
-      </Route>
+
     </IonRouterOutlet>
   );
 };

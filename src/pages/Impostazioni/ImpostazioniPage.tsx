@@ -53,9 +53,9 @@ import { useLocation } from "react-router";
 import { typeRoute } from "../../types/typeRoute";
 import { typeAvailableLanguages } from "../../types/typeAvailableLanguage";
 
-interface PageProps {}
+interface PageProps { }
 
-const ImpostazioniPage: React.FC<PageProps> = ({}) => {
+const ImpostazioniPage: React.FC<PageProps> = ({ }) => {
   //VARIABLES ------------------------
   const { l, updateLanguage } = useContext(ContextLanguage);
   const { authenticateUser, auth } = useContext(AuthContext);
@@ -129,9 +129,9 @@ const ImpostazioniPage: React.FC<PageProps> = ({}) => {
     setIsModalDeleteAccount(true);
   };
 
-  const handlePremium = () => {}; // TODO !!!
-  const handleDettagliAbbonamento = () => {}; // TODO !!!
-  const handleStoricoAbbonamento = () => {}; // TODO !!!
+  const handlePremium = () => { }; // TODO !!!
+  const handleDettagliAbbonamento = () => { }; // TODO !!!
+  const handleStoricoAbbonamento = () => { }; // TODO !!!
 
   // --- notifiche
   const handleEnableVantaggi = async () => {
@@ -308,16 +308,16 @@ const ImpostazioniPage: React.FC<PageProps> = ({}) => {
             </IonItem>
           </IonList>
           {/* -------- PREFERENZE ------- */}
-          <IonList inset>
+          {/* <IonList inset>
             <IonListHeader>{text[l].preferenze_sezione}</IonListHeader>
-            {/* ----- Lingua ------ */}
+            
             <IonItem button onClick={openScegliLingua}>
               <IonLabel>
                 <h3>{text[l].preferenze_lingua}</h3>
               </IonLabel>
               <IonNote slot="end">{lingua}</IonNote>
             </IonItem>
-          </IonList>
+          </IonList> */}
 
           {/* -------- LOGOUT ------ */}
           <IonList inset>

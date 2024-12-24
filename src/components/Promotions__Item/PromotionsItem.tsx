@@ -6,7 +6,6 @@ import {
   IonBadge,
   IonIcon,
   IonItem,
-  IonItemDivider,
   IonItemOption,
   IonItemOptions,
   IonItemSliding,

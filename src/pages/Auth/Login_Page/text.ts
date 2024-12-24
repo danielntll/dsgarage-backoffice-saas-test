@@ -6,7 +6,7 @@ export const text: typeAvailableLanguagesModel = {
     cardSubtitle: "Bentornato!",
     btn__login: "Login",
     input__email: {
-      ph: "me@menushare.it",
+      ph: "me@gmail.it",
       label: "Email",
     },
     input__password: {
@@ -37,7 +37,7 @@ export const text: typeAvailableLanguagesModel = {
     cardSubtitle: "Bentornato!",
     btn__login: "Login",
     input__email: {
-      ph: "me@menushare.it",
+      ph: "me@gmail.it",
       label: "Email",
     },
     input__password: {
