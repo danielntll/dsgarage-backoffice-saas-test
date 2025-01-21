@@ -1,6 +1,8 @@
 import {
+  IonButtons,
   IonContent,
   IonHeader,
+  IonMenuButton,
   IonPage,
   IonTitle,
   IonToolbar,
@@ -11,9 +13,9 @@ import styles from "./DemoPage.module.css";
 import { useContext } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
 
-interface PageProps { }
+interface PageProps {}
 
-const DemoPage: React.FC<PageProps> = ({ }) => {
+const DemoPage: React.FC<PageProps> = ({}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
@@ -23,6 +25,9 @@ const DemoPage: React.FC<PageProps> = ({ }) => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
           <IonTitle>{text[l].pageTitle}</IonTitle>
         </IonToolbar>
       </IonHeader>

@@ -7,10 +7,12 @@ import {
   route_PromotionsPage,
   route_RegistrazionePage,
   route_ServicesPage,
+  route_AutoAnnunci,
 } from "./singleRoute";
 
 export const appRoutes: typeRoute[] = [
   route_HomePage,
+  route_AutoAnnunci,
   route_GalleryPage,
   route_ServicesPage,
   route_PromotionsPage,
@@ -25,6 +27,7 @@ export const allRoutes = {
   route_PromotionsPage,
   route_ServicesPage,
   route_GalleryPage,
+  route_AutoAnnunci,
 };
 
 export const loginRoutes = {

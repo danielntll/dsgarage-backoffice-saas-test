@@ -1,4 +1,6 @@
 import {
+  carSport,
+  carSportOutline,
   home,
   homeOutline,
   images,
@@ -17,6 +19,17 @@ import {
 import { typeRoute } from "../types/typeRoute";
 
 // APP --------------
+export const route_AutoAnnunci: typeRoute = {
+  path: "/autoannunci",
+  tab: {
+    it_IT: "Auto Annunci",
+    en_GB: "Auto Annunci",
+  },
+  icons: {
+    active: carSport,
+    notActive: carSportOutline,
+  },
+};
 export const route_ServicesPage: typeRoute = {
   path: "/servizi",
   tab: {

@@ -13,15 +13,14 @@ import { text } from "./text";
 import styles from "./PromotionsPage.module.css";
 import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
-import PromotionsActive from "../../components/Promotions__Active/PromotionsActive";
 import PromotionsAll from "../../components/Promotions__All/PromotionsAll";
 import { PromotionsContextProvider } from "../../context/promotions/contextPromotions";
 import PromotionButtonNew from "../../components/Promotion__Button__New/PromotionButtonNew";
 import { ServicesContextProvider } from "../../context/services/contextServices";
 
-interface PageProps { }
+interface PageProps {}
 
-const PromotionsPage: React.FC<PageProps> = ({ }) => {
+const PromotionsPage: React.FC<PageProps> = ({}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
@@ -58,7 +57,6 @@ const PromotionsPage: React.FC<PageProps> = ({ }) => {
             </IonHeader>
             {/* ----------------- PAGE CONTENT ------------------*/}
             <div className={styles.content + " ion-padding"}>
-              {/* <PromotionsActive /> */}
               <PromotionsAll searchTerm={searchTerm} />
             </div>
             {/* ----------------- EXTRA UI ----------------------*/}
