@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import styles from "./AutoButtonCreate.module.css";
+import styles from "./CarPromotionButtonCreate.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { IonButton, IonIcon } from "@ionic/react";
@@ -7,7 +7,7 @@ import { add } from "ionicons/icons";
 
 interface ContainerProps {}
 
-const AutoButtonCreate: React.FC<ContainerProps> = ({}) => {
+const CarPromotionButtonCreate: React.FC<ContainerProps> = ({}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
@@ -21,4 +21,4 @@ const AutoButtonCreate: React.FC<ContainerProps> = ({}) => {
   );
 };
 
-export default AutoButtonCreate;
+export default CarPromotionButtonCreate;

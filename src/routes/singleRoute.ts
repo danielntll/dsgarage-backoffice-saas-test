@@ -19,7 +19,7 @@ import {
 import { typeRoute } from "../types/typeRoute";
 
 // APP --------------
-export const route_AutoAnnunci: typeRoute = {
+export const route_CarPromotionPage: typeRoute = {
   path: "/autoannunci",
   tab: {
     it_IT: "Auto Annunci",

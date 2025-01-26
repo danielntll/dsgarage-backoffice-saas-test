@@ -7,12 +7,12 @@ import {
   route_PromotionsPage,
   route_RegistrazionePage,
   route_ServicesPage,
-  route_AutoAnnunci,
+  route_CarPromotionPage,
 } from "./singleRoute";
 
 export const appRoutes: typeRoute[] = [
   route_HomePage,
-  route_AutoAnnunci,
+  route_CarPromotionPage,
   route_GalleryPage,
   route_ServicesPage,
   route_PromotionsPage,
@@ -27,7 +27,7 @@ export const allRoutes = {
   route_PromotionsPage,
   route_ServicesPage,
   route_GalleryPage,
-  route_AutoAnnunci,
+  route_CarPromotionPage,
 };
 
 export const loginRoutes = {
