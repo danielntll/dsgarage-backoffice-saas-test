@@ -69,7 +69,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         // Update local state directly after successful addition
         setCarPromotions((prevPromotions) => [
           ...prevPromotions,
-          { ...data, id: docRef.id },
+          { ...data, uid: docRef.uid },
         ]);
       } catch (error) {
         console.error("Error adding car promotion:", error);

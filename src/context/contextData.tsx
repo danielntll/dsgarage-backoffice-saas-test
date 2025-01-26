@@ -3,9 +3,13 @@ import { useAuthContext } from "./contextAuth";
 import {
   addDoc,
   collection,
+  CollectionReference,
   deleteDoc,
   doc,
+  DocumentData,
+  DocumentReference,
   getDocs,
+  QuerySnapshot,
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
@@ -19,8 +23,11 @@ import {
 } from "firebase/storage";
 
 type dataContext = {
-  getCollectionData: <T>(collectionPath: string) => Promise<T[]>;
-  addDocument: <T>(collectionPath: string, data: T) => Promise<void>;
+  getCollectionData: <T>(collectionPath: string) => Promise<T[] | undefined>;
+  addDocument: <T>(
+    collectionPath: string,
+    data: T
+  ) => Promise<DocumentReference<DocumentData, DocumentData> | undefined>;
   updateDocument: <T>(
     collectionPath: string,
     documentId: string,
@@ -35,7 +42,7 @@ export const DataContext = React.createContext<dataContext>({
   getCollectionData: async () => {
     return [];
   },
-  addDocument: async () => Promise.resolve(),
+  addDocument: async () => Promise.resolve(undefined),
   updateDocument: async () => Promise.resolve(),
   deleteDocument: async () => Promise.resolve(),
   uploadFile: async () => null,
@@ -50,11 +57,15 @@ export const DataContextProvider = ({ children }: any) => {
   // USE STATE -----------------------------
   // USE EFFECT ------------------------------
   // FUNCTIONS ------------------------------
-  async function getCollectionData<T>(collectionPath: string): Promise<T[]> {
+  async function getCollectionData<T>(
+    collectionPath: string
+  ): Promise<T[] | undefined> {
     try {
       console.log("getCollectionData : ", collectionPath);
-      const dataCollection = collection(db, collectionPath);
-      const dataSnapshot = await getDocs(dataCollection);
+      const dataCollection: CollectionReference<DocumentData, DocumentData> =
+        collection(db, collectionPath);
+      const dataSnapshot: QuerySnapshot<DocumentData, DocumentData> =
+        await getDocs(dataCollection);
 
       const data: T[] = [];
       dataSnapshot.forEach((doc) => {
@@ -64,24 +75,28 @@ export const DataContextProvider = ({ children }: any) => {
       return data;
     } catch (error) {
       console.error("Error getting collection data:", error);
-      return [];
+      return undefined;
     }
   }
 
   async function addDocument<T>(
     collectionPath: string,
     data: T
-  ): Promise<void> {
+  ): Promise<DocumentReference<DocumentData, DocumentData> | undefined> {
     try {
-      const dataCollection = collection(db, collectionPath);
-      await addDoc(dataCollection, {
-        ...data,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        byUID: authenticateUser?.uid,
-      });
+      const dataCollection: CollectionReference<DocumentData, DocumentData> =
+        collection(db, collectionPath);
+      const docRef: DocumentReference<DocumentData, DocumentData> =
+        await addDoc(dataCollection, {
+          ...data,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          byUID: authenticateUser?.uid,
+        });
+      return docRef;
     } catch (error) {
       console.error("Error adding document:", error);
+      return undefined;
     }
   }
 
@@ -91,11 +106,15 @@ export const DataContextProvider = ({ children }: any) => {
     data: Partial<T>
   ): Promise<void> {
     try {
-      const documentRef = doc(db, collectionPath, documentId);
+      const documentRef: DocumentReference<DocumentData, DocumentData> = doc(
+        db,
+        collectionPath,
+        documentId
+      );
 
       await updateDoc(documentRef, {
         ...data,
-        updatedAt: serverTimestamp(), // Update the timestamp
+        updatedAt: serverTimestamp(),
       });
     } catch (error) {
       console.error("Error updating document:", error);
@@ -107,7 +126,11 @@ export const DataContextProvider = ({ children }: any) => {
     documentId: string
   ): Promise<void> {
     try {
-      const documentRef = doc(db, collectionPath, documentId);
+      const documentRef: DocumentReference<DocumentData, DocumentData> = doc(
+        db,
+        collectionPath,
+        documentId
+      );
       await deleteDoc(documentRef);
     } catch (error) {
       console.error("Error deleting document:", error);
