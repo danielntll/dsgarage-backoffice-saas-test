@@ -45,10 +45,9 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   //FUNCTIONS ------------------------
-  const filteredGalleryData = galleryData.filter((item) =>
+  const filteredGalleryData = galleryData?.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const handleFilterButtonClick = (e: any) => {
     e.persist(); // Important to persist the event
     setPopoverEvent(e);
@@ -91,7 +90,7 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
         {listView === false ? (
           <div className={styles.gallery}>
             {filteredGalleryData
-              .filter((item) => (showVisible ? item.isVisible : true))
+              ?.filter((item) => (showVisible ? item.isVisible : true))
               .sort((a, b) => {
                 if (sortBy === "date") {
                   const dateA = a.createdAt.toDate();
@@ -113,7 +112,7 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
           </div>
         ) : (
           <IonList inset>
-            {filteredGalleryData.map((item: typeImage, index: number) => (
+            {filteredGalleryData?.map((item: typeImage, index: number) => (
               <ImageItem image={item} key={index + "pinnedImages list"} />
             ))}
           </IonList>
@@ -126,7 +125,7 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm }) => {
           <IonIcon icon={downloadOutline} className="ion-margin-end" />
           {loading ? text[l].loading__images : text[l].btn__load__more}
         </IonButton>
-        {galleryData.length === 0 ? (
+        {galleryData?.length === 0 ? (
           <IonItem>
             <IonLabel>
               <p>{text[l].noImages}</p>

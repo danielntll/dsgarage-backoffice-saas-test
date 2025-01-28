@@ -21,9 +21,11 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
+import { b } from "vitest/dist/reporters-5f784f42";
+import { typeFirebaseDataStructure } from "../types/typeFirebaseDataStructure";
 
 type dataContext = {
-  getCollectionData: <T>(collectionPath: string) => Promise<T[] | undefined>;
+  getCollectionData: <T>(collectionPath: string) => Promise<T[] | null>;
   addDocument: <T>(
     collectionPath: string,
     data: T
@@ -40,7 +42,7 @@ type dataContext = {
 
 export const DataContext = React.createContext<dataContext>({
   getCollectionData: async () => {
-    return [];
+    return null;
   },
   addDocument: async () => Promise.resolve(undefined),
   updateDocument: async () => Promise.resolve(),
@@ -59,9 +61,8 @@ export const DataContextProvider = ({ children }: any) => {
   // FUNCTIONS ------------------------------
   async function getCollectionData<T>(
     collectionPath: string
-  ): Promise<T[] | undefined> {
+  ): Promise<T[] | null> {
     try {
-      console.log("getCollectionData : ", collectionPath);
       const dataCollection: CollectionReference<DocumentData, DocumentData> =
         collection(db, collectionPath);
       const dataSnapshot: QuerySnapshot<DocumentData, DocumentData> =
@@ -75,7 +76,7 @@ export const DataContextProvider = ({ children }: any) => {
       return data;
     } catch (error) {
       console.error("Error getting collection data:", error);
-      return undefined;
+      return null;
     }
   }
 
@@ -86,12 +87,19 @@ export const DataContextProvider = ({ children }: any) => {
     try {
       const dataCollection: CollectionReference<DocumentData, DocumentData> =
         collection(db, collectionPath);
+
+      const fbDataStructure: typeFirebaseDataStructure = {
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        byUserUID: authenticateUser!.uid,
+        isArchived: false,
+        isPinned: false,
+      };
+
       const docRef: DocumentReference<DocumentData, DocumentData> =
         await addDoc(dataCollection, {
           ...data,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          byUID: authenticateUser?.uid,
+          ...fbDataStructure,
         });
       return docRef;
     } catch (error) {
@@ -111,10 +119,14 @@ export const DataContextProvider = ({ children }: any) => {
         collectionPath,
         documentId
       );
+      const fbDataStructure: typeFirebaseDataStructure = {
+        updatedAt: serverTimestamp(),
+        byUserUID: authenticateUser!.uid,
+      };
 
       await updateDoc(documentRef, {
         ...data,
-        updatedAt: serverTimestamp(),
+        fbDataStructure,
       });
     } catch (error) {
       console.error("Error updating document:", error);

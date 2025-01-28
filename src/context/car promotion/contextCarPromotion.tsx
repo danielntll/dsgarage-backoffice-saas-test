@@ -5,15 +5,31 @@ import { useContextToast } from "../systemEvents/contextToast";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { useDataContext } from "../contextData";
 import { serverTimestamp } from "firebase/firestore";
+import { typeHasError } from "../../types/typeHasError";
+import CarPromotionModalCreateModify from "../../components/CarPromotion__Modal__Create&Modify/CarPromotionModalCreateModify";
 
 type dataContext = {
   carPromotions: CarPromotion[];
   isLoading: boolean;
+  hasError: typeHasError | null;
+  addData: (data: CarPromotion) => Promise<void>;
+  updateInfo: (id: string, updatedData: Partial<CarPromotion>) => Promise<void>;
+  updateIsArchived: (id: string, isArchived: boolean) => Promise<void>;
+  updateIsPinned: (id: string, isPinned: boolean) => Promise<void>;
+  deleteData: (id: string) => Promise<void>;
+  handleOpenModal: () => void;
 };
 
 export const CarPromotionContext = React.createContext<dataContext>({
   carPromotions: [],
   isLoading: false,
+  hasError: null,
+  addData: async () => Promise.resolve(),
+  updateInfo: async () => Promise.resolve(),
+  updateIsArchived: async () => Promise.resolve(),
+  updateIsPinned: async () => Promise.resolve(),
+  deleteData: async () => Promise.resolve(),
+  handleOpenModal: () => {},
 });
 
 export const useCarPromotionContext = () =>
@@ -30,6 +46,8 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   // USE STATE -----------------------------
   const [carPromotions, setCarPromotions] = useState<CarPromotion[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [hasError, setHasError] = useState<typeHasError | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   // USE EFFECT ------------------------------
   useEffect(() => {
     if (authenticateUser !== undefined) {
@@ -42,120 +60,181 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   /**
    *
    */
-  const initData = async () => {
+  const initData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data: CarPromotion[] = await getCollectionData<CarPromotion>(
+      const data: CarPromotion[] | null = await getCollectionData<CarPromotion>(
         DOC_PATH
       );
-      setCarPromotions(data);
-      setIsLoading(false);
+      if (data !== null) {
+        setCarPromotions(data);
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching car promotions:", error);
+      setHasError({
+        message: {
+          en_GB: "",
+          it_IT: "",
+        },
+      });
+      setIsLoading(false);
+    } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const addData = useCallback(
-    async (data: CarPromotion) => {
-      try {
-        const docRef = await addDocument<CarPromotion>(DOC_PATH, {
-          ...data,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          byUserUID: authenticateUser!.uid,
-        });
-
-        // Update local state directly after successful addition
-        setCarPromotions((prevPromotions) => [
-          ...prevPromotions,
-          { ...data, uid: docRef.uid },
-        ]);
-      } catch (error) {
-        console.error("Error adding car promotion:", error);
-        toast.error(l.toast.addCarPromotionError); // Add error handling
-      }
-    },
-    [addDocument, DOC_PATH, setCarPromotions, toast, l, authenticateUser]
-  );
+  const addData = useCallback(async (data: CarPromotion) => {
+    setIsLoading(true);
+    try {
+      const docRef = await addDocument<CarPromotion>(DOC_PATH, {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        byUserUID: authenticateUser!.uid,
+      });
+      setCarPromotions((prevPromotions) => [
+        ...prevPromotions,
+        { ...data, uid: docRef!.id },
+      ]);
+    } catch (error) {
+      console.error("Error fetching car promotions:", error);
+      setHasError({
+        message: {
+          en_GB: "",
+          it_IT: "",
+        },
+      });
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const updateInfo = useCallback(
     async (id: string, updatedData: Partial<CarPromotion>) => {
+      setIsLoading(true);
       try {
         await updateDocument<CarPromotion>(DOC_PATH, id, updatedData);
 
         // Update the local state directly
         setCarPromotions((prevPromotions) =>
           prevPromotions.map((promotion) =>
-            promotion.id === id ? { ...promotion, ...updatedData } : promotion
+            promotion.uid === id ? { ...promotion, ...updatedData } : promotion
           )
         );
       } catch (error) {
-        console.error("Error updating car promotion info:", error);
+        console.error("Error fetching car promotions:", error);
+        setHasError({
+          message: {
+            en_GB: "",
+            it_IT: "",
+          },
+        });
+        setIsLoading(false);
+      } finally {
+        setIsLoading(false);
       }
     },
-    [updateDocument, DOC_PATH, setCarPromotions]
+    []
   );
 
   const updateIsArchived = useCallback(
     async (id: string, isArchived: boolean) => {
+      setIsLoading(true);
       try {
         await updateDocument<CarPromotion>(DOC_PATH, id, { isArchived });
 
         // Update local state directly
         setCarPromotions((prevPromotions) =>
           prevPromotions.map((promotion) =>
-            promotion.id === id ? { ...promotion, isArchived } : promotion
+            promotion.uid === id ? { ...promotion, isArchived } : promotion
           )
         );
       } catch (error) {
-        console.error("Error updating isArchived:", error);
+        console.error("Error fetching car promotions:", error);
+        setHasError({
+          message: {
+            en_GB: "",
+            it_IT: "",
+          },
+        });
+        setIsLoading(false);
+      } finally {
+        setIsLoading(false);
       }
     },
-    [updateDocument, DOC_PATH, setCarPromotions]
+    []
   );
 
-  const updateIsPinned = useCallback(
-    async (id: string, isPinned: boolean) => {
-      try {
-        await updateDocument<CarPromotion>(DOC_PATH, id, { isPinned });
+  const updateIsPinned = useCallback(async (id: string, isPinned: boolean) => {
+    setIsLoading(true);
+    try {
+      await updateDocument<CarPromotion>(DOC_PATH, id, { isPinned });
+      setCarPromotions((prevPromotions) =>
+        prevPromotions.map((promotion) =>
+          promotion.uid === id ? { ...promotion, isPinned } : promotion
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching car promotions:", error);
+      setHasError({
+        message: {
+          en_GB: "",
+          it_IT: "",
+        },
+      });
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-        // Update local state directly
-        setCarPromotions((prevPromotions) =>
-          prevPromotions.map((promotion) =>
-            promotion.id === id ? { ...promotion, isPinned } : promotion
-          )
-        );
-      } catch (error) {
-        console.error("Error updating isPinned:", error);
-      }
-    },
-    [updateDocument, DOC_PATH, setCarPromotions]
-  );
+  const deleteData = useCallback(async (id: string) => {
+    setIsLoading(true);
+    try {
+      await deleteDocument(DOC_PATH, id);
+      setCarPromotions((prevPromotions) =>
+        prevPromotions.filter((promotion) => promotion.uid !== id)
+      );
+    } catch (error) {
+      console.error("Error fetching car promotions:", error);
+      setHasError({
+        message: {
+          en_GB: "",
+          it_IT: "",
+        },
+      });
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const deleteData = useCallback(
-    async (id: string) => {
-      try {
-        await deleteDocument(DOC_PATH, id);
-        setCarPromotions((prevPromotions) =>
-          prevPromotions.filter((promotion) => promotion.id !== id)
-        );
-      } catch (error) {
-        console.error("Error deleting car promotion:", error);
-      }
-    },
-    [deleteDocument, DOC_PATH, setCarPromotions, toast, l]
-  );
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
 
   // RETURN ---------------------------------
   return (
     <CarPromotionContext.Provider
       value={{
         isLoading,
+        hasError,
         carPromotions,
+        addData,
+        updateInfo,
+        updateIsArchived,
+        updateIsPinned,
+        deleteData,
+        handleOpenModal,
       }}
     >
       {children}
+      {/* ----- EXTRA CONTENT ----- */}
+      <CarPromotionModalCreateModify
+        isModalOpen={isModalOpen}
+        callbackCloseModal={() => setIsModalOpen(false)}
+      />
     </CarPromotionContext.Provider>
   );
 };

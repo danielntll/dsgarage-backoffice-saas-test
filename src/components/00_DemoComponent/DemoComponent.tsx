@@ -1,15 +1,13 @@
-import { useContext } from 'react';
-import styles from './DemoComponent.module.css';
-import { ContextLanguage } from '../../context/contextLanguage';
-import { text } from './text';
+import styles from "./DemoComponent.module.css";
+import { useContextLanguage } from "../../context/contextLanguage";
+import { text } from "./text";
+interface ContainerProps {}
 
-interface ContainerProps {
-}
-
-const DemoComponent: React.FC<ContainerProps> = ({ }) => {
+const DemoComponent: React.FC<ContainerProps> = ({}) => {
   //VARIABLES ------------------------
-  const { l } = useContext(ContextLanguage);
-  //CONDITIONS -----------------------
+  const { l } = useContextLanguage();
+  //USE STATES -----------------------
+  //USE EFFECTS ----------------------
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (

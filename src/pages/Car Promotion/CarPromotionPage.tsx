@@ -17,10 +17,9 @@ import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { route_CarPromotionPage } from "../../routes/singleRoute";
 import AutoButtonCreate from "../../components/CarPromotion__Button__Create/CarPromotionButtonCreate";
-
-import { typeSegment } from "../../types/typeSegment";
 import { CarPromotionContextProvider } from "../../context/car promotion/contextCarPromotion";
 import CarPromotionList from "../../components/CarPromotion__List/CarPromotionList";
+import { enumCarPromotionSegments } from "../../enum/enumCarPromotionSegments";
 
 interface PageProps {}
 
@@ -28,7 +27,9 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
-  const [segment, setSegment] = useState<typeSegment>("active");
+  const [segment, setSegment] = useState<enumCarPromotionSegments>(
+    enumCarPromotionSegments.all
+  );
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
@@ -54,12 +55,17 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
             <IonToolbar>
               <IonSegment
                 value={segment}
-                onIonChange={(e) => setSegment(e.detail.value as typeSegment)}
+                onIonChange={(e) =>
+                  setSegment(e.detail.value as enumCarPromotionSegments)
+                }
               >
-                <IonSegmentButton value="active">
-                  <IonLabel>{text[l].segment__active}</IonLabel>
+                <IonSegmentButton value={enumCarPromotionSegments.all}>
+                  <IonLabel>{text[l].segment__all}</IonLabel>
                 </IonSegmentButton>
-                <IonSegmentButton value="archived">
+                <IonSegmentButton value={enumCarPromotionSegments.pinned}>
+                  <IonLabel>{text[l].segment__pinned}</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value={enumCarPromotionSegments.archived}>
                   <IonLabel>{text[l].segment__archived}</IonLabel>
                 </IonSegmentButton>
               </IonSegment>
@@ -67,7 +73,7 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
           </IonHeader>
           {/* ----------------- PAGE CONTENT ------------------*/}
           <div className={styles.content + " ion-padding"}>
-            <CarPromotionList />
+            <CarPromotionList filter={segment} />
           </div>
           {/* ----------------- EXTRA UI ----------------------*/}
         </IonContent>

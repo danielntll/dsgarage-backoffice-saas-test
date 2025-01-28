@@ -29,9 +29,10 @@ import { typeImageToUpload } from "../../types/typeImageToUpload";
 import { text } from "./text";
 import ImageOverlay from "../../components/Image__Overlay/ImageOverlay";
 import ImageModalModify from "../../components/Image__Modal__Modify/ImageModalModify";
+import { typeImageUploadData } from "../../types/typeImageUploadData";
 
 type galleryContext = {
-  galleryData: typeImage[];
+  galleryData: typeImage[] | null;
   loading: boolean;
   error: any;
   pinnedImages: typeImage[];
@@ -43,15 +44,19 @@ type galleryContext = {
     editedAlt: string,
     editedDescription: string
   ) => Promise<boolean>;
-  handleUploadImages: (toUpload: typeImageToUpload[]) => Promise<boolean>;
+  handleUploadImages: (
+    _imagesToUpload: File[],
+    _imageDetails: typeImageUploadData
+  ) => Promise<typeImage[] | null>;
   handleDeleteImage: (image: typeImage) => Promise<void>;
   handleShowImageOverlay: (image: typeImage) => void;
   handleEditClick: (image: typeImage) => void;
   loadMoreData: () => Promise<void>;
+  initState: () => void;
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
-  galleryData: [],
+  galleryData: null,
   loading: true,
   error: null,
   pinnedImages: [],
@@ -62,12 +67,13 @@ export const GalleryContext = React.createContext<galleryContext>({
     return false;
   },
   handleUploadImages: async () => {
-    return false;
+    return null;
   },
   handleDeleteImage: async () => {},
   handleShowImageOverlay: () => {},
   handleEditClick: () => {},
   loadMoreData: async () => {},
+  initState: () => {},
 });
 
 export const useGalleryContext = () => React.useContext(GalleryContext);
@@ -79,7 +85,7 @@ export const GalleryContextProvider = ({ children }: any) => {
   const { authenticateUser } = useContext(AuthContext);
   const { toast } = useContext(ContextToast);
 
-  const [galleryData, setGalleryData] = useState<typeImage[]>([]);
+  const [galleryData, setGalleryData] = useState<typeImage[] | null>(null);
   const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<any>(null);
 
@@ -96,15 +102,14 @@ export const GalleryContextProvider = ({ children }: any) => {
 
   const [currentPage, setCurrentPage] = useState<number>(2);
   // -----------------------------
-
   // USE EFFECT ------------------------------
-  useEffect(() => {
-    if (authenticateUser !== undefined) {
+  // FUNCTIONS -----------------------------
+  const initState = () => {
+    if (authenticateUser !== undefined && galleryData === null) {
       fetchGalleryData();
       fetchPinnedImages();
     }
-  }, [authenticateUser]);
-  // FUNCTIONS ------------------------------
+  };
 
   const handleEditClick = (image: typeImage) => {
     setEditedImage(image);
@@ -152,7 +157,7 @@ export const GalleryContextProvider = ({ children }: any) => {
 
       // 3. Update local state (Important: Update state *after* successful deletion)
       setGalleryData((prevData) =>
-        prevData.filter((item) => item.uid !== image.uid)
+        prevData!.filter((item) => item.uid !== image.uid)
       );
       setPinnedData((prevData) =>
         prevData.filter((item) => item.uid !== image.uid)
@@ -169,7 +174,7 @@ export const GalleryContextProvider = ({ children }: any) => {
 
       // 3. Update local state (Important: Update state *after* successful deletion)
       setGalleryData((prevData) =>
-        prevData.filter((item) => item.uid !== image.uid)
+        prevData!.filter((item) => item.uid !== image.uid)
       );
       setPinnedData((prevData) =>
         prevData.filter((item) => item.uid !== image.uid)
@@ -182,11 +187,21 @@ export const GalleryContextProvider = ({ children }: any) => {
     dismissLoading();
   };
 
-  const handleUploadImages = async (imagesToUpload: typeImageToUpload[]) => {
-    if (!imagesToUpload || imagesToUpload.length === 0) {
+  async function handleUploadImages(
+    _imagesToUpload: File[],
+    _imageDetails: typeImageUploadData
+  ) {
+    if (!_imagesToUpload || _imagesToUpload.length === 0) {
       toast("danger", "No images selected");
-      return false;
+      return null;
     }
+    const imagesToUpload: typeImageToUpload[] = _imagesToUpload.map(
+      (image, index) => ({
+        file: image,
+        alt: _imageDetails[index]?.alt || image.name.split(".")[0],
+        description: _imageDetails[index]?.description || "",
+      })
+    );
     presentLoading({
       message: text[l].loading,
     });
@@ -238,7 +253,7 @@ export const GalleryContextProvider = ({ children }: any) => {
       toast("success", "Images uploaded successfully");
 
       // Update local state directly after successful uploads
-      setGalleryData((prevData) => [...prevData, ...uploadedImages]);
+      setGalleryData((prevData) => [...prevData!, ...uploadedImages]);
 
       // Update pinned images if any new image is pinned
       const newPinnedImages = uploadedImages.filter((image) => image.isPinned);
@@ -246,13 +261,13 @@ export const GalleryContextProvider = ({ children }: any) => {
         setPinnedData((prevData) => [...prevData, ...newPinnedImages]);
       }
       dismissLoading();
-      return true;
+      return uploadedImages;
     } catch (error) {
       dismissLoading();
       console.error("Error uploading images:", error);
-      return false;
+      return null;
     }
-  };
+  }
 
   const fetchPinnedImages = async () => {
     try {
@@ -275,6 +290,7 @@ export const GalleryContextProvider = ({ children }: any) => {
   };
 
   const fetchGalleryData = async () => {
+    console.log("LOADINGS");
     presentLoading({
       message: text[l].loading,
       duration: 3000,
@@ -285,8 +301,8 @@ export const GalleryContextProvider = ({ children }: any) => {
       const galleryRef = collection(db, "gallery");
       let q = query(galleryRef, orderBy("createdAt"));
 
-      if (currentPage > 1 && galleryData.length > 0) {
-        const lastVisible = galleryData[galleryData.length - 1];
+      if (currentPage > 1 && galleryData !== null && galleryData.length > 0) {
+        const lastVisible = galleryData![galleryData!.length - 1];
         q = query(q, startAfter(lastVisible.createdAt));
       }
 
@@ -300,7 +316,7 @@ export const GalleryContextProvider = ({ children }: any) => {
       })) as typeImage[];
 
       const allGalleryData =
-        currentPage === 1 ? newData : [...galleryData, ...newData];
+        currentPage === 1 ? newData : [...(galleryData ?? []), ...newData];
       setGalleryData(allGalleryData);
 
       const allPinnedImages = allGalleryData.filter((item) => item.isPinned);
@@ -332,7 +348,7 @@ export const GalleryContextProvider = ({ children }: any) => {
 
         // Update local state after successful backend update
         setGalleryData((prevData) =>
-          prevData.map((item) =>
+          prevData!.map((item) =>
             item.uid === image.uid
               ? { ...item, isPinned: true, isVisible: true }
               : item
@@ -355,7 +371,7 @@ export const GalleryContextProvider = ({ children }: any) => {
           prevData.filter((item) => item.uid !== image.uid)
         );
         setGalleryData((prevData) =>
-          prevData.map((item) =>
+          prevData!.map((item) =>
             item.uid === image.uid ? { ...item, isPinned: false } : item
           )
         );
@@ -377,7 +393,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         });
         // Update local state after successful backend update
         setGalleryData((prevData) =>
-          prevData.map((item) =>
+          prevData!.map((item) =>
             item.uid === image.uid ? { ...item, isVisible: true } : item
           )
         );
@@ -389,7 +405,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         });
         // Update local state after successful backend update
         setGalleryData((prevData) =>
-          prevData.map((item) =>
+          prevData!.map((item) =>
             item.uid === image.uid ? { ...item, isVisible: false } : item
           )
         );
@@ -449,7 +465,7 @@ export const GalleryContextProvider = ({ children }: any) => {
 
       // Update local state directly
       setGalleryData((prevData) =>
-        prevData.map((item) =>
+        prevData!.map((item) =>
           item.uid === editedImage.uid
             ? { ...item, alt: editedAlt, description: editedDescription }
             : item
@@ -499,6 +515,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         handleShowImageOverlay,
         handleEditClick,
         loadMoreData,
+        initState,
       }}
     >
       <>

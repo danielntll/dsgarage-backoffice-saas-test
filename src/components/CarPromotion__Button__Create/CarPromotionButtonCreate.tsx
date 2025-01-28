@@ -1,20 +1,21 @@
-import { useContext } from "react";
 import styles from "./CarPromotionButtonCreate.module.css";
-import { ContextLanguage } from "../../context/contextLanguage";
+import { useContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { IonButton, IonIcon } from "@ionic/react";
 import { add } from "ionicons/icons";
+import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
 
 interface ContainerProps {}
 
 const CarPromotionButtonCreate: React.FC<ContainerProps> = ({}) => {
   //VARIABLES ------------------------
-  const { l } = useContext(ContextLanguage);
+  const { l } = useContextLanguage();
+  const { handleOpenModal } = useCarPromotionContext();
   //CONDITIONS -----------------------
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
-    <IonButton>
+    <IonButton onClick={handleOpenModal}>
       <IonIcon icon={add} />
       {text[l].componentTitle}
     </IonButton>

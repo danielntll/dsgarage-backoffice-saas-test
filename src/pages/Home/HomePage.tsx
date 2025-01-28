@@ -13,6 +13,9 @@ import { ContextLanguage } from "../../context/contextLanguage";
 import { useLocation } from "react-router";
 import { appRoutes } from "../../routes/routes";
 import { typeRoute } from "../../types/typeRoute";
+import GalleryHandler from "../../components/Gallery__Handler/GalleryHandler";
+import { GalleryContextProvider } from "../../context/gallery/contextGallery";
+import { typeImage } from "../../types/typeImage";
 
 interface PageProps {}
 
@@ -29,8 +32,9 @@ const HomePage: React.FC<PageProps> = ({}) => {
         ?.tab[l]
     );
   }, [location]);
-  //FUNCTIONS ------------------------
 
+  const [selectedImages, setSelectedImages] = useState<typeImage[]>([]);
+  //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
     <IonPage>
@@ -49,6 +53,11 @@ const HomePage: React.FC<PageProps> = ({}) => {
           </IonToolbar>
         </IonHeader>
         {/* ----------------- PAGE CONTENT ------------------*/}
+
+        <GalleryHandler
+          selectedImages={selectedImages}
+          setSelectedImages={setSelectedImages}
+        />
 
         {/* ----------------- EXTRA UI ----------------------*/}
       </IonContent>

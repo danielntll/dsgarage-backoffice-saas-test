@@ -3,10 +3,10 @@ import styles from "./CarPromotionItem.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { IonItem, IonLabel, IonThumbnail } from "@ionic/react";
-import { UsedCarCard } from "../../types/typeCarPromotion";
+import { CarPromotion } from "../../types/typeCarPromotion";
 
 interface ContainerProps {
-  data: UsedCarCard;
+  data: CarPromotion;
 }
 
 const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {

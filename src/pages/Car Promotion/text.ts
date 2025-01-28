@@ -4,13 +4,15 @@ export const text: typeAvailableLanguagesModel = {
   it_IT: {
     pageTitle: "Auto Annunci",
     btn__create: "Crea annuncio",
-    segment__active: "Attivi",
+    segment__all: "Tutti",
     segment__archived: "Archiviati",
+    segment__pinned: "Preferiti",
   },
   en_GB: {
     pageTitle: "Auto Annunci",
     btn__create: "Crea annuncio",
-    segment__active: "Attivi",
+    segment__all: "Tutti",
     segment__archived: "Archiviati",
+    segment__pinned: "Preferiti",
   },
 };

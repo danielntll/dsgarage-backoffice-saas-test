@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Or a specific height */
+}
+
+.imageGrid {
+  display: flex;
+  flex-wrap: wrap; /* Allows items to wrap onto multiple lines */
+  justify-content: space-around; /* Distribute items evenly */
+}
+
+.imageItem {
+  position: relative; /* Important for absolute positioning of the chip */
+  width: calc(33.33% - 20px);
+  margin: 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.chipContainer {
+  position: absolute;
+  top: 10px; /* Adjust as needed */
+  left: 10px; /* Adjust as needed */
+  z-index: 1; /* Ensure chip is on top of the image */
+}
+
+.imageItem img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.image {
+  border-radius: 8px;
+}
+/* Responsive adjustments (optional) */
+@media (max-width: 768px) {
+  .imageItem {
+    width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 500px) {
+  .imageItem {
+    width: calc(100% - 20px);
+  }
+}
