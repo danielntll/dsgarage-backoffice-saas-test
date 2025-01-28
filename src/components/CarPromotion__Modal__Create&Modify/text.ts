@@ -1,8 +1,8 @@
 export const text = {
   it_IT: {
-    componentTitle: "DefaultComponent",
+    componentTitle: "Crea annuncio auto",
   },
   en_GB: {
-    componentTitle: "DefaultComponent",
+    componentTitle: "Crea annuncio auto",
   },
 };

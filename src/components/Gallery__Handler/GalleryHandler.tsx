@@ -19,53 +19,48 @@ import { checkmark, cloudDownloadOutline } from "ionicons/icons";
 import ImagesAdd from "../Images__Add/ImagesAdd";
 import { typeImageUploadData } from "../../types/typeImageUploadData";
 interface ContainerProps {
+  imagesToUpload: File[];
+  setImagesToUpload: React.Dispatch<React.SetStateAction<File[]>>;
   selectedImages: typeImage[];
   setSelectedImages: React.Dispatch<React.SetStateAction<typeImage[]>>;
+  imageDetails: typeImageUploadData;
+  setImageDetails: React.Dispatch<React.SetStateAction<typeImageUploadData>>;
 }
 
 const GalleryHandler: React.FC<ContainerProps> = ({
   selectedImages,
   setSelectedImages,
+  imagesToUpload,
+  setImagesToUpload,
+  imageDetails,
+  setImageDetails,
 }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
-  const { initState, galleryData, loadMoreData, loading, handleUploadImages } =
-    useGalleryContext();
+  const { initState, galleryData, loadMoreData, loading } = useGalleryContext();
   //USE STATES -----------------------
   const [segment, setSegment] = useState<enumImagesHandler>(
     enumImagesHandler.select
   );
-
-  const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
-  const [imageDetails, setImageDetails] = useState<typeImageUploadData>({});
-
   //USE EFFECTS ----------------------
   useEffect(() => {
     initState();
   }, []);
   //FUNCTIONS ------------------------
   const handleToggleSelection = (image: typeImage) => {
+    /// Reset all data
     if (selectedImages.includes(image)) {
       setSelectedImages(selectedImages.filter((item) => item !== image));
     } else {
       setSelectedImages([...selectedImages, image]);
     }
   };
-  const handleImagesUpload = async () => {
-    if (imagesToUpload.length === 0) return;
-    handleUploadImages(imagesToUpload, imageDetails).then(
-      (uploadedImages: typeImage[] | null) => {
-        // Use the returned value
-        if (uploadedImages) {
-          // Check if upload was successful
-          imagesToUpload.forEach((image) =>
-            URL.revokeObjectURL(URL.createObjectURL(image))
-          );
-          setImagesToUpload([]);
-          setImageDetails({});
-        }
-      }
-    );
+
+  const handleSegmentChange = (event: enumImagesHandler) => {
+    setSelectedImages([]);
+    setImagesToUpload([]);
+    setImageDetails({});
+    setSegment(event);
   };
   //RETURN COMPONENT -----------------
   return (
@@ -74,7 +69,9 @@ const GalleryHandler: React.FC<ContainerProps> = ({
         <IonToolbar>
           <IonSegment
             value={segment}
-            onIonChange={(e) => setSegment(e.detail.value as enumImagesHandler)}
+            onIonChange={(e) =>
+              handleSegmentChange(e.detail.value as enumImagesHandler)
+            }
           >
             <IonSegmentButton value={enumImagesHandler.select}>
               <IonLabel>{text[l].segment__select}</IonLabel>

@@ -18,6 +18,7 @@ type dataContext = {
   updateIsPinned: (id: string, isPinned: boolean) => Promise<void>;
   deleteData: (id: string) => Promise<void>;
   handleOpenModal: () => void;
+  initData: () => void;
 };
 
 export const CarPromotionContext = React.createContext<dataContext>({
@@ -30,6 +31,7 @@ export const CarPromotionContext = React.createContext<dataContext>({
   updateIsPinned: async () => Promise.resolve(),
   deleteData: async () => Promise.resolve(),
   handleOpenModal: () => {},
+  initData: () => {},
 });
 
 export const useCarPromotionContext = () =>
@@ -49,39 +51,41 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   const [hasError, setHasError] = useState<typeHasError | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   // USE EFFECT ------------------------------
-  useEffect(() => {
-    if (authenticateUser !== undefined) {
-      initData();
-    }
-  }, [authenticateUser]);
   // FUNCTIONS ------------------------------
-
   // ---  initData
   /**
    *
    */
   const initData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data: CarPromotion[] | null = await getCollectionData<CarPromotion>(
-        DOC_PATH
-      );
-      if (data !== null) {
-        setCarPromotions(data);
+    if (authenticateUser !== null) {
+      setIsLoading(true);
+      try {
+        const data: CarPromotion[] | null =
+          await getCollectionData<CarPromotion>(DOC_PATH);
+        if (data !== null) {
+          setCarPromotions(data);
+        }
+      } catch (error) {
+        console.error("Error fetching car promotions:", error);
+        setHasError({
+          message: {
+            en_GB: "Impossibile scaricare i dati",
+            it_IT: "Impossibile scaricare i dati",
+          },
+        });
+        setIsLoading(false);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching car promotions:", error);
+    } else {
       setHasError({
         message: {
-          en_GB: "",
-          it_IT: "",
+          en_GB: "Errore di autenticazione",
+          it_IT: "Errore di autenticazione",
         },
       });
-      setIsLoading(false);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [authenticateUser]);
 
   const addData = useCallback(async (data: CarPromotion) => {
     setIsLoading(true);
@@ -227,6 +231,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         updateIsPinned,
         deleteData,
         handleOpenModal,
+        initData,
       }}
     >
       {children}

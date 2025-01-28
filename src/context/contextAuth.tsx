@@ -23,6 +23,7 @@ import { ContextLanguage } from "./contextLanguage";
 import { ContextToast } from "./systemEvents/contextToast";
 import { DataContextProvider } from "./contextData";
 import { GalleryContextProvider } from "./gallery/contextGallery";
+import { CarPromotionContextProvider } from "./car promotion/contextCarPromotion";
 
 type AuthType = {
   authenticateUser: User | undefined;
@@ -89,17 +90,14 @@ export const AuthContextProvider = () => {
       }}
     >
       {isLoading ? (
-        <IonLoading
-          isOpen={isLoading}
-          duration={2000}
-          message="Loading..."
-          spinner="circles"
-        />
+        <IonLoading isOpen={isLoading} message="Loading..." spinner="circles" />
       ) : null}
       {authenticateUser?.emailVerified == true ? (
         <DataContextProvider>
           <GalleryContextProvider>
-            {authenticatedRoutesOutlet()}
+            <CarPromotionContextProvider>
+              {authenticatedRoutesOutlet()}
+            </CarPromotionContextProvider>
           </GalleryContextProvider>
         </DataContextProvider>
       ) : (

@@ -33,52 +33,50 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
-    <CarPromotionContextProvider>
-      <IonPage>
-        <IonHeader>
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
+          <IonTitle>{route_CarPromotionPage.tab[l]}</IonTitle>
+          <IonButtons slot="end">
+            <AutoButtonCreate />
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent fullscreen>
+        <IonHeader collapse="condense">
           <IonToolbar>
-            <IonButtons slot="start">
-              <IonMenuButton />
-            </IonButtons>
-            <IonTitle>{route_CarPromotionPage.tab[l]}</IonTitle>
-            <IonButtons slot="end">
-              <AutoButtonCreate />
-            </IonButtons>
+            <IonTitle size="large">{route_CarPromotionPage.tab[l]}</IonTitle>
+          </IonToolbar>
+          {/* -------- */}
+          <IonToolbar>
+            <IonSegment
+              value={segment}
+              onIonChange={(e) =>
+                setSegment(e.detail.value as enumCarPromotionSegments)
+              }
+            >
+              <IonSegmentButton value={enumCarPromotionSegments.all}>
+                <IonLabel>{text[l].segment__all}</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value={enumCarPromotionSegments.pinned}>
+                <IonLabel>{text[l].segment__pinned}</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value={enumCarPromotionSegments.archived}>
+                <IonLabel>{text[l].segment__archived}</IonLabel>
+              </IonSegmentButton>
+            </IonSegment>
           </IonToolbar>
         </IonHeader>
-        <IonContent fullscreen>
-          <IonHeader collapse="condense">
-            <IonToolbar>
-              <IonTitle size="large">{route_CarPromotionPage.tab[l]}</IonTitle>
-            </IonToolbar>
-            {/* -------- */}
-            <IonToolbar>
-              <IonSegment
-                value={segment}
-                onIonChange={(e) =>
-                  setSegment(e.detail.value as enumCarPromotionSegments)
-                }
-              >
-                <IonSegmentButton value={enumCarPromotionSegments.all}>
-                  <IonLabel>{text[l].segment__all}</IonLabel>
-                </IonSegmentButton>
-                <IonSegmentButton value={enumCarPromotionSegments.pinned}>
-                  <IonLabel>{text[l].segment__pinned}</IonLabel>
-                </IonSegmentButton>
-                <IonSegmentButton value={enumCarPromotionSegments.archived}>
-                  <IonLabel>{text[l].segment__archived}</IonLabel>
-                </IonSegmentButton>
-              </IonSegment>
-            </IonToolbar>
-          </IonHeader>
-          {/* ----------------- PAGE CONTENT ------------------*/}
-          <div className={styles.content + " ion-padding"}>
-            <CarPromotionList filter={segment} />
-          </div>
-          {/* ----------------- EXTRA UI ----------------------*/}
-        </IonContent>
-      </IonPage>
-    </CarPromotionContextProvider>
+        {/* ----------------- PAGE CONTENT ------------------*/}
+        <div className={styles.content + " ion-padding"}>
+          <CarPromotionList filter={segment} />
+        </div>
+        {/* ----------------- EXTRA UI ----------------------*/}
+      </IonContent>
+    </IonPage>
   );
 };
 

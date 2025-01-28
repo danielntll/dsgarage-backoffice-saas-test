@@ -53,12 +53,6 @@ const HomePage: React.FC<PageProps> = ({}) => {
           </IonToolbar>
         </IonHeader>
         {/* ----------------- PAGE CONTENT ------------------*/}
-
-        <GalleryHandler
-          selectedImages={selectedImages}
-          setSelectedImages={setSelectedImages}
-        />
-
         {/* ----------------- EXTRA UI ----------------------*/}
       </IonContent>
     </IonPage>
