@@ -79,7 +79,12 @@ const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
             >
               Archivia
             </IonItem>
-            <IonItem color={"danger"} button={true} detail={false}>
+            <IonItem
+              onClick={() => deleteData(data.uid!)}
+              color={"danger"}
+              button={true}
+              detail={false}
+            >
               Elimina
             </IonItem>
           </IonList>

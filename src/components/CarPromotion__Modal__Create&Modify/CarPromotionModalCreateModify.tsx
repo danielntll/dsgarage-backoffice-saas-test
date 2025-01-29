@@ -17,14 +17,14 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { SetStateAction, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CarDetails,
   CarInfo,
   CarPromotion,
 } from "../../types/typeCarPromotion";
 import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
-import { add, car, removeCircle, removeCircleOutline } from "ionicons/icons";
+import { add, removeCircleOutline } from "ionicons/icons";
 import GalleryHandler from "../Gallery__Handler/GalleryHandler";
 import { typeImage } from "../../types/typeImage";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
@@ -56,10 +56,13 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   const [imageDetails, setImageDetails] = useState<typeImageUploadData>({});
   //USE EFFECTS ----------------------
   useEffect(() => {
-    setFormIsValid(carInfo && carDetails && images.length > 0);
-  }, [carInfo, carDetails, images]);
+    setFormIsValid(
+      carInfo && carDetails && (images.length > 0 || imagesToUpload.length > 0)
+    );
+  }, [carInfo, carDetails, images, imagesToUpload]);
   //FUNCTIONS ------------------------
 
+  // ------ handleAddFeature
   const handleAddFeature = useCallback(() => {
     if (featureInput.trim() !== "") {
       setCarDetails((prevDetails) => ({
@@ -80,6 +83,7 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     [setCarDetails]
   );
 
+  // ------- handleFeatureInputChange
   const handleFeatureInputChange = useCallback(
     (event: any) => {
       setFeatureInput(event.target.value); // Update featureInput state
@@ -87,6 +91,7 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     [setFeatureInput]
   );
 
+  // -------- handleCarInfoChange
   const handleCarInfoChange = useCallback(
     (event: any) => {
       setCarInfo({
@@ -100,6 +105,7 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     [carInfo]
   );
 
+  // --------- handleCarDetailsChange
   const handleCarDetailsChange = useCallback(
     (event: any) => {
       setCarDetails({
@@ -110,28 +116,48 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     [carDetails]
   );
 
+  // --------- handleSubmit
   const handleSubmit = useCallback(async () => {
-    if (imagesToUpload !== null && imagesToUpload.length !== 0) {
-      await handleImagesUpload();
-    }
+    const imgs = await handleImagesUpload();
 
     const newCarPromotion: CarPromotion = {
       carInfo: carInfo,
       carDetails: carDetails,
-      images: images,
+      images: imgs != undefined ? imgs : images,
     };
-    console.log(newCarPromotion, " dati da caricare");
+
     try {
       await addData(newCarPromotion);
-      console.log(newCarPromotion, " dati caricati");
+
       callbackCloseModal();
+      resetAll();
     } catch (error) {
       console.error("Error adding car promotion:", error);
     }
   }, [callbackCloseModal, carInfo, carDetails, images, formIsValid]);
 
-  const handleImagesUpload = async () => {
-    if (imagesToUpload.length === 0) return;
+  // --------- resetAll
+  const resetAll = useCallback(() => {
+    setCarInfo({});
+    setCarDetails({ features: [] });
+    setFeatureInput("");
+    setImages([]);
+    setImagesToUpload([]);
+    setImageDetails({});
+    setFormIsValid(false);
+  }, [
+    setCarInfo,
+    setCarDetails,
+    setFeatureInput,
+    setImages,
+    setImagesToUpload,
+    setImageDetails,
+    setFormIsValid,
+  ]);
+
+  // --------- handleImagesUpload
+  const handleImagesUpload = async (): Promise<typeImage[] | undefined> => {
+    if (imagesToUpload.length === 0) return undefined;
     const images = await handleUploadImages(imagesToUpload, imageDetails);
 
     if (images) {
@@ -141,6 +167,9 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
       );
       setImagesToUpload([]);
       setImages(images);
+      return images;
+    } else {
+      return undefined;
     }
   };
   //RETURN COMPONENT -----------------

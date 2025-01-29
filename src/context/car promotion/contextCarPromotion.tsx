@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useContextLanguage } from "../contextLanguage";
 import { useAuthContext } from "../contextAuth";
 import { useContextToast } from "../systemEvents/contextToast";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { useDataContext } from "../contextData";
-import { serverTimestamp } from "firebase/firestore";
 import { typeHasError } from "../../types/typeHasError";
 import CarPromotionModalCreateModify from "../../components/CarPromotion__Modal__Create&Modify/CarPromotionModalCreateModify";
+import { typeFirebaseDataStructure } from "../../types/typeFirebaseDataStructure";
 
 type dataContext = {
   carPromotions: CarPromotion[];
@@ -90,16 +90,18 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   const addData = useCallback(async (data: CarPromotion) => {
     setIsLoading(true);
     try {
-      const docRef = await addDocument<CarPromotion>(DOC_PATH, {
-        ...data,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        byUserUID: authenticateUser!.uid,
-      });
-      setCarPromotions((prevPromotions) => [
-        ...prevPromotions,
-        { ...data, uid: docRef!.id },
-      ]);
+      const doc: (CarPromotion & typeFirebaseDataStructure) | undefined =
+        await addDocument<CarPromotion>(DOC_PATH, data);
+      if (doc !== undefined) {
+        setCarPromotions((prevPromotions) => [...prevPromotions, doc]);
+      } else {
+        setHasError({
+          message: {
+            en_GB: "Impossibile aggiungere i dati",
+            it_IT: "Impossibile aggiungere i dati",
+          },
+        });
+      }
     } catch (error) {
       console.error("Error fetching car promotions:", error);
       setHasError({

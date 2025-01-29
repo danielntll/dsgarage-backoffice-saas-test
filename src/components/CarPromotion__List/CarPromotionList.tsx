@@ -2,13 +2,7 @@ import styles from "./CarPromotionList.module.css";
 import { useContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
-import {
-  IonContent,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonPopover,
-} from "@ionic/react";
+import { IonItem, IonLabel, IonList } from "@ionic/react";
 import CarPromotionItem from "../CarPromotion__Item/CarPromotionItem";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { enumCarPromotionSegments } from "../../enum/enumCarPromotionSegments";
@@ -28,28 +22,30 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter }) => {
   }, []);
 
   useEffect(() => {
-    console.log("Filter");
-    filterPromotions();
+    console.log("1 --- ", carPromotions);
+    filterPromotions(carPromotions);
   }, [filter, carPromotions]);
+
   //USE STATES -----------------------
   const [filteredPromotions, setFilteredPromotions] =
     useState<CarPromotion[]>(carPromotions);
   //FUNCTIONS ------------------------
-  const filterPromotions = useCallback(() => {
+  const filterPromotions = (data: CarPromotion[]) => {
+    console.log("2 ---- ", data);
     let filteredPromotions: CarPromotion[] = [];
     switch (filter) {
       case enumCarPromotionSegments.all:
-        filteredPromotions = carPromotions.filter(
+        filteredPromotions = data.filter(
           (promotion: CarPromotion) => promotion.isArchived === false
         );
         break;
       case enumCarPromotionSegments.archived:
-        filteredPromotions = carPromotions.filter(
+        filteredPromotions = data.filter(
           (promotion: CarPromotion) => promotion.isArchived === true
         );
         break;
       case enumCarPromotionSegments.pinned:
-        filteredPromotions = carPromotions.filter(
+        filteredPromotions = data.filter(
           (promotion: CarPromotion) =>
             promotion.isPinned === true && promotion.isArchived === false
         );
@@ -58,8 +54,9 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter }) => {
         filteredPromotions = [];
         break;
     }
+    console.log("3 -----", filteredPromotions);
     setFilteredPromotions(filteredPromotions);
-  }, [filter, carPromotions]);
+  };
   //RETURN COMPONENT -----------------
   return (
     <>

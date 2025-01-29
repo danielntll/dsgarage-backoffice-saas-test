@@ -21,7 +21,6 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import { b } from "vitest/dist/reporters-5f784f42";
 import { typeFirebaseDataStructure } from "../types/typeFirebaseDataStructure";
 
 type dataContext = {
@@ -29,7 +28,7 @@ type dataContext = {
   addDocument: <T>(
     collectionPath: string,
     data: T
-  ) => Promise<DocumentReference<DocumentData, DocumentData> | undefined>;
+  ) => Promise<(T & typeFirebaseDataStructure) | undefined>;
   updateDocument: <T>(
     collectionPath: string,
     documentId: string,
@@ -59,9 +58,11 @@ export const DataContextProvider = ({ children }: any) => {
   // USE STATE -----------------------------
   // USE EFFECT ------------------------------
   // FUNCTIONS ------------------------------
+  // ---  getCollectionData
   async function getCollectionData<T>(
     collectionPath: string
   ): Promise<T[] | null> {
+    console.log("getCollectionData=", collectionPath);
     try {
       const dataCollection: CollectionReference<DocumentData, DocumentData> =
         collection(db, collectionPath);
@@ -70,20 +71,21 @@ export const DataContextProvider = ({ children }: any) => {
 
       const data: T[] = [];
       dataSnapshot.forEach((doc) => {
-        data.push(doc.data() as T);
+        data.push({ ...doc.data(), uid: doc.id } as T);
       });
-
+      console.log(data);
       return data;
     } catch (error) {
       console.error("Error getting collection data:", error);
       return null;
     }
   }
-
+  // ---  addDocument
   async function addDocument<T>(
     collectionPath: string,
     data: T
-  ): Promise<DocumentReference<DocumentData, DocumentData> | undefined> {
+  ): Promise<(T & typeFirebaseDataStructure) | undefined> {
+    console.log("addDocument=", collectionPath);
     try {
       const dataCollection: CollectionReference<DocumentData, DocumentData> =
         collection(db, collectionPath);
@@ -101,18 +103,24 @@ export const DataContextProvider = ({ children }: any) => {
           ...data,
           ...fbDataStructure,
         });
-      return docRef;
+      const fullData: T & typeFirebaseDataStructure = {
+        ...data,
+        ...fbDataStructure,
+        uid: docRef.id,
+      };
+      return fullData;
     } catch (error) {
       console.error("Error adding document:", error);
       return undefined;
     }
   }
-
+  // ---  updateDocument
   async function updateDocument<T>(
     collectionPath: string,
     documentId: string,
     data: Partial<T>
   ): Promise<void> {
+    console.log("updateDocument=", collectionPath);
     try {
       const documentRef: DocumentReference<DocumentData, DocumentData> = doc(
         db,
@@ -132,11 +140,12 @@ export const DataContextProvider = ({ children }: any) => {
       console.error("Error updating document:", error);
     }
   }
-
+  // ---  deleteDocument
   async function deleteDocument(
     collectionPath: string,
     documentId: string
   ): Promise<void> {
+    console.log("deleteDocument=", collectionPath);
     try {
       const documentRef: DocumentReference<DocumentData, DocumentData> = doc(
         db,
@@ -148,11 +157,12 @@ export const DataContextProvider = ({ children }: any) => {
       console.error("Error deleting document:", error);
     }
   }
-
+  // ---  uploadFile
   async function uploadFile(
     filePath: string,
     file: File
   ): Promise<string | null> {
+    console.log("uploadFile=", filePath);
     try {
       const storage = getStorage();
       const storageRef = ref(storage, filePath);
@@ -194,8 +204,9 @@ export const DataContextProvider = ({ children }: any) => {
       return null;
     }
   }
-
+  // ---  deleteFile
   async function deleteFile(filePath: string): Promise<void> {
+    console.log("deleteFile=", filePath);
     try {
       const storage = getStorage();
       const storageRef = ref(storage, filePath); // Create a reference to the file
