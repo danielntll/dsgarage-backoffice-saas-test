@@ -25,6 +25,7 @@ interface ContainerProps {
   setSelectedImages: React.Dispatch<React.SetStateAction<typeImage[]>>;
   imageDetails: typeImageUploadData;
   setImageDetails: React.Dispatch<React.SetStateAction<typeImageUploadData>>;
+  callbackReset: () => void;
 }
 
 const GalleryHandler: React.FC<ContainerProps> = ({
@@ -34,6 +35,7 @@ const GalleryHandler: React.FC<ContainerProps> = ({
   setImagesToUpload,
   imageDetails,
   setImageDetails,
+  callbackReset,
 }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
@@ -48,18 +50,21 @@ const GalleryHandler: React.FC<ContainerProps> = ({
   }, []);
   //FUNCTIONS ------------------------
   const handleToggleSelection = (image: typeImage) => {
-    /// Reset all data
-    if (selectedImages.includes(image)) {
-      setSelectedImages(selectedImages.filter((item) => item !== image));
+    if (
+      selectedImages.some(
+        (selectedImage: typeImage) => selectedImage.uid === image.uid
+      )
+    ) {
+      setSelectedImages(
+        selectedImages.filter((item: typeImage) => item.uid !== image.uid)
+      );
     } else {
       setSelectedImages([...selectedImages, image]);
     }
   };
 
   const handleSegmentChange = (event: enumImagesHandler) => {
-    setSelectedImages([]);
-    setImagesToUpload([]);
-    setImageDetails({});
+    callbackReset();
     setSegment(event);
   };
   //RETURN COMPONENT -----------------
@@ -88,27 +93,31 @@ const GalleryHandler: React.FC<ContainerProps> = ({
             {loading ? (
               <p>{text[l].loading}</p>
             ) : (
-              galleryData?.map((image: typeImage, index: number) => (
-                <div
-                  onClick={() => handleToggleSelection(image)}
-                  className={styles.imageItem}
-                  key={index}
-                >
-                  <div className={styles.chipContainer}>
-                    {selectedImages.includes(image) && (
-                      <IonBadge color={"success"}>
-                        <IonIcon icon={checkmark} />
-                        {text[l].selected}
-                      </IonBadge>
-                    )}
+              galleryData?.map((image: typeImage, index: number) => {
+                return (
+                  <div
+                    onClick={() => handleToggleSelection(image)}
+                    className={styles.imageItem}
+                    key={index}
+                  >
+                    <div className={styles.chipContainer}>
+                      {selectedImages.some(
+                        (selectedImage) => selectedImage.uid === image.uid
+                      ) && (
+                        <IonBadge color={"success"}>
+                          <IonIcon icon={checkmark} />
+                          {text[l].selected}
+                        </IonBadge>
+                      )}
+                    </div>
+                    <img
+                      className={styles.image}
+                      src={image.imageUrl}
+                      alt={`Image ${index + 1}`}
+                    />
                   </div>
-                  <img
-                    className={styles.image}
-                    src={image.imageUrl}
-                    alt={`Image ${index + 1}`}
-                  />
-                </div>
-              ))
+                );
+              })
             )}
           </div>
           <IonButton onClick={loadMoreData} expand="block" fill="clear">

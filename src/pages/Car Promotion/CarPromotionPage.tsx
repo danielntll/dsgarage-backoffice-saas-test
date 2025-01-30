@@ -5,6 +5,7 @@ import {
   IonLabel,
   IonMenuButton,
   IonPage,
+  IonSearchbar,
   IonSegment,
   IonSegmentButton,
   IonTitle,
@@ -17,7 +18,6 @@ import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { route_CarPromotionPage } from "../../routes/singleRoute";
 import AutoButtonCreate from "../../components/CarPromotion__Button__Create/CarPromotionButtonCreate";
-import { CarPromotionContextProvider } from "../../context/car promotion/contextCarPromotion";
 import CarPromotionList from "../../components/CarPromotion__List/CarPromotionList";
 import { enumCarPromotionSegments } from "../../enum/enumCarPromotionSegments";
 
@@ -30,6 +30,7 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
   const [segment, setSegment] = useState<enumCarPromotionSegments>(
     enumCarPromotionSegments.all
   );
+  const [searchTerm, setSearchTerm] = useState<string>("");
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
@@ -49,6 +50,13 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
         <IonHeader collapse="condense">
           <IonToolbar>
             <IonTitle size="large">{route_CarPromotionPage.tab[l]}</IonTitle>
+            <IonToolbar>
+              <IonSearchbar
+                placeholder="Cerca annuncio per modello"
+                value={searchTerm}
+                onIonInput={(e) => setSearchTerm(e.detail.value!)}
+              />
+            </IonToolbar>
           </IonToolbar>
           {/* -------- */}
           <IonToolbar>
@@ -72,7 +80,7 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
         </IonHeader>
         {/* ----------------- PAGE CONTENT ------------------*/}
         <div className={styles.content + " ion-padding"}>
-          <CarPromotionList filter={segment} />
+          <CarPromotionList searchTerm={searchTerm} filter={segment} />
         </div>
         {/* ----------------- EXTRA UI ----------------------*/}
       </IonContent>

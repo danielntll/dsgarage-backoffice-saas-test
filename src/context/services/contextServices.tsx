@@ -72,7 +72,6 @@ export const ServicesContextProvider = ({ children }: any) => {
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
   const handleUpdateService = (srvToUpdate: typeService) => {
-    console.log(srvToUpdate);
     if (srvToUpdate) {
       setServiceToUpdate(srvToUpdate);
       setShowModal(true);

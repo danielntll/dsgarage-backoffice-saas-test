@@ -3,6 +3,7 @@ import styles from "./CarPromotionItem.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
+  IonBadge,
   IonButton,
   IonContent,
   IonIcon,
@@ -13,7 +14,7 @@ import {
   IonThumbnail,
 } from "@ionic/react";
 import { CarPromotion } from "../../types/typeCarPromotion";
-import { ellipsisVertical } from "ionicons/icons";
+import { ellipsisVertical, star } from "ionicons/icons";
 import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
 
 interface ContainerProps {
@@ -23,7 +24,7 @@ interface ContainerProps {
 const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { updateIsArchived, updateIsPinned, deleteData } =
+  const { updateIsArchived, updateIsPinned, deleteData, handleUpdate } =
     useCarPromotionContext();
   //CONDITIONS -----------------------
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -42,7 +43,16 @@ const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
           <img src={data.images[0].imageUrl} alt="" />
         </IonThumbnail>
         <IonLabel>
-          <h3>Modello: {data.carInfo.model}</h3>
+          <h2 className={styles.title}>
+            Modello: {data.carInfo.model}
+            {data.isPinned && (
+              <IonIcon
+                color="primary"
+                className="ion-margin-start"
+                icon={star}
+              />
+            )}
+          </h2>
           <p>
             Km: {data.carInfo.km} - Prezzo: {data.carInfo.price} - Anno:{" "}
             {data.carInfo.year}
@@ -62,7 +72,11 @@ const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
       >
         <IonContent>
           <IonList>
-            <IonItem button={true} detail={false}>
+            <IonItem
+              onClick={() => handleUpdate(data.uid!)}
+              button={true}
+              detail={false}
+            >
               Modifica
             </IonItem>
             <IonItem

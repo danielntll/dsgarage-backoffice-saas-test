@@ -13,6 +13,7 @@ import {
   IonList,
   IonListHeader,
   IonModal,
+  IonSpinner,
   IonTextarea,
   IonTitle,
   IonToolbar,
@@ -33,33 +34,51 @@ import { typeImageUploadData } from "../../types/typeImageUploadData";
 interface ContainerProps {
   isModalOpen: boolean;
   callbackCloseModal: () => void;
+  elementToModify: CarPromotion | null;
 }
 
 const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   isModalOpen,
   callbackCloseModal,
+  elementToModify,
 }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
-  const { addData } = useCarPromotionContext();
+  const { addData, updateInfo } = useCarPromotionContext();
   const { handleUploadImages } = useGalleryContext();
   //USE STATES -----------------------
-  const [formIsValid, setFormIsValid] = useState(false);
-  const [carInfo, setCarInfo] = useState<CarInfo>({});
-  const [carDetails, setCarDetails] = useState<CarDetails>({
-    features: [],
-  });
+  const [formIsValid, setFormIsValid] = useState(elementToModify != null);
+  const [carInfo, setCarInfo] = useState<CarInfo>(
+    elementToModify?.carInfo ?? {}
+  );
+  const [carDetails, setCarDetails] = useState<CarDetails>(
+    elementToModify?.carDetails ?? {
+      features: [],
+    }
+  );
+  const [images, setImages] = useState<typeImage[]>(
+    elementToModify?.images ?? []
+  );
 
   const [featureInput, setFeatureInput] = useState(""); //State for the feature input
-  const [images, setImages] = useState<typeImage[]>([]);
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
   const [imageDetails, setImageDetails] = useState<typeImageUploadData>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   //USE EFFECTS ----------------------
   useEffect(() => {
     setFormIsValid(
       carInfo && carDetails && (images.length > 0 || imagesToUpload.length > 0)
     );
   }, [carInfo, carDetails, images, imagesToUpload]);
+
+  useEffect(() => {
+    if (elementToModify) {
+      setCarInfo(elementToModify.carInfo);
+      setCarDetails(elementToModify.carDetails);
+      setImages(elementToModify.images);
+      setFormIsValid(true);
+    }
+  }, [elementToModify]);
   //FUNCTIONS ------------------------
 
   // ------ handleAddFeature
@@ -118,6 +137,10 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
 
   // --------- handleSubmit
   const handleSubmit = useCallback(async () => {
+    setIsLoading(true);
+    // Delay di 2 secondi
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     const imgs = await handleImagesUpload();
 
     const newCarPromotion: CarPromotion = {
@@ -127,13 +150,17 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     };
 
     try {
-      await addData(newCarPromotion);
+      if (elementToModify) {
+        await updateInfo(elementToModify.uid!, newCarPromotion);
+      } else {
+        await addData(newCarPromotion);
+      }
 
-      callbackCloseModal();
-      resetAll();
+      closeModal();
     } catch (error) {
       console.error("Error adding car promotion:", error);
     }
+    setIsLoading(false);
   }, [callbackCloseModal, carInfo, carDetails, images, formIsValid]);
 
   // --------- resetAll
@@ -155,6 +182,12 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     setFormIsValid,
   ]);
 
+  const resetImages = () => {
+    setImages(elementToModify?.images ?? []);
+    setImagesToUpload([]);
+    setImageDetails({});
+  };
+
   // --------- handleImagesUpload
   const handleImagesUpload = async (): Promise<typeImage[] | undefined> => {
     if (imagesToUpload.length === 0) return undefined;
@@ -172,25 +205,39 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
       return undefined;
     }
   };
+
+  // ---------- closeModal
+  const closeModal = () => {
+    callbackCloseModal();
+    resetAll();
+  };
+
   //RETURN COMPONENT -----------------
   return (
-    <IonModal isOpen={isModalOpen} onDidDismiss={callbackCloseModal}>
+    <IonModal isOpen={isModalOpen} onDidDismiss={closeModal}>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonButton color={"medium"} onClick={callbackCloseModal}>
+            <IonButton color={"medium"} onClick={closeModal}>
               Chiudi
             </IonButton>
           </IonButtons>
-          <IonTitle>{text[l].componentTitle}</IonTitle>
+          <IonTitle>
+            {elementToModify != null
+              ? text[l].modify.title
+              : text[l].create.title}
+          </IonTitle>
           <IonButtons slot="end">
             <IonButton
               onClick={handleSubmit}
               type="submit"
               expand="block"
-              disabled={!formIsValid}
+              disabled={!formIsValid || isLoading}
             >
-              Crea
+              {isLoading && <IonSpinner />}
+              {elementToModify != null
+                ? text[l].modify.button
+                : text[l].create.button}
             </IonButton>
           </IonButtons>
         </IonToolbar>
@@ -320,11 +367,14 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
             </IonListHeader>
             <GalleryHandler
               selectedImages={images}
-              setSelectedImages={setImages}
+              setSelectedImages={(els) => {
+                setImages(els);
+              }}
               imagesToUpload={imagesToUpload}
               setImagesToUpload={setImagesToUpload}
               imageDetails={imageDetails}
               setImageDetails={setImageDetails}
+              callbackReset={resetImages}
             />
           </IonList>
         </form>

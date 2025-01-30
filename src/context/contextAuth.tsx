@@ -62,7 +62,6 @@ export const AuthContextProvider = () => {
       if (user) {
         if (user?.emailVerified) {
           setAuthenticateUser(user);
-          toast("success", textAuthContext[l].info_welcome_back);
           setIsModalVerifyEmailSend(false);
         } else {
           setIsModalVerifyEmailSend(true);

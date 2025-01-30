@@ -14,6 +14,7 @@ type dataContext = {
   isLoading: boolean;
   hasError: typeHasError | null;
   addData: (data: CarPromotion) => Promise<void>;
+  handleUpdate: (id: string) => void;
   updateInfo: (id: string, updatedData: Partial<CarPromotion>) => Promise<void>;
   updateIsArchived: (id: string, isArchived: boolean) => Promise<void>;
   updateIsPinned: (id: string, isPinned: boolean) => Promise<void>;
@@ -27,6 +28,7 @@ export const CarPromotionContext = React.createContext<dataContext>({
   isLoading: false,
   hasError: null,
   addData: async () => Promise.resolve(),
+  handleUpdate: async () => {},
   updateInfo: async () => Promise.resolve(),
   updateIsArchived: async () => Promise.resolve(),
   updateIsPinned: async () => Promise.resolve(),
@@ -52,6 +54,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasError, setHasError] = useState<typeHasError | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [elementToModify, setElementToModify] = useState<CarPromotion | null>(
+    null
+  );
   // USE EFFECT ------------------------------
   // FUNCTIONS ------------------------------
   // ---  initData
@@ -117,6 +122,13 @@ export const CarPromotionContextProvider = ({ children }: any) => {
       setIsLoading(false);
     }
   }, []);
+
+  const handleUpdate = (id: string) => {
+    setElementToModify(
+      carPromotions.find((promotion) => promotion.uid === id) ?? null
+    );
+    handleOpenModal();
+  };
 
   const updateInfo = useCallback(
     async (id: string, updatedData: Partial<CarPromotion>) => {
@@ -250,6 +262,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         hasError,
         carPromotions,
         addData,
+        handleUpdate,
         updateInfo,
         updateIsArchived,
         updateIsPinned,
@@ -262,7 +275,11 @@ export const CarPromotionContextProvider = ({ children }: any) => {
       {/* ----- EXTRA CONTENT ----- */}
       <CarPromotionModalCreateModify
         isModalOpen={isModalOpen}
-        callbackCloseModal={() => setIsModalOpen(false)}
+        callbackCloseModal={() => {
+          setIsModalOpen(false);
+          setElementToModify(null);
+        }}
+        elementToModify={elementToModify}
       />
     </CarPromotionContext.Provider>
   );

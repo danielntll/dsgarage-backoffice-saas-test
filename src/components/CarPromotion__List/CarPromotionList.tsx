@@ -6,32 +6,35 @@ import { IonItem, IonLabel, IonList } from "@ionic/react";
 import CarPromotionItem from "../CarPromotion__Item/CarPromotionItem";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { enumCarPromotionSegments } from "../../enum/enumCarPromotionSegments";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ContainerProps {
   filter: enumCarPromotionSegments;
+  searchTerm: string;
 }
 
-const CarPromotionList: React.FC<ContainerProps> = ({ filter }) => {
+const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
-  const { carPromotions, initData } = useCarPromotionContext();
+  const { carPromotions, initData, isLoading } = useCarPromotionContext();
   // USE EFFECTS----------------------
   useEffect(() => {
     initData();
   }, []);
 
   useEffect(() => {
-    console.log("1 --- ", carPromotions);
-    filterPromotions(carPromotions);
-  }, [filter, carPromotions]);
+    filterPromotions(
+      carPromotions.filter((item) =>
+        item.carInfo.model?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [filter, carPromotions, searchTerm]);
 
   //USE STATES -----------------------
   const [filteredPromotions, setFilteredPromotions] =
     useState<CarPromotion[]>(carPromotions);
   //FUNCTIONS ------------------------
   const filterPromotions = (data: CarPromotion[]) => {
-    console.log("2 ---- ", data);
     let filteredPromotions: CarPromotion[] = [];
     switch (filter) {
       case enumCarPromotionSegments.all:
@@ -54,14 +57,17 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter }) => {
         filteredPromotions = [];
         break;
     }
-    console.log("3 -----", filteredPromotions);
     setFilteredPromotions(filteredPromotions);
   };
   //RETURN COMPONENT -----------------
   return (
     <>
       <IonList inset>
-        {filteredPromotions.length === 0 ? (
+        {isLoading ? (
+          <IonItem>
+            <IonLabel color={"warning"}>{text[l].loading}</IonLabel>
+          </IonItem>
+        ) : filteredPromotions.length === 0 ? (
           <IonItem>
             <IonLabel>{text[l].empty}</IonLabel>
           </IonItem>

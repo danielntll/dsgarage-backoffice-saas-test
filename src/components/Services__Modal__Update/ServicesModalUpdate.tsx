@@ -44,7 +44,6 @@ const ServicesModalUpdate: React.FC<ContainerProps> = ({
   const [isValid, setIsValid] = useState(false);
   //FUNCTIONS ------------------------
   const handleInputChange = (e: any) => {
-    console.log("handleInputChange");
     const { name, value } = e.target;
     setUpdatedService((prevService) => ({ ...prevService, [name]: value }));
     setIsValid(

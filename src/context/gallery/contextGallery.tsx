@@ -290,7 +290,6 @@ export const GalleryContextProvider = ({ children }: any) => {
   };
 
   const fetchGalleryData = async () => {
-    console.log("LOADINGS");
     presentLoading({
       message: text[l].loading,
       duration: 3000,
