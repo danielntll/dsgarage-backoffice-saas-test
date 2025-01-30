@@ -7,6 +7,7 @@ import { useDataContext } from "../contextData";
 import { typeHasError } from "../../types/typeHasError";
 import CarPromotionModalCreateModify from "../../components/CarPromotion__Modal__Create&Modify/CarPromotionModalCreateModify";
 import { typeFirebaseDataStructure } from "../../types/typeFirebaseDataStructure";
+import { useIonAlert } from "@ionic/react";
 
 type dataContext = {
   carPromotions: CarPromotion[];
@@ -45,6 +46,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   const { toast } = useContextToast();
   const { getCollectionData, addDocument, updateDocument, deleteDocument } =
     useDataContext();
+  const [presentAlert] = useIonAlert();
   // USE STATE -----------------------------
   const [carPromotions, setCarPromotions] = useState<CarPromotion[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -196,24 +198,44 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   }, []);
 
   const deleteData = useCallback(async (id: string) => {
-    setIsLoading(true);
-    try {
-      await deleteDocument(DOC_PATH, id);
-      setCarPromotions((prevPromotions) =>
-        prevPromotions.filter((promotion) => promotion.uid !== id)
-      );
-    } catch (error) {
-      console.error("Error fetching car promotions:", error);
-      setHasError({
-        message: {
-          en_GB: "",
-          it_IT: "",
+    presentAlert({
+      header: "Attenzione",
+      subHeader: "Azione irreversibile",
+      message: "Sicuro di voler eliminare questo elemento in modo definitivo?",
+      buttons: [
+        {
+          text: "Annulla",
+          role: "cancel",
+          handler: () => {
+            console.log("Alert canceled");
+          },
         },
-      });
-      setIsLoading(false);
-    } finally {
-      setIsLoading(false);
-    }
+        {
+          text: "OK",
+          role: "confirm",
+          handler: async () => {
+            setIsLoading(true);
+            try {
+              await deleteDocument(DOC_PATH, id);
+              setCarPromotions((prevPromotions) =>
+                prevPromotions.filter((promotion) => promotion.uid !== id)
+              );
+            } catch (error) {
+              console.error("Error fetching car promotions:", error);
+              setHasError({
+                message: {
+                  en_GB: "",
+                  it_IT: "",
+                },
+              });
+              setIsLoading(false);
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        },
+      ],
+    });
   }, []);
 
   const handleOpenModal = () => {

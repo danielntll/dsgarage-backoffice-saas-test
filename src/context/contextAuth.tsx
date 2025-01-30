@@ -52,6 +52,9 @@ export const AuthContextProvider = () => {
     useState<boolean>(false);
   // USE EFFECTS -----------------------------
   useEffect(() => {
+    if (currentAuth != null || currentAuth != undefined) {
+      setIsLoading(false);
+    }
     onAuthStateChanged(auth, (user) => {
       setAuthenticateUser(user == null ? undefined : user);
       setCurrentAuth(auth);
@@ -70,7 +73,7 @@ export const AuthContextProvider = () => {
         history.replace("/");
       }
     });
-  }, []);
+  }, [currentAuth]);
   // FUNCTIONS ------------------------------
   const handleSendAgainVerification = async () => {
     try {
