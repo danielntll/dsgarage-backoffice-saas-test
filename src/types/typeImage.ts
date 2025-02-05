@@ -1,12 +1,11 @@
 import { Timestamp } from "firebase/firestore";
+import { typeFirebaseDataStructure } from "./typeFirebaseDataStructure";
 
-export type typeImage = {
+export interface typeImage extends typeFirebaseDataStructure {
   uid: string;
   alt: string;
-  isPinned?: boolean;
-  isVisible?: boolean;
   description?: string;
   createdAt: Timestamp;
   imageUrl: string;
   name: string;
-};
+}

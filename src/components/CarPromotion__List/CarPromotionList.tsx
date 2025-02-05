@@ -17,6 +17,9 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
   const { carPromotions, initData, isLoading } = useCarPromotionContext();
+  //USE STATES -----------------------
+  const [filteredPromotions, setFilteredPromotions] =
+    useState<CarPromotion[]>(carPromotions);
   // USE EFFECTS----------------------
   useEffect(() => {
     initData();
@@ -30,9 +33,6 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
     );
   }, [filter, carPromotions, searchTerm]);
 
-  //USE STATES -----------------------
-  const [filteredPromotions, setFilteredPromotions] =
-    useState<CarPromotion[]>(carPromotions);
   //FUNCTIONS ------------------------
   const filterPromotions = (data: CarPromotion[]) => {
     let filteredPromotions: CarPromotion[] = [];

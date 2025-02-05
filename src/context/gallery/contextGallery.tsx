@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { ContextLanguage } from "../contextLanguage";
 import { AuthContext } from "../contextAuth";
 import { ContextToast } from "../systemEvents/contextToast";
@@ -30,6 +30,7 @@ import { text } from "./text";
 import ImageOverlay from "../../components/Image__Overlay/ImageOverlay";
 import ImageModalModify from "../../components/Image__Modal__Modify/ImageModalModify";
 import { typeImageUploadData } from "../../types/typeImageUploadData";
+import { useDataContext } from "../contextData";
 
 type galleryContext = {
   galleryData: typeImage[] | null;
@@ -84,9 +85,12 @@ export const GalleryContextProvider = ({ children }: any) => {
   const { l } = useContext(ContextLanguage);
   const { authenticateUser } = useContext(AuthContext);
   const { toast } = useContext(ContextToast);
+  const { getCollectionData, addDocument, updateDocument, deleteDocument } =
+    useDataContext();
 
+  // USE STATE -----------------------------
   const [galleryData, setGalleryData] = useState<typeImage[] | null>(null);
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
 
   const [pinnedImages, setPinnedData] = useState<typeImage[]>([]);
@@ -101,7 +105,6 @@ export const GalleryContextProvider = ({ children }: any) => {
   const [editedImage, setEditedImage] = useState<typeImage | null>(null);
 
   const [currentPage, setCurrentPage] = useState<number>(2);
-  // -----------------------------
   // USE EFFECT ------------------------------
   // FUNCTIONS -----------------------------
   const initState = () => {

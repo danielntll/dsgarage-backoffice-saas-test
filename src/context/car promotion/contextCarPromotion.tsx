@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { useContextLanguage } from "../contextLanguage";
 import { useAuthContext } from "../contextAuth";
-import { useContextToast } from "../systemEvents/contextToast";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { useDataContext } from "../contextData";
 import { typeHasError } from "../../types/typeHasError";
@@ -43,9 +41,7 @@ export const useCarPromotionContext = () =>
 export const CarPromotionContextProvider = ({ children }: any) => {
   // VARIABLES ------------------------------
   const DOC_PATH = "carpromotions";
-  const { l } = useContextLanguage();
   const { authenticateUser } = useAuthContext();
-  const { toast } = useContextToast();
   const { getCollectionData, addDocument, updateDocument, deleteDocument } =
     useDataContext();
   const [presentAlert] = useIonAlert();
@@ -94,6 +90,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
 
+  /**
+   *
+   */
   const addData = useCallback(async (data: CarPromotion) => {
     setIsLoading(true);
     try {
@@ -123,6 +122,10 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     }
   }, []);
 
+  /**
+   *
+   * @param id
+   */
   const handleUpdate = (id: string) => {
     setElementToModify(
       carPromotions.find((promotion) => promotion.uid === id) ?? null
@@ -130,6 +133,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     handleOpenModal();
   };
 
+  /**
+   *
+   */
   const updateInfo = useCallback(
     async (id: string, updatedData: Partial<CarPromotion>) => {
       setIsLoading(true);
@@ -158,6 +164,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     []
   );
 
+  /**
+   *
+   */
   const updateIsArchived = useCallback(
     async (id: string, isArchived: boolean) => {
       setIsLoading(true);
@@ -186,6 +195,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     []
   );
 
+  /**
+   *
+   */
   const updateIsPinned = useCallback(async (id: string, isPinned: boolean) => {
     setIsLoading(true);
     try {
@@ -209,6 +221,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     }
   }, []);
 
+  /**
+   *
+   */
   const deleteData = useCallback(async (id: string) => {
     presentAlert({
       header: "Attenzione",
@@ -250,6 +265,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     });
   }, []);
 
+  /**
+   *
+   */
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
