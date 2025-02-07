@@ -23,6 +23,7 @@ import { useGalleryContext } from "../../context/gallery/contextGallery";
 import ImagesAll from "../../components/Images__All/ImagesAll";
 import ModalImagesUpload from "../../components/Modal__Images__Upload/ModalImagesUpload";
 import { enumPageGallerySegment } from "../../enum/enumPageGallerySegment";
+import GalleryList from "../../components/Gallery__List/GalleryList";
 
 interface PageProps {}
 
@@ -93,7 +94,7 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
         </IonHeader>
         {/* ----------------- PAGE CONTENT ------------------*/}
         <div className={styles.content}>
-          <ImagesAll filter={segment} searchTerm={searchTerm} />
+          <GalleryList searchTerm={searchTerm} filter={segment} />
         </div>
         {/* ----------------- EXTRA UI ----------------------*/}
         <ModalImagesUpload

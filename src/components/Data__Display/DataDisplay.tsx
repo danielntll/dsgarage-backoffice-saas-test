@@ -53,7 +53,6 @@ const DataDisplay: React.FC<ContainerProps> = ({ event, data, type }) => {
             : dateB.getTime() - dateA.getTime();
         })
       );
-    console.log(data);
   }, [data, sortBy, sortOrder]);
   //FUNCTIONS ------------------------
   const handleFilterButtonClick = (e: any) => {

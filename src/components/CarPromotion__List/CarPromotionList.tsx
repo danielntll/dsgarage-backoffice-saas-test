@@ -2,11 +2,13 @@ import styles from "./CarPromotionList.module.css";
 import { useContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
-import { IonItem, IonLabel, IonList } from "@ionic/react";
+import { IonList } from "@ionic/react";
 import CarPromotionItem from "../CarPromotion__Item/CarPromotionItem";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { enumCarPromotionSegments } from "../../enum/enumCarPromotionSegments";
 import { useEffect, useState } from "react";
+import ItemLoading from "../Item__Loading/ItemLoading";
+import ItemEmpty from "../Item__Empty/ItemEmpty";
 
 interface ContainerProps {
   filter: enumCarPromotionSegments;
@@ -64,20 +66,15 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
     <>
       <IonList inset>
         {isLoading ? (
-          <IonItem>
-            <IonLabel color={"warning"}>{text[l].loading}</IonLabel>
-          </IonItem>
+          <ItemLoading />
         ) : filteredPromotions.length === 0 ? (
-          <IonItem>
-            <IonLabel>{text[l].empty}</IonLabel>
-          </IonItem>
+          <ItemEmpty />
         ) : (
           filteredPromotions.map((car: CarPromotion, index: number) => {
             return <CarPromotionItem data={car} key={index} />;
           })
         )}
       </IonList>
-      {/* ------------ */}
     </>
   );
 };

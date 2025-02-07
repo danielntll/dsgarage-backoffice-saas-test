@@ -2,15 +2,18 @@ import React, { useCallback, useState } from "react";
 import { useAuthContext } from "../contextAuth";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { useDataContext } from "../contextData";
-import { typeHasError } from "../../types/typeHasError";
 import CarPromotionModalCreateModify from "../../components/CarPromotion__Modal__Create&Modify/CarPromotionModalCreateModify";
 import { typeFirebaseDataStructure } from "../../types/typeFirebaseDataStructure";
 import { useIonAlert } from "@ionic/react";
+import { typeContextStatus } from "../../types/typeContextStatus";
+import { text } from "ionicons/icons";
+import { textDataManaging } from "../../text/textDataManaging";
+import { useContextLanguage } from "../contextLanguage";
+import { getStatusFetch } from "../../utils/getStatusFetch";
 
 type dataContext = {
   carPromotions: CarPromotion[];
-  isLoading: boolean;
-  hasError: typeHasError | null;
+  statusFetch: typeContextStatus;
   addData: (data: CarPromotion) => Promise<void>;
   handleUpdate: (id: string) => void;
   updateInfo: (id: string, updatedData: Partial<CarPromotion>) => Promise<void>;
@@ -23,8 +26,7 @@ type dataContext = {
 
 export const CarPromotionContext = React.createContext<dataContext>({
   carPromotions: [],
-  isLoading: false,
-  hasError: null,
+  statusFetch: { status: "loading", message: "" },
   addData: async () => Promise.resolve(),
   handleUpdate: async () => {},
   updateInfo: async () => Promise.resolve(),
@@ -41,14 +43,16 @@ export const useCarPromotionContext = () =>
 export const CarPromotionContextProvider = ({ children }: any) => {
   // VARIABLES ------------------------------
   const DOC_PATH = "carpromotions";
+  const { l } = useContextLanguage();
   const { authenticateUser } = useAuthContext();
   const { getCollectionData, addDocument, updateDocument, deleteDocument } =
     useDataContext();
   const [presentAlert] = useIonAlert();
   // USE STATE -----------------------------
   const [carPromotions, setCarPromotions] = useState<CarPromotion[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [hasError, setHasError] = useState<typeHasError | null>(null);
+  const [statusFetch, setStatusFetch] = useState<typeContextStatus>(
+    getStatusFetch("loading", "fetch", l)
+  );
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [elementToModify, setElementToModify] = useState<CarPromotion | null>(
     null
@@ -61,7 +65,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    */
   const initData = useCallback(async () => {
     if (authenticateUser !== null) {
-      setIsLoading(true);
+      setStatusFetch(true);
       try {
         const data: CarPromotion[] | null =
           await getCollectionData<CarPromotion>(DOC_PATH);
@@ -276,8 +280,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   return (
     <CarPromotionContext.Provider
       value={{
-        isLoading,
-        hasError,
+        statusFetch,
         carPromotions,
         addData,
         handleUpdate,

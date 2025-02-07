@@ -231,7 +231,6 @@ export const GalleryContextProvider = ({ children }: any) => {
                   imageUrl: downloadURL,
                   alt: image.alt,
                   description: image.description,
-                  isVisible: true,
                   isPinned: false,
                   name: image.file.name,
                   createdAt: Timestamp.now(),

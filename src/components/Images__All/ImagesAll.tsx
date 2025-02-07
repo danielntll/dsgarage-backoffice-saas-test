@@ -7,7 +7,6 @@ import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { downloadOutline } from "ionicons/icons";
 import { enumPageGallerySegment } from "../../enum/enumPageGallerySegment";
 import DataDisplay from "../Data__Display/DataDisplay";
-import { enumEventData } from "../../enum/enumEventData";
 
 interface ContainerProps {
   searchTerm: string;
@@ -29,11 +28,7 @@ const ImagesAll: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
   //RETURN COMPONENT -----------------
   return (
     <>
-      <DataDisplay
-        
-        data={galleryData}
-        type={"image"}
-      />
+      <DataDisplay event="" data={galleryData} type={"image"} />
       <div className="ion-padding-horizontal">
         <IonButton onClick={loadMoreData} disabled={loading} expand="block">
           <IonIcon icon={downloadOutline} className="ion-margin-end" />
