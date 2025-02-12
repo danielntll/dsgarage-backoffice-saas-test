@@ -16,24 +16,24 @@ interface ContainerProps {
 const ImagesAll: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
   // VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { initState, galleryData, loading, error, loadMoreData } =
-    useGalleryContext();
+  // const { initState, galleryData, loading, error, loadMoreData } =
+  //   useGalleryContext();
 
   // USE STATES -----------------------
   // USE EFFECTS----------------------
-  useEffect(() => {
-    initState();
-  }, []);
+  // useEffect(() => {
+  //   initState();
+  // }, []);
   // FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
     <>
-      <DataDisplay event="" data={galleryData} type={"image"} />
+      {/* <DataDisplay event="" data={galleryData} type={"image"} /> */}
       <div className="ion-padding-horizontal">
-        <IonButton onClick={loadMoreData} disabled={loading} expand="block">
+        {/* <IonButton onClick={loadMoreData} disabled={loading} expand="block">
           <IonIcon icon={downloadOutline} className="ion-margin-end" />
           {loading ? text[l].loading__images : text[l].btn__load__more}
-        </IonButton>
+        </IonButton> */}
       </div>
     </>
   );

@@ -1,14 +1,10 @@
-import styles from "./CarPromotionList.module.css";
-import { useContextLanguage } from "../../context/contextLanguage";
-import { text } from "./text";
 import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
 import { IonList } from "@ionic/react";
 import CarPromotionItem from "../CarPromotion__Item/CarPromotionItem";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { enumCarPromotionSegments } from "../../enum/enumCarPromotionSegments";
 import { useEffect, useState } from "react";
-import ItemLoading from "../Item__Loading/ItemLoading";
-import ItemEmpty from "../Item__Empty/ItemEmpty";
+import StatusData from "../Status__Data/StatusData";
 
 interface ContainerProps {
   filter: enumCarPromotionSegments;
@@ -17,8 +13,7 @@ interface ContainerProps {
 
 const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //VARIABLES ------------------------
-  const { l } = useContextLanguage();
-  const { carPromotions, initData, isLoading } = useCarPromotionContext();
+  const { carPromotions, initData, statusFetch } = useCarPromotionContext();
   //USE STATES -----------------------
   const [filteredPromotions, setFilteredPromotions] =
     useState<CarPromotion[]>(carPromotions);
@@ -65,15 +60,11 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   return (
     <>
       <IonList inset>
-        {isLoading ? (
-          <ItemLoading />
-        ) : filteredPromotions.length === 0 ? (
-          <ItemEmpty />
-        ) : (
-          filteredPromotions.map((car: CarPromotion, index: number) => {
+        <StatusData status={statusFetch} dataLength={filteredPromotions.length}>
+          {filteredPromotions.map((car: CarPromotion, index: number) => {
             return <CarPromotionItem data={car} key={index} />;
-          })
-        )}
+          })}
+        </StatusData>
       </IonList>
     </>
   );

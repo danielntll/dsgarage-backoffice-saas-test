@@ -15,12 +15,9 @@ import {
 import { text } from "./text";
 
 import styles from "./Gallery.module.css";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { route_GalleryPage } from "../../routes/singleRoute";
-import PinnedImages from "../../components/PinnedImages/PinnedImages";
-import { useGalleryContext } from "../../context/gallery/contextGallery";
-import ImagesAll from "../../components/Images__All/ImagesAll";
 import ModalImagesUpload from "../../components/Modal__Images__Upload/ModalImagesUpload";
 import { enumPageGallerySegment } from "../../enum/enumPageGallerySegment";
 import GalleryList from "../../components/Gallery__List/GalleryList";

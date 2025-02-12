@@ -27,7 +27,7 @@ const ModalImagesUpload: React.FC<ContainerProps> = ({
 }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { handleUploadImages } = useGalleryContext();
+  // const { handleUploadImages } = useGalleryContext();
   //CONDITIONS -----------------------
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
   const [imageDetails, setImageDetails] = useState<typeImageUploadData>({});
@@ -35,20 +35,20 @@ const ModalImagesUpload: React.FC<ContainerProps> = ({
   //FUNCTIONS ------------------------
   const handleImagesUpload = async () => {
     if (imagesToUpload.length === 0) return;
-    handleUploadImages(imagesToUpload, imageDetails).then(
-      (uploadSuccessful) => {
-        // Use the returned value
-        if (uploadSuccessful) {
-          // Check if upload was successful
-          imagesToUpload.forEach((image) =>
-            URL.revokeObjectURL(URL.createObjectURL(image))
-          );
-          setIsModalOpen(false);
-          setImagesToUpload([]);
-          setImageDetails({});
-        }
-      }
-    );
+    // handleUploadImages(imagesToUpload, imageDetails).then(
+    //   (uploadSuccessful) => {
+    //     // Use the returned value
+    //     if (uploadSuccessful) {
+    //       // Check if upload was successful
+    //       imagesToUpload.forEach((image) =>
+    //         URL.revokeObjectURL(URL.createObjectURL(image))
+    //       );
+    //       setIsModalOpen(false);
+    //       setImagesToUpload([]);
+    //       setImageDetails({});
+    //     }
+    //   }
+    // );
   };
   //RETURN COMPONENT -----------------
 

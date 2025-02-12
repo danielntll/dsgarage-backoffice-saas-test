@@ -30,14 +30,15 @@ const ImageItem: React.FC<ContainerProps> = ({ image }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
   const {
-    handleShowImageOverlay,
-    handleDeleteImage,
-    handleEditClick,
-    togglePinImage,
-    toggleVisibilityImage,
+    // handleShowImageOverlay,
+    // handleDeleteImage,
+    // handleEditClick,
+    // togglePinImage,
+    // toggleVisibilityImage,
   } = useGalleryContext();
   //CONDITIONS -----------------------
   //FUNCTIONS ------------------------
+
   //RETURN COMPONENT -----------------
   return (
     <IonItemSliding>

@@ -9,6 +9,7 @@ import { enumPageGallerySegment } from "../../enum/enumPageGallerySegment";
 import { useEffect, useState } from "react";
 import ItemLoading from "../Item__Loading/ItemLoading";
 import ItemEmpty from "../Item__Empty/ItemEmpty";
+import StatusData from "../Status__Data/StatusData";
 
 interface ContainerProps {
   searchTerm: string;
@@ -18,35 +19,56 @@ interface ContainerProps {
 const GalleryList: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
-  const { galleryData, loading: isLoading } = useGalleryContext();
+  const { galleryData, initData, statusFetch } = useGalleryContext();
   //USE STATES -----------------------
-  const [filteredData, setFilteredData] = useState<typeImage[] | null>(
-    galleryData
-  );
+  const [filteredData, setFilteredData] = useState<typeImage[]>(galleryData);
   //USE EFFECTS ----------------------
   useEffect(() => {
-    if (galleryData !== null) {
-      setFilteredData(
-        galleryData.filter((item) =>
-          item.alt?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    }
+    initData();
+  }, []);
+
+  useEffect(() => {
+    filterData(
+      galleryData.filter((item) =>
+        item.alt?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
   }, [filter, galleryData, searchTerm]);
   //FUNCTIONS ------------------------
+  const filterData = (data: typeImage[]) => {
+    let filteredData: typeImage[] = [];
+    switch (filter) {
+      case enumPageGallerySegment.all:
+        filteredData = data.filter(
+          (promotion: typeImage) => promotion.isArchived === false
+        );
+        break;
+      case enumPageGallerySegment.archived:
+        filteredData = data.filter(
+          (promotion: typeImage) => promotion.isArchived === true
+        );
+        break;
+      case enumPageGallerySegment.pinned:
+        filteredData = data.filter(
+          (promotion: typeImage) =>
+            promotion.isPinned === true && promotion.isArchived === false
+        );
+        break;
+      default:
+        filteredData = [];
+        break;
+    }
+    setFilteredData(filteredData);
+  };
   //RETURN COMPONENT -----------------
   return (
     <>
       <IonList inset>
-        {isLoading ? (
-          <ItemLoading />
-        ) : filteredData?.length === 0 ? (
-          <ItemEmpty />
-        ) : (
-          filteredData?.map((data: typeImage, index: number) => {
+        <StatusData status={statusFetch} dataLength={filteredData.length}>
+          {filteredData?.map((data: typeImage, index: number) => {
             return <ImageItem image={data} key={index} />;
-          })
-        )}
+          })}
+        </StatusData>
       </IonList>
     </>
   );
