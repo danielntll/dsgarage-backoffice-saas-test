@@ -14,12 +14,17 @@ import { typeFirebaseDataStructure } from "../../types/typeFirebaseDataStructure
 import { typeImageUploadData } from "../../types/typeImageUploadData";
 
 type galleryContext = {
-  galleryData: typeImage[];
   initData: () => void;
   addData: (
     imagesToUpload: File[],
     imageDetails: typeImageUploadData
   ) => Promise<void>;
+  handleShowImageOverlay: (image: typeImage) => void;
+  handleDeleteImage: (image: typeImage) => void;
+  handleEditImage: (image: typeImage) => void;
+  handleTogglePinImage: (image: typeImage) => Promise<void>;
+  handleToggleArchiveImage: (image: typeImage) => Promise<void>;
+  galleryData: typeImage[];
   statusFetch: typeContextStatus | null;
   statusUpload: typeContextStatus | null;
   statusUpdate: typeContextStatus | null;
@@ -27,9 +32,14 @@ type galleryContext = {
 };
 
 export const GalleryContext = React.createContext<galleryContext>({
-  galleryData: [],
   initData: () => {},
   addData: async () => Promise.resolve(),
+  handleShowImageOverlay: () => {},
+  handleDeleteImage: () => {},
+  handleEditImage: () => {},
+  handleTogglePinImage: async () => Promise.resolve(),
+  handleToggleArchiveImage: async () => Promise.resolve(),
+  galleryData: [],
   statusFetch: { status: "loading", message: "" },
   statusUpload: { status: "success", message: "" },
   statusUpdate: { status: "success", message: "" },
@@ -50,6 +60,7 @@ export const GalleryContextProvider = ({ children }: any) => {
     updateDocument,
     deleteDocument,
     uploadFile,
+    deleteFile,
   } = useDataContext();
   const { toast } = useContext(ContextToast);
   const [presentAlert] = useIonAlert();
@@ -104,7 +115,7 @@ export const GalleryContextProvider = ({ children }: any) => {
         getStatusFetch("error", "fetch", l, "Utente non autenticato.")
       );
     }
-  }, [authenticateUser]);
+  }, [authenticateUser, l]);
 
   /**
    *
@@ -176,394 +187,158 @@ export const GalleryContextProvider = ({ children }: any) => {
         toast("danger", "Error uploading images");
       }
     },
-    []
+    [l]
   );
 
-  // const initState = () => {
-  //   if (authenticateUser !== undefined && galleryData === null) {
-  //     fetchGalleryData();
-  //     fetchPinnedImages();
-  //   }
-  // };
+  /**
+   * Alert di avviso per l'eliminazione del file.
+   *
+   * @param image
+   */
+  const handleDeleteImage = async (image: typeImage) => {
+    presentAlert({
+      header: text[l].alertDeleteTitle,
+      message: text[l].alertDeleteMessage,
+      buttons: [
+        { text: text[l].alertDeleteCancel, role: "cancel" },
+        {
+          text: text[l].alertDeleteConfirm,
+          role: "confirm",
+          handler: async () => {
+            await _deleteImage(image);
+          },
+        },
+      ],
+    });
+  };
 
-  // const handleEditClick = (image: typeImage) => {
-  //   setEditedImage(image);
-  //   setShowModalEdit(true);
-  // };
+  /**
+   * Esecuzione di eliminazione file e documento.
+   *
+   * @param image
+   */
+  const _deleteImage = async (image: typeImage) => {
+    presentLoading({ message: text[l].loading });
+    try {
+      // Delete from Storage first to avoid potential issues if Firestore deletion fails
+      await deleteFile(`gallery/${image.name}`);
 
-  // const handleShowImageOverlay = (image: typeImage) => {
-  //   setOverlayImage(image);
-  //   setShowOverlay(true);
-  // };
+      // Delete from Firestore
+      await deleteDocument(DOC_PATH, image.uid!);
 
-  // const closeOverlay = () => {
-  //   setShowOverlay(false);
-  //   setOverlayImage(null);
-  // };
+      // Update local state
+      setGalleryData((prevData) =>
+        prevData.filter((item) => item.uid !== image.uid)
+      );
+      toast("success", "Image deleted successfully");
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      toast("danger", "Error deleting image. Please try again later.");
+    } finally {
+      dismissLoading();
+    }
+  };
 
-  // const handleDeleteImage = async (image: typeImage) => {
-  //   presentAlert({
-  //     header: text[l].alertDeleteTitle,
-  //     message: text[l].alertDeleteMessage,
-  //     buttons: [
-  //       {
-  //         text: text[l].alertDeleteCancel,
-  //         role: "cancel",
-  //       },
-  //       {
-  //         text: text[l].alertDeleteConfirm,
-  //         role: "confirm",
-  //         handler: async () => {
-  //           await _deleteImage(image); // Call the deleteImage function here
-  //         },
-  //       },
-  //     ],
-  //   });
-  // };
+  /**
+   * Apre il modale di modifica immagine
+   * @param image
+   */
+  const handleEditImage = (image: typeImage) => {
+    setEditedImage(image);
+    setShowModalEdit(true);
+  };
 
-  // const _deleteImage = async (image: typeImage) => {
-  //   presentLoading({
-  //     message: text[l].loading,
-  //   });
-  //   try {
-  //     // 2. Delete from Firestore
-  //     const imageRef = doc(db, "gallery", image.uid);
-  //     await deleteDoc(imageRef);
+  /**
+   *
+   */
+  const handleSaveEdit = useCallback(
+    async (updatedImage: typeImage): Promise<boolean> => {
+      try {
+        setStatusUpdate(getStatusFetch("loading", "update", l));
+        await updateDocument(DOC_PATH, updatedImage.uid!, updatedImage);
+        setGalleryData((prevData) =>
+          prevData.map((item) =>
+            item.uid === updatedImage.uid ? updatedImage : item
+          )
+        );
+        setStatusUpdate(getStatusFetch("success", "update", l));
+        toast("success", "Immagine aggiornata correttamente");
+        setShowModalEdit(false);
+        return true;
+      } catch (error) {
+        console.error("Error updating image:", error);
+        setStatusUpdate(getStatusFetch("error", "update", l));
+        toast("danger", "Errore durante l'aggiornamento dell'immagine");
+        return false;
+      }
+    },
+    [l]
+  );
 
-  //     // 3. Update local state (Important: Update state *after* successful deletion)
-  //     setGalleryData((prevData) =>
-  //       prevData!.filter((item) => item.uid !== image.uid)
-  //     );
-  //   } catch (error) {
-  //     console.error("Error deleting image:", error);
-  //     toast("danger", "Error deleting image");
-  //   }
-  //   try {
-  //     // 1. Delete from Storage
-  //     const storagePath = `gallery/${image.name}`;
-  //     const storageRef = ref(storage, storagePath);
-  //     await deleteObject(storageRef);
+  /**
+   * Chiude l'immagine in full screen
+   * e resetta la variabile
+   */
+  const hanldeCloseOverlay = () => {
+    setShowOverlay(false);
+    setOverlayImage(null);
+  };
 
-  //     // 3. Update local state (Important: Update state *after* successful deletion)
-  //     setGalleryData((prevData) =>
-  //       prevData!.filter((item) => item.uid !== image.uid)
-  //     );
-  //     toast("success", "Image deleted successfully");
-  //   } catch (error) {
-  //     console.error("Error deleting image:", error);
-  //     toast("danger", "Error deleting image");
-  //   }
-  //   dismissLoading();
-  // };
+  /**
+   * Apre l'immagine selezionata in full screen
+   *
+   * @param image typeImage: l'immagine da aprire
+   */
+  const handleShowImageOverlay = (image: typeImage) => {
+    setOverlayImage(image);
+    setShowOverlay(true);
+  };
 
-  // async function handleUploadImages(
-  //   _imagesToUpload: File[],
-  //   _imageDetails: typeImageUploadData
-  // ) {
-  //   if (!_imagesToUpload || _imagesToUpload.length === 0) {
-  //     toast("danger", "No images selected");
-  //     return null;
-  //   }
-  //   const imagesToUpload: typeImageToUpload[] = _imagesToUpload.map(
-  //     (image, index) => ({
-  //       file: image,
-  //       alt: _imageDetails[index]?.alt || image.name.split(".")[0],
-  //       description: _imageDetails[index]?.description || "",
-  //     })
-  //   );
-  //   presentLoading({
-  //     message: text[l].loading,
-  //   });
-  //   try {
-  //     const uploadPromises = imagesToUpload.map(
-  //       async (image: typeImageToUpload) => {
-  //         const storageRef = ref(storage, `/gallery/${image.file.name}`);
-  //         const uploadTask = uploadBytesResumable(storageRef, image.file);
+  /**
+   * Gestisce il toggle del pin di un'immagine.
+   * @param image L'immagine da aggiornare.
+   */
+  const handleTogglePinImage = useCallback(async (image: typeImage) => {
+    try {
+      const updatedImage = { ...image, isPinned: !image.isPinned };
+      await updateDocument(DOC_PATH, image.uid!, updatedImage);
+      setGalleryData((prevData) =>
+        prevData.map((item) => (item.uid === image.uid ? updatedImage : item))
+      );
+      toast(
+        "success",
+        `Immagine ${
+          updatedImage.isPinned ? "aggiunta" : "rimossa"
+        } dai preferiti`
+      );
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+      toast("danger", "Errore durante l'aggiornamento dei preferiti");
+    }
+  }, []);
 
-  //         return new Promise<typeImage>((resolve, reject) => {
-  //           uploadTask.on(
-  //             "state_changed",
-  //             (snapshot) => {},
-  //             (error) => {
-  //               console.error("Upload failed:", error);
-  //               toast("danger", "Upload failed");
-  //               reject(error); // Reject the promise if upload fails
-  //             },
-  //             async () => {
-  //               const downloadURL = await getDownloadURL(
-  //                 uploadTask.snapshot.ref
-  //               );
-  //               const newImage: typeImage = {
-  //                 imageUrl: downloadURL,
-  //                 alt: image.alt,
-  //                 description: image.description,
-  //                 isPinned: false,
-  //                 name: image.file.name,
-  //                 createdAt: Timestamp.now(),
-  //                 uid: "",
-  //               };
-
-  //               const docRef = await addDoc(
-  //                 collection(db, "gallery"),
-  //                 newImage
-  //               );
-  //               newImage.uid = docRef.id;
-
-  //               resolve(newImage); // Resolve with the image data
-  //             }
-  //           );
-  //         });
-  //       }
-  //     );
-
-  //     const uploadedImages = await Promise.all(uploadPromises);
-
-  //     toast("success", "Images uploaded successfully");
-
-  //     // Update local state directly after successful uploads
-  //     setGalleryData((prevData) => [...prevData!, ...uploadedImages]);
-
-  //     // Update pinned images if any new image is pinned
-  //     const newPinnedImages = uploadedImages.filter((image) => image.isPinned);
-  //     if (newPinnedImages.length > 0) {
-  //       setPinnedData((prevData) => [...prevData, ...newPinnedImages]);
-  //     }
-  //     dismissLoading();
-  //     return uploadedImages;
-  //   } catch (error) {
-  //     dismissLoading();
-  //     console.error("Error uploading images:", error);
-  //     return null;
-  //   }
-  // }
-
-  // const fetchPinnedImages = async () => {
-  //   try {
-  //     const pinnedImagesRef = collection(db, "gallery");
-  //     const q = query(pinnedImagesRef, where("isPinned", "==", true)); // Query for pinned images only
-  //     const pinnedImagesSnapshot = await getDocs(q);
-
-  //     const pinnedImagesList: typeImage[] = [];
-  //     pinnedImagesSnapshot.docs.forEach((doc) => {
-  //       const data = doc.data() as typeImage; // Type assertion for safety
-  //       data.uid = doc.id;
-  //       pinnedImagesList.push(data);
-  //     });
-
-  //     setPinnedData(pinnedImagesList);
-  //   } catch (error) {
-  //     console.error("Error fetching pinned images:", error);
-  //     toast("danger", "Error loading pinned images"); // Assuming you have a toast function
-  //   }
-  // };
-
-  // const fetchGalleryData = async () => {
-  //   presentLoading({
-  //     message: text[l].loading,
-  //     duration: 3000,
-  //   });
-  //   try {
-  //     setLoading(true);
-
-  //     const galleryRef = collection(db, "gallery");
-  //     let q = query(galleryRef, orderBy("createdAt"));
-
-  //     if (currentPage > 1 && galleryData !== null && galleryData.length > 0) {
-  //       const lastVisible = galleryData![galleryData!.length - 1];
-  //       q = query(q, startAfter(lastVisible.createdAt));
-  //     }
-
-  //     q = query(q, limit(perPage));
-
-  //     const gallerySnapshot = await getDocs(q);
-
-  //     const newData = gallerySnapshot.docs.map((doc) => ({
-  //       ...doc.data(),
-  //       uid: doc.id,
-  //     })) as typeImage[];
-
-  //     const allGalleryData =
-  //       currentPage === 1 ? newData : [...(galleryData ?? []), ...newData];
-  //     setGalleryData(allGalleryData);
-
-  //     const allPinnedImages = allGalleryData.filter((item) => item.isPinned);
-  //     setPinnedData(allPinnedImages);
-  //     dismissLoading();
-  //     newData.length === 0 &&
-  //       toast("success", "Hai scaricato tutte le immagini");
-  //   } catch (err) {
-  //     dismissLoading();
-  //     setError(err);
-  //     console.error("Error fetching gallery data:", err);
-  //     toast("danger", "Error loading gallery data");
-  //   } finally {
-  //     dismissLoading();
-  //     setLoading(false);
-  //   }
-  //   dismissLoading();
-  // };
-
-  // const togglePinImage = async (image: typeImage) => {
-  //   try {
-  //     const imageRef = doc(db, "gallery", image.uid);
-  //     if (!image.isPinned) {
-  //       // If NOT pinned already
-  //       await updateDoc(imageRef, {
-  //         isPinned: true,
-  //         isVisible: true,
-  //       });
-
-  //       // Update local state after successful backend update
-  //       setGalleryData((prevData) =>
-  //         prevData!.map((item) =>
-  //           item.uid === image.uid
-  //             ? { ...item, isPinned: true, isVisible: true }
-  //             : item
-  //         )
-  //       );
-  //       setPinnedData((prevData) =>
-  //         prevData
-  //           ? [...prevData, { ...image, isPinned: true, isVisible: true }]
-  //           : [{ ...image, isPinned: true, isVisible: true }]
-  //       );
-  //       toast("success", "Immagine aggiunta");
-  //     } else {
-  //       // If already pinned
-  //       await updateDoc(imageRef, {
-  //         isPinned: false,
-  //       });
-
-  //       // Update local state: remove from pinnedImages, update isPinned in galleryData
-  //       setPinnedData((prevData) =>
-  //         prevData.filter((item) => item.uid !== image.uid)
-  //       );
-  //       setGalleryData((prevData) =>
-  //         prevData!.map((item) =>
-  //           item.uid === image.uid ? { ...item, isPinned: false } : item
-  //         )
-  //       );
-  //       toast("success", "Immagine rimossa");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error pinning image:", error);
-  //     toast("danger", "Error pinning image");
-  //   }
-  // };
-
-  // const toggleVisibilityAndCheckPinned = async (image: typeImage) => {
-  //   try {
-  //     const imageRef = doc(db, "gallery", image.uid);
-  //     if (!image.isVisible) {
-  //       // If NOT pinned already
-  //       await updateDoc(imageRef, {
-  //         isVisible: true,
-  //       });
-  //       // Update local state after successful backend update
-  //       setGalleryData((prevData) =>
-  //         prevData!.map((item) =>
-  //           item.uid === image.uid ? { ...item, isVisible: true } : item
-  //         )
-  //       );
-  //       toast("success", "Immagine visibile nella galleria");
-  //     } else {
-  //       // If already pinned
-  //       await updateDoc(imageRef, {
-  //         isVisible: false,
-  //       });
-  //       // Update local state after successful backend update
-  //       setGalleryData((prevData) =>
-  //         prevData!.map((item) =>
-  //           item.uid === image.uid ? { ...item, isVisible: false } : item
-  //         )
-  //       );
-  //       toast("success", "Immagine nascosta");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error pinning image:", error);
-  //     toast("danger", "Error pinning image");
-  //   }
-  // };
-
-  // const toggleVisibilityImage = async (image: typeImage) => {
-  //   if (image.isPinned && image.isVisible) {
-  //     presentAlert({
-  //       header: "Attenzione",
-  //       subHeader: "Immagine in evidenza",
-  //       message:
-  //         "Questa immagine risulta nella lista delle immagini in evidenza, nascondere l'immagine comporta la rimozione dalla lista delle immagini in evidenza",
-  //       buttons: [
-  //         {
-  //           text: "Annulla",
-  //           role: "cancel",
-  //           handler: () => {
-  //             console.log("Alert canceled");
-  //           },
-  //         },
-  //         {
-  //           text: "OK",
-  //           role: "confirm",
-  //           handler: () => {
-  //             toggleVisibilityAndCheckPinned(image);
-  //             togglePinImage(image);
-  //           },
-  //         },
-  //       ],
-  //     });
-  //   } else {
-  //     toggleVisibilityAndCheckPinned(image);
-  //   }
-  // };
-
-  // const handleSaveEdit = async (
-  //   editedImage: typeImage,
-  //   editedAlt: string,
-  //   editedDescription: string
-  // ): Promise<boolean> => {
-  //   if (!editedImage) return false;
-  //   presentLoading({
-  //     message: text[l].loading,
-  //   });
-  //   try {
-  //     const imageRef = doc(db, "gallery", editedImage.uid);
-  //     await updateDoc(imageRef, {
-  //       alt: editedAlt,
-  //       description: editedDescription,
-  //     });
-
-  //     // Update local state directly
-  //     setGalleryData((prevData) =>
-  //       prevData!.map((item) =>
-  //         item.uid === editedImage.uid
-  //           ? { ...item, alt: editedAlt, description: editedDescription }
-  //           : item
-  //       )
-  //     );
-
-  //     // Update pinnedImages if necessary
-  //     if (editedImage.isPinned) {
-  //       setPinnedData((prevData) =>
-  //         prevData.map((item) =>
-  //           item.uid === editedImage.uid
-  //             ? { ...item, alt: editedAlt, description: editedDescription }
-  //             : item
-  //         )
-  //       );
-  //     }
-  //     dismissLoading();
-  //     toast("success", "Image updated successfully");
-  //     return false;
-  //   } catch (error) {
-  //     dismissLoading();
-  //     console.error("Error updating image:", error);
-  //     toast("danger", "Error updating image");
-  //   }
-  //   return false;
-  // };
-
-  // const loadMoreData = async () => {
-  //   setCurrentPage((prevPage) => prevPage + 1);
-  //   await fetchGalleryData();
-  // };
+  /**
+   * Gestisce il toggle dell'archiviazione di un'immagine.
+   * @param image L'immagine da aggiornare.
+   */
+  const handleToggleArchiveImage = useCallback(async (image: typeImage) => {
+    try {
+      const updatedImage = { ...image, isArchived: !image.isArchived };
+      await updateDocument(DOC_PATH, image.uid!, updatedImage);
+      setGalleryData((prevData) =>
+        prevData.map((item) => (item.uid === image.uid ? updatedImage : item))
+      );
+      toast(
+        "success",
+        `Immagine ${
+          updatedImage.isArchived ? "aggiunta" : "rimossa"
+        } dall'archivio`
+      );
+    } catch (error) {
+      console.error("Error toggling archive:", error);
+      toast("danger", "Errore durante l'aggiornamento dell'archivio");
+    }
+  }, []);
 
   // RETURN ---------------------------------
   return (
@@ -576,24 +351,29 @@ export const GalleryContextProvider = ({ children }: any) => {
         statusDelete,
         addData,
         initData,
+        handleShowImageOverlay,
+        handleDeleteImage,
+        handleEditImage,
+        handleTogglePinImage,
+        handleToggleArchiveImage,
       }}
     >
-      {/* <>
-        {children}
-        {showOverlay && (
-          <ImageOverlay
-            showOverlay={showOverlay}
-            overlayImage={overlayImage}
-            closeOverlay={closeOverlay}
-          />
-        )}
+      {children}
+      {showOverlay && (
+        <ImageOverlay
+          showOverlay={showOverlay}
+          overlayImage={overlayImage}
+          callbackCloseOverlay={hanldeCloseOverlay}
+        />
+      )}
+      <>
         <ImageModalModify
           showModalEdit={showModalEdit}
           setShowModalEdit={setShowModalEdit}
           editedImage={editedImage}
           handleSaveEdit={handleSaveEdit}
         />
-      </> */}
+      </>
     </GalleryContext.Provider>
   );
 };

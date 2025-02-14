@@ -12,13 +12,13 @@ import ImageButtonModify from "../Image__Button__Modify/ImageButtonModify";
 interface ContainerProps {
   showOverlay: boolean;
   overlayImage: typeImage | null;
-  closeOverlay: () => void;
+  callbackCloseOverlay: () => void;
 }
 
 const ImageOverlay: React.FC<ContainerProps> = ({
   showOverlay,
   overlayImage,
-  closeOverlay,
+  callbackCloseOverlay,
 }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
@@ -43,7 +43,7 @@ const ImageOverlay: React.FC<ContainerProps> = ({
         <IonButtons>
           <IonButton
             fill={"clear"}
-            onClick={closeOverlay}
+            onClick={callbackCloseOverlay}
             size="small"
             color={"primary"}
           >

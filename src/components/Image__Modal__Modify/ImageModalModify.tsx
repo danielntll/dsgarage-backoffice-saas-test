@@ -22,11 +22,7 @@ interface ContainerProps {
   showModalEdit: boolean;
   setShowModalEdit: React.Dispatch<React.SetStateAction<boolean>>;
   editedImage: typeImage | null;
-  handleSaveEdit: (
-    editedImage: typeImage,
-    editedAlt: string,
-    editedDescription: string
-  ) => Promise<boolean>;
+  handleSaveEdit: (editedImage: typeImage) => Promise<boolean>;
 }
 
 const ImageModalModify: React.FC<ContainerProps> = ({
@@ -51,7 +47,10 @@ const ImageModalModify: React.FC<ContainerProps> = ({
   }, [editedImage]);
 
   const save = async () => {
-    await handleSaveEdit(editedImage!, editedAlt, editedDescription)
+    editedImage!.alt = editedAlt;
+    editedImage!.description = editedDescription;
+
+    await handleSaveEdit(editedImage!)
       .then((val) => {
         setShowModalEdit(val);
       })
