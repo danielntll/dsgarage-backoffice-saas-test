@@ -1,13 +1,6 @@
-import styles from "./DemoComponent.module.css";
 import { useContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
-import {
-  IonButton,
-  IonIcon,
-  IonLabel,
-  IonList,
-  IonListHeader,
-} from "@ionic/react";
+import { IonLabel, IonList, IonListHeader } from "@ionic/react";
 import ImageItem from "../Image__Item/ImageItem";
 import { typeImage } from "../../types/typeImage";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
@@ -15,7 +8,6 @@ import { enumPageGallerySegment } from "../../enum/enumPageGallerySegment";
 import { useEffect, useState } from "react";
 import ItemLoading from "../Item__Loading/ItemLoading";
 import ItemEmpty from "../Item__Empty/ItemEmpty";
-import { downloadOutline } from "ionicons/icons";
 import GalleryButtonLoadMore from "../Gallery__Button__LoadMore/GalleryButtonLoadMore";
 
 interface ContainerProps {
