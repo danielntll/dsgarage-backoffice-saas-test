@@ -7,7 +7,6 @@ import { typeFirebaseDataStructure } from "../../types/typeFirebaseDataStructure
 import { useIonAlert } from "@ionic/react";
 import { typeContextStatus } from "../../types/typeContextStatus";
 import { text } from "ionicons/icons";
-import { textDataManaging } from "../../text/textDataManaging";
 import { useContextLanguage } from "../contextLanguage";
 import { getStatusFetch } from "../../utils/getStatusFetch";
 
@@ -65,7 +64,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    */
   const initData = useCallback(async () => {
     if (authenticateUser !== null) {
-      setStatusFetch(true);
+      setStatusFetch(getStatusFetch("loading", "fetch", l));
       try {
         const data: CarPromotion[] | null =
           await getCollectionData<CarPromotion>(DOC_PATH);
@@ -74,23 +73,12 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         }
       } catch (error) {
         console.error("Error fetching car promotions:", error);
-        setHasError({
-          message: {
-            en_GB: "Impossibile scaricare i dati",
-            it_IT: "Impossibile scaricare i dati",
-          },
-        });
-        setIsLoading(false);
+        setStatusFetch(getStatusFetch("error", "fetch", l));
       } finally {
-        setIsLoading(false);
+        setStatusFetch(getStatusFetch("success", "fetch", l));
       }
     } else {
-      setHasError({
-        message: {
-          en_GB: "Errore di autenticazione",
-          it_IT: "Errore di autenticazione",
-        },
-      });
+      setStatusFetch(getStatusFetch("error", "fetch", l));
     }
   }, [authenticateUser]);
 
@@ -98,31 +86,20 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    *
    */
   const addData = useCallback(async (data: CarPromotion) => {
-    setIsLoading(true);
+    setStatusFetch(getStatusFetch("loading", "upload", l));
     try {
       const doc: (CarPromotion & typeFirebaseDataStructure) | undefined =
         await addDocument<CarPromotion>(DOC_PATH, data);
       if (doc !== undefined) {
         setCarPromotions((prevPromotions) => [...prevPromotions, doc]);
       } else {
-        setHasError({
-          message: {
-            en_GB: "Impossibile aggiungere i dati",
-            it_IT: "Impossibile aggiungere i dati",
-          },
-        });
+        setStatusFetch(getStatusFetch("error", "upload", l));
       }
     } catch (error) {
       console.error("Error fetching car promotions:", error);
-      setHasError({
-        message: {
-          en_GB: "",
-          it_IT: "",
-        },
-      });
-      setIsLoading(false);
+      setStatusFetch(getStatusFetch("error", "upload", l));
     } finally {
-      setIsLoading(false);
+      setStatusFetch(getStatusFetch("success", "upload", l));
     }
   }, []);
 
@@ -142,7 +119,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    */
   const updateInfo = useCallback(
     async (id: string, updatedData: Partial<CarPromotion>) => {
-      setIsLoading(true);
+      setStatusFetch(getStatusFetch("loading", "update", l));
       try {
         await updateDocument<CarPromotion>(DOC_PATH, id, updatedData);
 
@@ -154,15 +131,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         );
       } catch (error) {
         console.error("Error fetching car promotions:", error);
-        setHasError({
-          message: {
-            en_GB: "",
-            it_IT: "",
-          },
-        });
-        setIsLoading(false);
+        setStatusFetch(getStatusFetch("error", "update", l));
       } finally {
-        setIsLoading(false);
+        setStatusFetch(getStatusFetch("success", "update", l));
       }
     },
     []
@@ -173,7 +144,6 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    */
   const updateIsArchived = useCallback(
     async (id: string, isArchived: boolean) => {
-      setIsLoading(true);
       try {
         await updateDocument<CarPromotion>(DOC_PATH, id, { isArchived });
 
@@ -185,15 +155,6 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         );
       } catch (error) {
         console.error("Error fetching car promotions:", error);
-        setHasError({
-          message: {
-            en_GB: "",
-            it_IT: "",
-          },
-        });
-        setIsLoading(false);
-      } finally {
-        setIsLoading(false);
       }
     },
     []
@@ -203,7 +164,6 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    *
    */
   const updateIsPinned = useCallback(async (id: string, isPinned: boolean) => {
-    setIsLoading(true);
     try {
       await updateDocument<CarPromotion>(DOC_PATH, id, { isPinned });
       setCarPromotions((prevPromotions) =>
@@ -213,15 +173,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
       );
     } catch (error) {
       console.error("Error fetching car promotions:", error);
-      setHasError({
-        message: {
-          en_GB: "",
-          it_IT: "",
-        },
-      });
-      setIsLoading(false);
     } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -245,7 +197,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
           text: "OK",
           role: "confirm",
           handler: async () => {
-            setIsLoading(true);
+            setStatusFetch(getStatusFetch("loading", "delete", l));
             try {
               await deleteDocument(DOC_PATH, id);
               setCarPromotions((prevPromotions) =>
@@ -253,15 +205,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
               );
             } catch (error) {
               console.error("Error fetching car promotions:", error);
-              setHasError({
-                message: {
-                  en_GB: "",
-                  it_IT: "",
-                },
-              });
-              setIsLoading(false);
+              setStatusFetch(getStatusFetch("error", "delete", l));
             } finally {
-              setIsLoading(false);
+              setStatusFetch(getStatusFetch("success", "delete", l));
             }
           },
         },

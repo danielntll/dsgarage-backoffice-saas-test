@@ -138,9 +138,6 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   // --------- handleSubmit
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
-    // Delay di 2 secondi
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
     const imgs = await handleImagesUpload();
 
     const newCarPromotion: CarPromotion = {
@@ -191,7 +188,11 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   // --------- handleImagesUpload
   const handleImagesUpload = async (): Promise<typeImage[] | undefined> => {
     if (imagesToUpload.length === 0) return undefined;
-    const images = await handleUploadImages(imagesToUpload, imageDetails);
+    const images = await handleUploadImages(
+      imagesToUpload,
+      imageDetails,
+      false
+    );
 
     if (images) {
       // Check if upload was successful

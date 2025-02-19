@@ -35,7 +35,7 @@ const ModalImagesUpload: React.FC<ContainerProps> = ({
   //FUNCTIONS ------------------------
   const handleImagesUpload = async () => {
     if (imagesToUpload.length === 0) return;
-    handleUploadImages(imagesToUpload, imageDetails).then(
+    handleUploadImages(imagesToUpload, imageDetails, true).then(
       (uploadSuccessful) => {
         // Use the returned value
         if (uploadSuccessful) {

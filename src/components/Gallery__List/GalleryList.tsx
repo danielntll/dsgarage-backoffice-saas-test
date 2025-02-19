@@ -1,7 +1,13 @@
 import styles from "./DemoComponent.module.css";
 import { useContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
-import { IonList } from "@ionic/react";
+import {
+  IonButton,
+  IonIcon,
+  IonLabel,
+  IonList,
+  IonListHeader,
+} from "@ionic/react";
 import ImageItem from "../Image__Item/ImageItem";
 import { typeImage } from "../../types/typeImage";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
@@ -9,6 +15,8 @@ import { enumPageGallerySegment } from "../../enum/enumPageGallerySegment";
 import { useEffect, useState } from "react";
 import ItemLoading from "../Item__Loading/ItemLoading";
 import ItemEmpty from "../Item__Empty/ItemEmpty";
+import { downloadOutline } from "ionicons/icons";
+import GalleryButtonLoadMore from "../Gallery__Button__LoadMore/GalleryButtonLoadMore";
 
 interface ContainerProps {
   searchTerm: string;
@@ -18,19 +26,35 @@ interface ContainerProps {
 const GalleryList: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
-  const { galleryData, loading: isLoading } = useGalleryContext();
+  const { initState, galleryData, loading } = useGalleryContext();
   //USE STATES -----------------------
   const [filteredData, setFilteredData] = useState<typeImage[] | null>(
     galleryData
   );
   //USE EFFECTS ----------------------
   useEffect(() => {
+    console.log("useEffect GalleryList");
+    initState();
+  }, []);
+
+  useEffect(() => {
     if (galleryData !== null) {
-      setFilteredData(
-        galleryData.filter((item) =>
-          item.alt?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      let filtered = galleryData.filter((item) =>
+        item.alt?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      switch (filter) {
+        case enumPageGallerySegment.pinned:
+          filtered = filtered.filter((item) => item.isPinned === true);
+          break;
+        case enumPageGallerySegment.archived:
+          filtered = filtered.filter((item) => item.isArchived === true);
+          break;
+        default:
+          filtered = filtered.filter((item) => item.isArchived === false);
+          break;
+      }
+
+      setFilteredData(filtered);
     }
   }, [filter, galleryData, searchTerm]);
   //FUNCTIONS ------------------------
@@ -38,7 +62,14 @@ const GalleryList: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
   return (
     <>
       <IonList inset>
-        {isLoading ? (
+        <IonListHeader>
+          <IonLabel>
+            <p>
+              {text[l].img_available}: {filteredData?.length || 0}
+            </p>
+          </IonLabel>
+        </IonListHeader>
+        {loading ? (
           <ItemLoading />
         ) : filteredData?.length === 0 ? (
           <ItemEmpty />
@@ -48,6 +79,7 @@ const GalleryList: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
           })
         )}
       </IonList>
+      <GalleryButtonLoadMore />
     </>
   );
 };

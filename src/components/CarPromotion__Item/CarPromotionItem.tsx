@@ -44,14 +44,8 @@ const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
         </IonThumbnail>
         <IonLabel>
           <h2 className={styles.title}>
-            Modello: {data.carInfo.model}
-            {data.isPinned && (
-              <IonIcon
-                color="primary"
-                className="ion-margin-start"
-                icon={star}
-              />
-            )}
+            {data.isPinned && <IonIcon color="primary" icon={star} />} Modello:{" "}
+            {data.carInfo.model}
           </h2>
           <p>
             Km: {data.carInfo.km} - Prezzo: {data.carInfo.price} - Anno:{" "}

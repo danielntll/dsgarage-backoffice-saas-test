@@ -1,25 +1,17 @@
-import { useContext } from "react";
-import styles from "./ImageItem.module.css";
+import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
-import { text } from "./text";
 import {
+  IonButton,
+  IonContent,
   IonIcon,
   IonItem,
-  IonItemOption,
-  IonItemOptions,
-  IonItemSliding,
   IonLabel,
+  IonList,
+  IonPopover,
   IonThumbnail,
 } from "@ionic/react";
 import { typeImage } from "../../types/typeImage";
-import {
-  eye,
-  eyeOff,
-  pencil,
-  star,
-  starHalf,
-  trashBinOutline,
-} from "ionicons/icons";
+import { ellipsisVertical, star } from "ionicons/icons";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 
 interface ContainerProps {
@@ -37,23 +29,19 @@ const ImageItem: React.FC<ContainerProps> = ({ image }) => {
     toggleVisibilityImage,
   } = useGalleryContext();
   //CONDITIONS -----------------------
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [popoverEvent, setPopoverEvent] = useState<any>(null);
+
   //FUNCTIONS ------------------------
+  const handleOptionsClick = (e: any) => {
+    e.stopPropagation();
+    e.persist();
+    setPopoverEvent(e);
+    setIsOpen(true);
+  };
   //RETURN COMPONENT -----------------
   return (
-    <IonItemSliding>
-      {/* ----------- ACTIONS START ------- */}
-      <IonItemOptions side="start">
-        <IonItemOption
-          color="danger"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteImage(image);
-          }}
-        >
-          <IonIcon icon={trashBinOutline} slot="icon-only" />
-        </IonItemOption>
-      </IonItemOptions>
-      {/* ----------- ITEM ------- */}
+    <>
       <IonItem
         button
         onClick={() => {
@@ -64,41 +52,64 @@ const ImageItem: React.FC<ContainerProps> = ({ image }) => {
           <img src={image.imageUrl} alt={image.alt} />
         </IonThumbnail>
         <IonLabel>
-          <h2>{image.name}</h2>
-          <p>{image.alt}</p>
+          <h2>
+            {image.isPinned && <IonIcon color="primary" icon={star} />} Alt:{" "}
+            {image.alt}
+          </h2>
+          <p>
+            Descrizione:{" "}
+            {image.description?.length === 0
+              ? "Nessuna descrizione"
+              : image.description}
+          </p>
+          <p>Nome: {image.name}</p>
         </IonLabel>
+        <IonButton fill="clear" onClick={handleOptionsClick}>
+          <IonIcon icon={ellipsisVertical} />
+        </IonButton>
       </IonItem>
-      {/* ----------- ACTIONS END ------- */}
-      <IonItemOptions side="end">
-        <IonItemOption
-          color={image.isPinned ? "primary" : "medium"}
-          onClick={(e) => {
-            e.stopPropagation();
-            togglePinImage(image);
-          }}
-        >
-          <IonIcon icon={image.isPinned ? star : starHalf} slot="icon-only" />
-        </IonItemOption>
-        <IonItemOption
-          color={image.isVisible ? "primary" : "medium"}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleVisibilityImage(image);
-          }}
-        >
-          <IonIcon icon={image.isVisible ? eye : eyeOff} slot="icon-only" />
-        </IonItemOption>
-        <IonItemOption
-          color="primary"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleEditClick(image);
-          }}
-        >
-          <IonIcon icon={pencil} slot="icon-only" />
-        </IonItemOption>
-      </IonItemOptions>
-    </IonItemSliding>
+      {/* ------- */}
+      <IonPopover
+        isOpen={isOpen}
+        event={popoverEvent}
+        dismissOnSelect={true}
+        onDidDismiss={() => setIsOpen(false)}
+      >
+        <IonContent>
+          <IonList>
+            <IonItem
+              onClick={() => handleEditClick(image)}
+              button={true}
+              detail={false}
+            >
+              Modifica
+            </IonItem>
+            <IonItem
+              onClick={() => togglePinImage(image)}
+              button={true}
+              detail={false}
+            >
+              Preferiti
+            </IonItem>
+            <IonItem
+              onClick={() => toggleVisibilityImage(image)}
+              button={true}
+              detail={false}
+            >
+              Archivia
+            </IonItem>
+            <IonItem
+              onClick={() => handleDeleteImage(image)}
+              color={"danger"}
+              button={true}
+              detail={false}
+            >
+              Elimina
+            </IonItem>
+          </IonList>
+        </IonContent>
+      </IonPopover>
+    </>
   );
 };
 

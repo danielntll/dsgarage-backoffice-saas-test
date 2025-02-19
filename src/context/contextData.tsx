@@ -8,10 +8,15 @@ import {
   doc,
   DocumentData,
   DocumentReference,
+  DocumentSnapshot,
   getDocs,
+  limit,
+  query,
   QuerySnapshot,
   serverTimestamp,
+  startAfter,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import {
@@ -25,6 +30,15 @@ import { typeFirebaseDataStructure } from "../types/typeFirebaseDataStructure";
 
 type dataContext = {
   getCollectionData: <T>(collectionPath: string) => Promise<T[] | null>;
+  getPaginationCollectionData: <T>(
+    collectionPath: string,
+    perPage: number,
+    startAfterDoc?: DocumentSnapshot<DocumentData>,
+    whereClause?: [string, "==", any]
+  ) => Promise<{
+    data: T[];
+    lastVisible?: DocumentSnapshot<DocumentData>;
+  } | null>;
   addDocument: <T>(
     collectionPath: string,
     data: T
@@ -41,6 +55,9 @@ type dataContext = {
 
 export const DataContext = React.createContext<dataContext>({
   getCollectionData: async () => {
+    return null;
+  },
+  getPaginationCollectionData: async () => {
     return null;
   },
   addDocument: async () => Promise.resolve(undefined),
@@ -80,6 +97,50 @@ export const DataContextProvider = ({ children }: any) => {
       return null;
     }
   }
+  // ---  getPaginationCollectionData
+  async function getPaginationCollectionData<T>(
+    collectionPath: string,
+    perPage: number = 10,
+    startAfterDoc?: DocumentSnapshot<DocumentData>,
+    whereClause?: [string, "==", any]
+  ): Promise<{
+    data: T[];
+    lastVisible?: DocumentSnapshot<DocumentData>;
+  } | null> {
+    console.log("getCollectionData=", collectionPath);
+    try {
+      let q = query(collection(db, collectionPath));
+
+      if (whereClause) {
+        // Apply where clause if provided
+        q = query(q, where(whereClause[0], whereClause[1], whereClause[2]));
+      }
+
+      if (startAfterDoc) {
+        q = query(q, startAfter(startAfterDoc));
+      }
+
+      q = query(q, limit(perPage));
+
+      const dataSnapshot = await getDocs(q);
+
+      const data: T[] = [];
+      dataSnapshot.forEach((doc) => {
+        data.push({ ...doc.data(), uid: doc.id } as T);
+      });
+
+      const lastVisible =
+        dataSnapshot.docs.length > 0
+          ? dataSnapshot.docs[dataSnapshot.docs.length - 1]
+          : undefined;
+
+      return { data, lastVisible };
+    } catch (error) {
+      console.error("Error getting collection data:", error);
+      return null;
+    }
+  }
+
   // ---  addDocument
   async function addDocument<T>(
     collectionPath: string,
@@ -223,6 +284,7 @@ export const DataContextProvider = ({ children }: any) => {
     <DataContext.Provider
       value={{
         getCollectionData,
+        getPaginationCollectionData,
         addDocument,
         updateDocument,
         deleteDocument,

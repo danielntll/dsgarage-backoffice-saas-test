@@ -1,12 +1,14 @@
-import React, { useContext, useState } from "react";
-import { ContextLanguage } from "../contextLanguage";
-import { AuthContext } from "../contextAuth";
-import { ContextToast } from "../systemEvents/contextToast";
+import React, { useState } from "react";
+import { useContextLanguage } from "../contextLanguage";
+import { useAuthContext } from "../contextAuth";
+import { useContextToast } from "../systemEvents/contextToast";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
+  DocumentData,
+  DocumentSnapshot,
   getDocs,
   limit,
   orderBy,
@@ -37,6 +39,8 @@ type galleryContext = {
   loading: boolean;
   error: any;
   pinnedImages: typeImage[];
+  isLoadingMore: boolean;
+  lastVisible: DocumentSnapshot<DocumentData> | undefined | null;
   fetchGalleryData: () => Promise<void>;
   togglePinImage: (image: typeImage) => Promise<void>;
   toggleVisibilityImage: (image: typeImage) => Promise<void>;
@@ -47,12 +51,13 @@ type galleryContext = {
   ) => Promise<boolean>;
   handleUploadImages: (
     _imagesToUpload: File[],
-    _imageDetails: typeImageUploadData
+    _imageDetails: typeImageUploadData,
+    _isGallery: boolean
   ) => Promise<typeImage[] | null>;
   handleDeleteImage: (image: typeImage) => Promise<void>;
   handleShowImageOverlay: (image: typeImage) => void;
   handleEditClick: (image: typeImage) => void;
-  loadMoreData: () => Promise<void>;
+  loadMoreData: () => void;
   initState: () => void;
 };
 
@@ -61,6 +66,8 @@ export const GalleryContext = React.createContext<galleryContext>({
   loading: true,
   error: null,
   pinnedImages: [],
+  isLoadingMore: false,
+  lastVisible: null,
   fetchGalleryData: async () => {},
   togglePinImage: async () => {},
   toggleVisibilityImage: async () => {},
@@ -81,17 +88,21 @@ export const useGalleryContext = () => React.useContext(GalleryContext);
 
 export const GalleryContextProvider = ({ children }: any) => {
   // VARIABLES ------------------------------
-  const perPage: number = 10;
-  const { l } = useContext(ContextLanguage);
-  const { authenticateUser } = useContext(AuthContext);
-  const { toast } = useContext(ContextToast);
-  const { getCollectionData, addDocument, updateDocument, deleteDocument } =
-    useDataContext();
 
+  const { l } = useContextLanguage();
+  const { authenticateUser } = useAuthContext();
+  const { toast } = useContextToast();
+  const { getPaginationCollectionData, updateDocument } = useDataContext();
+  const perPage = 10;
   // USE STATE -----------------------------
-  const [galleryData, setGalleryData] = useState<typeImage[] | null>(null);
+  const [galleryData, setGalleryData] = useState<typeImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [lastVisible, setLastVisible] = useState<
+    DocumentSnapshot<DocumentData> | undefined | null
+  >(null);
 
   const [pinnedImages, setPinnedData] = useState<typeImage[]>([]);
   const [presentAlert] = useIonAlert();
@@ -104,13 +115,43 @@ export const GalleryContextProvider = ({ children }: any) => {
   const [showModalEdit, setShowModalEdit] = useState(false);
   const [editedImage, setEditedImage] = useState<typeImage | null>(null);
 
-  const [currentPage, setCurrentPage] = useState<number>(2);
   // USE EFFECT ------------------------------
   // FUNCTIONS -----------------------------
-  const initState = () => {
-    if (authenticateUser !== undefined && galleryData === null) {
-      fetchGalleryData();
-      fetchPinnedImages();
+  const initState = async () => {
+    if (authenticateUser !== undefined) {
+      setLoading(true);
+      await fetchData();
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    setIsLoadingMore(true);
+    console.log("fetchData");
+    const result = await getPaginationCollectionData<typeImage>(
+      "gallery",
+      perPage,
+      lastVisible ?? undefined,
+      ["isGallery", "==", true]
+    );
+
+    if (result) {
+      if (result.data.length > 0) {
+        setGalleryData((prevData) => [...prevData, ...result.data]);
+        setLastVisible(result.lastVisible);
+      } else {
+        setLastVisible(undefined);
+        toast("warning", "No more images to load");
+      }
+    } else {
+      toast("danger", "Error fetching data");
+    }
+    setIsLoadingMore(false);
+  };
+
+  const loadMoreData = () => {
+    if (!loading && lastVisible) {
+      fetchData();
     }
   };
 
@@ -192,7 +233,8 @@ export const GalleryContextProvider = ({ children }: any) => {
 
   async function handleUploadImages(
     _imagesToUpload: File[],
-    _imageDetails: typeImageUploadData
+    _imageDetails: typeImageUploadData,
+    _isGallery: boolean
   ) {
     if (!_imagesToUpload || _imagesToUpload.length === 0) {
       toast("danger", "No images selected");
@@ -235,6 +277,8 @@ export const GalleryContextProvider = ({ children }: any) => {
                   name: image.file.name,
                   createdAt: Timestamp.now(),
                   uid: "",
+                  isGallery: _isGallery,
+                  isArchived: false,
                 };
 
                 const docRef = await addDoc(
@@ -336,90 +380,79 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
     dismissLoading();
   };
-
   const togglePinImage = async (image: typeImage) => {
     try {
-      const imageRef = doc(db, "gallery", image.uid);
-      if (!image.isPinned) {
-        // If NOT pinned already
-        await updateDoc(imageRef, {
-          isPinned: true,
-          isVisible: true,
-        });
+      const newIsPinnedValue = !image.isPinned; // Toggle the isPinned value
+      await updateDocument("gallery", image.uid!, {
+        isPinned: newIsPinnedValue,
+      });
 
-        // Update local state after successful backend update
-        setGalleryData((prevData) =>
-          prevData!.map((item) =>
-            item.uid === image.uid
-              ? { ...item, isPinned: true, isVisible: true }
-              : item
-          )
-        );
-        setPinnedData((prevData) =>
-          prevData
-            ? [...prevData, { ...image, isPinned: true, isVisible: true }]
-            : [{ ...image, isPinned: true, isVisible: true }]
-        );
-        toast("success", "Immagine aggiunta");
+      // Update local state
+      setGalleryData((prevData) =>
+        prevData!.map((item) =>
+          item.uid === image.uid
+            ? { ...item, isPinned: newIsPinnedValue }
+            : item
+        )
+      );
+
+      if (newIsPinnedValue) {
+        // Add to pinnedImages array
+        setPinnedData((prevData) => [
+          ...prevData,
+          { ...image, isPinned: true },
+        ]);
+        toast("success", "Immagine aggiunta ai preferiti");
       } else {
-        // If already pinned
-        await updateDoc(imageRef, {
-          isPinned: false,
-        });
-
-        // Update local state: remove from pinnedImages, update isPinned in galleryData
+        // Remove from pinnedImages array
         setPinnedData((prevData) =>
           prevData.filter((item) => item.uid !== image.uid)
         );
-        setGalleryData((prevData) =>
-          prevData!.map((item) =>
-            item.uid === image.uid ? { ...item, isPinned: false } : item
-          )
-        );
-        toast("success", "Immagine rimossa");
+        toast("success", "Immagine rimossa dai preferiti");
       }
     } catch (error) {
-      console.error("Error pinning image:", error);
-      toast("danger", "Error pinning image");
+      console.error("Error pinning/unpinning image:", error);
+      toast("danger", "Error pinning/unpinning image");
     }
   };
 
   const toggleVisibilityAndCheckPinned = async (image: typeImage) => {
     try {
-      const imageRef = doc(db, "gallery", image.uid);
-      if (!image.isVisible) {
-        // If NOT pinned already
-        await updateDoc(imageRef, {
-          isVisible: true,
-        });
-        // Update local state after successful backend update
-        setGalleryData((prevData) =>
-          prevData!.map((item) =>
-            item.uid === image.uid ? { ...item, isVisible: true } : item
-          )
-        );
-        toast("success", "Immagine visibile nella galleria");
+      const newIsArchivedValue = !image.isArchived;
+      await updateDocument("gallery", image.uid!, {
+        isArchived: newIsArchivedValue,
+      });
+
+      // Update local state.  Use the same mapping as before for consistency.
+      setGalleryData((prevData) =>
+        prevData!.map((item) =>
+          item.uid === image.uid
+            ? { ...item, isArchived: newIsArchivedValue }
+            : item
+        )
+      );
+
+      setPinnedData((prevData) =>
+        prevData.map((item) =>
+          item.uid === image.uid
+            ? { ...item, isArchived: newIsArchivedValue }
+            : item
+        )
+      );
+
+      if (newIsArchivedValue) {
+        toast("success", "Immagine archiviata");
       } else {
-        // If already pinned
-        await updateDoc(imageRef, {
-          isVisible: false,
-        });
-        // Update local state after successful backend update
-        setGalleryData((prevData) =>
-          prevData!.map((item) =>
-            item.uid === image.uid ? { ...item, isVisible: false } : item
-          )
-        );
-        toast("success", "Immagine nascosta");
+        toast("success", "Immagine ripristinata");
       }
     } catch (error) {
-      console.error("Error pinning image:", error);
-      toast("danger", "Error pinning image");
+      console.error("Error archiving/unarchiving image:", error);
+      toast("danger", "Error archiving/unarchiving image");
     }
   };
 
   const toggleVisibilityImage = async (image: typeImage) => {
-    if (image.isPinned && image.isVisible) {
+    if (image.isPinned && image.isArchived) {
       presentAlert({
         header: "Attenzione",
         subHeader: "Immagine in evidenza",
@@ -494,11 +527,6 @@ export const GalleryContextProvider = ({ children }: any) => {
     return false;
   };
 
-  const loadMoreData = async () => {
-    setCurrentPage((prevPage) => prevPage + 1);
-    await fetchGalleryData();
-  };
-
   // RETURN ---------------------------------
   return (
     <GalleryContext.Provider
@@ -507,6 +535,8 @@ export const GalleryContextProvider = ({ children }: any) => {
         loading,
         error,
         pinnedImages,
+        isLoadingMore,
+        lastVisible,
         fetchGalleryData,
         togglePinImage,
         toggleVisibilityImage,
