@@ -29,7 +29,6 @@ import { useIonAlert } from "@ionic/react";
 type dataContext = {
   promotionsData: typePromotion[];
   targets: string[];
-  loadMoreData: () => Promise<void>;
   handleCreatePromotion: (
     newPromotion: typePromotion,
     imageFile?: File
@@ -46,7 +45,6 @@ type dataContext = {
 export const PromotionsContext = React.createContext<dataContext>({
   promotionsData: [],
   targets: [],
-  loadMoreData: async () => {},
   handleCreatePromotion: async () => {},
   handleAddTarget: async () => {},
   handleDeletePromotion: async () => {},
@@ -89,8 +87,6 @@ export const PromotionsContextProvider = ({ children }: any) => {
     }
   }, [authenticateUser]);
   // FUNCTIONS ------------------------------
-
-  const loadMoreData = async () => {};
 
   const fetchTargets = async () => {
     try {
@@ -365,7 +361,6 @@ export const PromotionsContextProvider = ({ children }: any) => {
       <PromotionsContext.Provider
         value={{
           promotionsData,
-          loadMoreData,
           handleAddTarget,
           targets,
           handleCreatePromotion,

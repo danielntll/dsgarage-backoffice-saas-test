@@ -18,7 +18,7 @@ interface ContainerProps {
 const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
-  const { carPromotions, initData, isLoading } = useCarPromotionContext();
+  const { carPromotions, initData, statusFetch } = useCarPromotionContext();
   //USE STATES -----------------------
   const [filteredPromotions, setFilteredPromotions] =
     useState<CarPromotion[]>(carPromotions);
@@ -65,7 +65,7 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   return (
     <>
       <IonList inset>
-        {isLoading ? (
+        {statusFetch.status === "loading" ? (
           <ItemLoading />
         ) : filteredPromotions.length === 0 ? (
           <ItemEmpty />

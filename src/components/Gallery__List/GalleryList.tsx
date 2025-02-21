@@ -36,7 +36,9 @@ const GalleryList: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
       );
       switch (filter) {
         case enumPageGallerySegment.pinned:
-          filtered = filtered.filter((item) => item.isPinned === true);
+          filtered = filtered.filter(
+            (item) => item.isPinned === true && item.isArchived === false
+          );
           break;
         case enumPageGallerySegment.archived:
           filtered = filtered.filter((item) => item.isArchived === true);
