@@ -37,7 +37,7 @@ const ServicesList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
         filteredPromotions = [];
         break;
     }
-    setFilteredPromotions(filteredPromotions);
+    // setFilteredPromotions(filteredPromotions);
   };
   //RETURN COMPONENT -----------------
   return (
