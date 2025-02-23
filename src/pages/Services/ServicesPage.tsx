@@ -20,6 +20,7 @@ import ServicesAll from "../../components/Services__All/ServicesAll";
 import { ServicesContextProvider } from "../../context/services/contextServices";
 import ServicesButtonCreate from "../../components/Services__Button__Create/ServicesButtonCreate";
 import { enumServices } from "../../enum/enumServices";
+import ServicesList from "../../components/Services__List/ServicesList";
 
 interface PageProps {}
 
@@ -69,7 +70,7 @@ const ServicesPage: React.FC<PageProps> = ({}) => {
           </IonHeader>
           {/* ----------------- PAGE CONTENT ------------------*/}
           <div className={styles.content + " ion-padding"}>
-            <ServicesAll />
+            <ServicesList searchTerm={""} filter={segment} />
           </div>
           {/* ----------------- EXTRA UI ----------------------*/}
         </IonContent>

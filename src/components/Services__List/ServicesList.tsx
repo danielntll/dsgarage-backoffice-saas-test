@@ -3,6 +3,12 @@ import { useContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { enumServices } from "../../enum/enumServices";
 import { typeService } from "../../types/typeService";
+import { useEffect, useState } from "react";
+import { useServicesContext } from "../../context/services/contextServices";
+import { IonList } from "@ionic/react";
+import ItemLoading from "../Item__Loading/ItemLoading";
+import ItemEmpty from "../Item__Empty/ItemEmpty";
+import ServicesItem from "../Services__Item/ServicesItem";
 interface ContainerProps {
   filter: enumServices;
   searchTerm: string;
@@ -11,39 +17,62 @@ interface ContainerProps {
 const ServicesList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
+  const { fetchServices, services, loadingServices } = useServicesContext();
   //USE STATES -----------------------
+  const [filteredData, setFilteredData] = useState<typeService[]>([]);
   //USE EFFECTS ----------------------
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    filterData(
+      services.filter((item) =>
+        item.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [filter, services, searchTerm]);
   //FUNCTIONS ------------------------
-  const filterPromotions = (data: typeService[]) => {
-    let filteredPromotions: typeService[] = [];
+  const filterData = (data: typeService[]) => {
+    let auxFilteredData: typeService[] = [];
     switch (filter) {
       case enumServices.all:
-        filteredPromotions = data.filter(
+        auxFilteredData = data.filter(
           (promotion: typeService) => promotion.isArchived === false
         );
         break;
       case enumServices.archived:
-        filteredPromotions = data.filter(
+        auxFilteredData = data.filter(
           (promotion: typeService) => promotion.isArchived === true
         );
         break;
       case enumServices.pinned:
-        filteredPromotions = data.filter(
+        auxFilteredData = data.filter(
           (promotion: typeService) =>
             promotion.isPinned === true && promotion.isArchived === false
         );
         break;
       default:
-        filteredPromotions = [];
+        auxFilteredData = [];
         break;
     }
-    // setFilteredPromotions(filteredPromotions);
+    setFilteredData(auxFilteredData);
   };
   //RETURN COMPONENT -----------------
   return (
-    <div className={styles.container}>
-      <p>{text[l].componentTitle}</p>
-    </div>
+    <>
+      <IonList inset>
+        {loadingServices ? (
+          <ItemLoading />
+        ) : filteredData.length === 0 ? (
+          <ItemEmpty />
+        ) : (
+          filteredData.map((item: typeService, index: number) => {
+            return <ServicesItem data={item} key={index} />;
+          })
+        )}
+      </IonList>
+    </>
   );
 };
 

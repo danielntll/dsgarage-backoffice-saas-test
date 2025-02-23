@@ -3,19 +3,7 @@ import { AuthContext } from "../contextAuth";
 import { typeService } from "../../types/typeService";
 import { ContextToast } from "../systemEvents/contextToast";
 import { ContextLanguage } from "../contextLanguage";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  orderBy,
-  query,
-  Timestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db, storage } from "../../firebase/firebaseConfig";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { useDataContext } from "../contextData";
 import { text } from "./text";
 import ServicesModalUpdate from "../../components/Services__Modal__Update/ServicesModalUpdate";
 import { useIonAlert } from "@ionic/react";
@@ -25,13 +13,14 @@ type dataContext = {
   loadingServices: boolean;
   fetchServices: () => Promise<void>;
   createService: (newService: typeService, imageFile?: File) => Promise<void>;
+  handleUpdateService: (srvToUpdate: typeService) => void;
+  handleDeleteService: (srvToDelete: typeService) => void;
+  togglePinned: (srvToUpdate: typeService) => void;
+  toggleArchived: (srvToUpdate: typeService) => void;
   updateService: (
     updatedService: typeService,
     imageFile?: File
   ) => Promise<void>;
-  deleteService: (serviceId: string) => Promise<void>;
-  handleUpdateService: (srvToUpdate: typeService) => void;
-  handleDeleteService: (srvToDelete: typeService) => void;
 };
 
 export const ServicesContext = React.createContext<dataContext>({
@@ -40,9 +29,10 @@ export const ServicesContext = React.createContext<dataContext>({
   fetchServices: async () => {},
   createService: async () => {},
   updateService: async () => {},
-  deleteService: async () => {},
   handleUpdateService: () => {},
   handleDeleteService: () => {},
+  toggleArchived: () => {},
+  togglePinned: () => {},
 });
 
 export const useServicesContext = () => React.useContext(ServicesContext);
@@ -52,6 +42,13 @@ export const ServicesContextProvider = ({ children }: any) => {
   const { authenticateUser } = useContext(AuthContext);
   const { toast, loadingAlert, dismissLoadingAlert } = useContext(ContextToast);
   const { l } = useContext(ContextLanguage);
+  const {
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    uploadFile,
+    getCollectionData,
+  } = useDataContext();
 
   // USE STATE ------------------------------
   const [services, setServices] = useState<typeService[]>([]);
@@ -80,15 +77,12 @@ export const ServicesContextProvider = ({ children }: any) => {
   const fetchServices = async () => {
     try {
       setLoadingServices(true);
-      const servicesCollection = collection(db, "services");
-      const q = query(servicesCollection, orderBy("createdAt", "desc"));
-      const servicesSnapshot = await getDocs(q);
-      const servicesData = servicesSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        uid: doc.id,
-      })) as typeService[];
-
-      setServices(servicesData);
+      const servicesData = await getCollectionData<typeService>("services");
+      if (servicesData) {
+        setServices(servicesData);
+      } else {
+        setServices([]);
+      }
     } catch (error) {
       console.error("Error fetching services:", error);
       toast("danger", text[l].error_services_load);
@@ -102,27 +96,26 @@ export const ServicesContextProvider = ({ children }: any) => {
       loadingAlert(text[l].loading);
       let imageUrl = "";
       if (imageFile) {
-        const storageRef = ref(storage, `services/${imageFile.name}`);
-        await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(storageRef);
+        imageUrl =
+          (await uploadFile(`services/${imageFile.name}`, imageFile)) || "";
       }
 
-      const serviceWithTimestamp = {
+      const serviceWithTimestamp: typeService = {
         ...newService,
         imageUrl: imageUrl,
-        createdAt: Timestamp.now(),
       };
 
-      const docRef = await addDoc(
-        collection(db, "services"),
+      const newServiceData = await addDocument<typeService>(
+        "services",
         serviceWithTimestamp
       );
-      toast("success", text[l].success_services_creation);
-
-      setServices((prevServices: typeService[]) => [
-        ...prevServices,
-        { ...serviceWithTimestamp, uid: docRef.id },
-      ]);
+      if (newServiceData) {
+        setServices((prevServices: typeService[]) => [
+          ...prevServices,
+          newServiceData,
+        ]);
+        toast("success", text[l].success_services_creation);
+      }
     } catch (error) {
       console.error("Error creating service:", error);
       toast("danger", text[l].error_services_creation);
@@ -137,25 +130,24 @@ export const ServicesContextProvider = ({ children }: any) => {
   ) => {
     try {
       loadingAlert(text[l].loading);
-
-      let imageUrl = updatedService.imageUrl; // Keep existing image URL
+      let imageUrl = updatedService.imageUrl;
 
       if (imageFile) {
-        // If a new image is provided, upload and update
-        const storageRef = ref(storage, `services/${imageFile.name}`);
-        await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(storageRef); // Update URL
+        imageUrl =
+          (await uploadFile(`services/${imageFile.name}`, imageFile)) || "";
       }
 
       const serviceWithTimestamp: typeService = {
         ...updatedService,
-        imageUrl: imageUrl, // Update with the correct image URL
+        imageUrl,
       };
 
-      const serviceRef = doc(db, "services", updatedService.uid);
-      await updateDoc(serviceRef, serviceWithTimestamp);
+      await updateDocument(
+        "services",
+        updatedService.uid!,
+        serviceWithTimestamp
+      );
       toast("success", text[l].success_services_update);
-
       setServices((prevServices) =>
         prevServices.map((service) =>
           service.uid === updatedService.uid ? serviceWithTimestamp : service
@@ -172,7 +164,7 @@ export const ServicesContextProvider = ({ children }: any) => {
   const deleteService = async (serviceId: string) => {
     try {
       loadingAlert(text[l].loading);
-      await deleteDoc(doc(db, "services", serviceId));
+      await deleteDocument("services", serviceId);
       toast("success", text[l].success_services_delete);
       setServices((prevServices) =>
         prevServices.filter((service) => service.uid !== serviceId)
@@ -198,13 +190,46 @@ export const ServicesContextProvider = ({ children }: any) => {
           text: text[l].btn__delete,
           role: "confirm",
           cssClass: "alert-button-delete",
-
           handler: () => {
-            deleteService(serviceToDelete.uid);
+            deleteService(serviceToDelete.uid!);
           },
         },
       ],
     });
+  };
+
+  const togglePinned = async (service: typeService) => {
+    try {
+      loadingAlert(text[l].loading);
+      const updatedService = { ...service, isPinned: !service.isPinned };
+      await updateDocument("services", service.uid!, updatedService);
+      setServices((prevServices) =>
+        prevServices.map((s) => (s.uid === service.uid ? updatedService : s))
+      );
+      toast("success", text[l].success_services_update);
+    } catch (error) {
+      console.error("Error toggling pinned status:", error);
+      toast("danger", text[l].error_services_update);
+    } finally {
+      dismissLoadingAlert();
+    }
+  };
+
+  const toggleArchived = async (service: typeService) => {
+    try {
+      loadingAlert(text[l].loading);
+      const updatedService = { ...service, isArchived: !service.isArchived };
+      await updateDocument("services", service.uid!, updatedService);
+      setServices((prevServices) =>
+        prevServices.map((s) => (s.uid === service.uid ? updatedService : s))
+      );
+      toast("success", text[l].success_services_update);
+    } catch (error) {
+      console.error("Error toggling archived status:", error);
+      toast("danger", text[l].error_services_update);
+    } finally {
+      dismissLoadingAlert();
+    }
   };
 
   // RETURN ---------------------------------
@@ -215,14 +240,14 @@ export const ServicesContextProvider = ({ children }: any) => {
         loadingServices,
         fetchServices,
         createService,
-        updateService,
-        deleteService,
         handleUpdateService,
         handleDeleteService,
+        toggleArchived,
+        togglePinned,
+        updateService,
       }}
     >
       {children}
-      {/* ----------- MODALS ------- */}
       <ServicesModalUpdate
         showModal={showModal}
         setShowModal={setShowModal}
