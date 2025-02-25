@@ -5,7 +5,7 @@ import { enumServices } from "../../enum/enumServices";
 import { typeService } from "../../types/typeService";
 import { useEffect, useState } from "react";
 import { useServicesContext } from "../../context/services/contextServices";
-import { IonList } from "@ionic/react";
+import { IonLabel, IonList } from "@ionic/react";
 import ItemLoading from "../Item__Loading/ItemLoading";
 import ItemEmpty from "../Item__Empty/ItemEmpty";
 import ServicesItem from "../Services__Item/ServicesItem";
@@ -17,9 +17,10 @@ interface ContainerProps {
 const ServicesList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
-  const { fetchServices, services, loadingServices } = useServicesContext();
+  const { fetchServices, services, statusFetch } = useServicesContext();
   //USE STATES -----------------------
   const [filteredData, setFilteredData] = useState<typeService[]>([]);
+  const [infoText, setInfoText] = useState<string | null>("");
   //USE EFFECTS ----------------------
   useEffect(() => {
     fetchServices();
@@ -32,6 +33,22 @@ const ServicesList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
       )
     );
   }, [filter, services, searchTerm]);
+  useEffect(() => {
+    switch (filter) {
+      case enumServices.all:
+        setInfoText(text[l].segment__all);
+        break;
+      case enumServices.archived:
+        setInfoText(text[l].segment__archived);
+        break;
+      case enumServices.pinned:
+        setInfoText(text[l].segment__pinned);
+        break;
+      default:
+        setInfoText(null);
+        break;
+    }
+  }, [filter]);
   //FUNCTIONS ------------------------
   const filterData = (data: typeService[]) => {
     let auxFilteredData: typeService[] = [];
@@ -61,8 +78,13 @@ const ServicesList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //RETURN COMPONENT -----------------
   return (
     <>
+      {infoText && (
+        <IonLabel>
+          <p className="ion-padding-horizontal">{infoText}</p>
+        </IonLabel>
+      )}
       <IonList inset>
-        {loadingServices ? (
+        {statusFetch.status === "loading" ? (
           <ItemLoading />
         ) : filteredData.length === 0 ? (
           <ItemEmpty />

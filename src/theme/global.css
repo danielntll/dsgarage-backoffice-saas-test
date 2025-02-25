@@ -76,3 +76,7 @@
   inset-inline-start: 12px;
   top: 12px;
 }
+
+ion-popover {
+  --min-height: 150px;
+}

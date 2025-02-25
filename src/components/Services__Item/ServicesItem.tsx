@@ -76,7 +76,7 @@ const ServicesItem: React.FC<ContainerProps> = ({ data }) => {
     <>
       <IonItem>
         <IonThumbnail className="ion-margin-end">
-          <img src={data.imageUrl} alt="" />
+          <img src={data?.image?.url} alt="" />
         </IonThumbnail>
         <IonLabel>
           <h2 className={styles.title}>

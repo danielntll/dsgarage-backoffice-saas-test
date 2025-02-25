@@ -1,7 +1,8 @@
 import { typeFirebaseDataStructure } from "./typeFirebaseDataStructure";
+import { typeImageSimple } from "./typeImageSimple";
 
 export interface typeService extends typeFirebaseDataStructure {
-  imageUrl: string;
+  image: typeImageSimple;
   title: string;
   subtitle: string;
   description: string;

@@ -12,6 +12,7 @@ import {
   IonLabel,
   IonList,
   IonModal,
+  IonSpinner,
   IonTextarea,
   IonThumbnail,
   IonTitle,
@@ -33,7 +34,7 @@ const ServicesModalUpdate: React.FC<ContainerProps> = ({
 }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { updateService } = useServicesContext();
+  const { updateService, statusUpdate } = useServicesContext();
   //CONDITIONS -----------------------
   const [updatedService, setUpdatedService] = useState<typeService>(
     serviceToUpdate ?? emptyService
@@ -93,7 +94,11 @@ const ServicesModalUpdate: React.FC<ContainerProps> = ({
           </IonButtons>
           <IonTitle>{text[l].new_service_modal_title}</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={handleUpdateService} disabled={!isValid}>
+            <IonButton
+              onClick={handleUpdateService}
+              disabled={!isValid || statusUpdate.status === "loading"}
+            >
+              {statusUpdate.status === "loading" && <IonSpinner />}
               {text[l].btn__update}
             </IonButton>
           </IonButtons>
@@ -143,7 +148,7 @@ const ServicesModalUpdate: React.FC<ContainerProps> = ({
         <IonList inset>
           <IonItem>
             <IonThumbnail className="ion-margin">
-              <img src={updatedService.imageUrl} alt="" />
+              <img src={updatedService?.image?.url} alt="" />
             </IonThumbnail>
             <IonLabel>
               <p>{text[l].image__label__selected}</p>
@@ -163,7 +168,10 @@ export default ServicesModalUpdate;
 
 const emptyService: typeService = {
   uid: "",
-  imageUrl: "",
+  image: {
+    url: "",
+    uid: "",
+  },
   title: "",
   subtitle: "",
   description: "",

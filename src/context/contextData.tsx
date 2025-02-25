@@ -18,7 +18,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
+import { db, storage } from "../firebase/firebaseConfig";
 import {
   deleteObject,
   getDownloadURL,
@@ -225,7 +225,6 @@ export const DataContextProvider = ({ children }: any) => {
   ): Promise<string | null> {
     console.log("uploadFile=", filePath);
     try {
-      const storage = getStorage();
       const storageRef = ref(storage, filePath);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -269,7 +268,6 @@ export const DataContextProvider = ({ children }: any) => {
   async function deleteFile(filePath: string): Promise<void> {
     console.log("deleteFile=", filePath);
     try {
-      const storage = getStorage();
       const storageRef = ref(storage, filePath); // Create a reference to the file
 
       await deleteObject(storageRef);

@@ -1,16 +1,13 @@
 import { Timestamp } from "firebase/firestore";
+import { typeFirebaseDataStructure } from "./typeFirebaseDataStructure";
 
-export type typePromotion = {
-  uid: string;
+export interface typePromotion extends typeFirebaseDataStructure {
   target: string;
   title: string;
   subtitle: string;
-  imageUrl: string;
+  imageUrl?: string | null;
   category: string;
   description: string;
-  isVisible: boolean;
-  isPinned: boolean;
   startAt: Timestamp;
   endAt: Timestamp;
-  createdAt: Timestamp;
-};
+}

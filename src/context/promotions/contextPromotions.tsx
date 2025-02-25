@@ -4,27 +4,13 @@ import { AuthContext } from "../contextAuth";
 import { ContextToast } from "../systemEvents/contextToast";
 import { typePromotion } from "../../types/typeTarghet";
 import { text } from "./text";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  setDoc,
-  startAfter,
-  Timestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db, storage } from "../../firebase/firebaseConfig";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { useDataContext } from "../contextData";
 import PromotionsModalUpdate from "../../components/Promotions__Modal__Update/PromotionsModalUpdate";
 import { typePromotionModal } from "../../types/typePromotionModal";
 import { ServicesContextProvider } from "../services/contextServices";
 import { useIonAlert } from "@ionic/react";
+import { getStatusFetch } from "../../utils/getStatusFetch";
+import { typeContextStatus } from "../../types/typeContextStatus";
 
 type dataContext = {
   promotionsData: typePromotion[];
@@ -59,25 +45,24 @@ export const usePromotionsContext = () => React.useContext(PromotionsContext);
 
 export const PromotionsContextProvider = ({ children }: any) => {
   // VARIABLES ------------------------------
-  const perPage: number = 10;
   const { l } = useContext(ContextLanguage);
   const { authenticateUser } = useContext(AuthContext);
   const { toast, loadingAlert, dismissLoadingAlert } = useContext(ContextToast);
+  const { getCollectionData, addDocument, updateDocument, deleteDocument } =
+    useDataContext();
+
+  const [statusFetch, setStatusFetch] = useState<typeContextStatus>(
+    getStatusFetch("loading", "fetch", l)
+  );
+  const [statusFetchTarghets, setStatusFetchTarghets] =
+    useState<typeContextStatus>(getStatusFetch("loading", "fetch", l));
   // USE STATE -----------------------------
   const [promotionsData, setPromotionsData] = useState<typePromotion[]>([]);
-  const [loading, setLoading] = useState(true); // Start with loading true
-  const [error, setError] = useState<any>(null);
-
-  const [currentPage, setCurrentPage] = useState<number>(2);
-
-  const [targets, setTargets] = useState<string[]>([]); // State to store targets
-  const [loadingTargets, setLoadingTargets] = useState(true); // Loading state for targets
-
+  const [targets, setTargets] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<typePromotionModal>({
     isOpen: false,
     mode: "create",
   });
-
   const [presentAlert] = useIonAlert();
   // USE EFFECT ------------------------------
   useEffect(() => {
@@ -90,100 +75,62 @@ export const PromotionsContextProvider = ({ children }: any) => {
 
   const fetchTargets = async () => {
     try {
-      setLoadingTargets(true); // Set loading to true before fetching
-
-      const targetsCollection = collection(db, "customersTarget");
-      const targetsSnapshot = await getDocs(targetsCollection);
-
-      const targetsData = targetsSnapshot.docs.map(
-        (doc) => doc.data().name as string
-      );
-      setTargets(targetsData); // Update the state with fetched targets
+      setStatusFetchTarghets(getStatusFetch("loading", "fetch", l));
+      const targetsData = await getCollectionData<string>("customersTarget");
+      setTargets(targetsData || []);
     } catch (error) {
       console.error("Error fetching targets:", error);
       toast("danger", text[l].error_target_load);
-      // Handle error as needed (e.g., show error message)
+      setStatusFetchTarghets(getStatusFetch("error", "fetch", l));
     } finally {
-      setLoadingTargets(false); // Set loading to false after fetching, regardless of success/failure
+      setStatusFetchTarghets(getStatusFetch("success", "fetch", l));
     }
   };
 
-  // ---  initData
-  /**
-   *
-   */
   const fetchPromotionsData = async () => {
     loadingAlert(text[l].loading);
     try {
-      setLoading(true);
-
-      const promozioniRef = collection(db, "promotions");
-      let q = query(promozioniRef, orderBy("createdAt"));
-
-      if (currentPage > 1 && promotionsData.length > 0) {
-        const lastVisible = promotionsData[promotionsData.length - 1];
-        q = query(q, startAfter(lastVisible.createdAt));
-      }
-
-      q = query(q, limit(perPage));
-
-      const snapshot = await getDocs(q);
-
-      const newData = snapshot.docs.map((doc) => ({
-        ...doc.data(),
-        uid: doc.id,
-      })) as typePromotion[];
-
-      const promotions =
-        currentPage === 1 ? newData : [...promotionsData, ...newData];
-      setPromotionsData(promotions);
-
-      dismissLoadingAlert();
-      newData.length === 0 && toast("success", text[l].success_loading);
+      setStatusFetch(getStatusFetch("loading", "fetch", l));
+      const promotions = await getCollectionData<typePromotion>("promotions");
+      setPromotionsData(promotions || []);
     } catch (err) {
-      dismissLoadingAlert();
-      setError(err);
+      setStatusFetch(getStatusFetch("error", "fetch", l));
       console.error("Error fetching promozioni data:", err);
       toast("danger", text[l].error_loading);
     } finally {
+      setStatusFetch(getStatusFetch("success", "fetch", l));
       dismissLoadingAlert();
-      setLoading(false);
     }
-    dismissLoadingAlert();
   };
 
   const handleEditPromotion = async (
     updatedPromotion: typePromotion,
     imageFile?: File
   ) => {
+    let imageUrl: string | null | undefined = updatedPromotion.imageUrl; // Keep existing URL
+
     try {
       loadingAlert(text[l].updating);
-
-      let imageUrl = updatedPromotion.imageUrl; // Keep existing image URL
-
       if (imageFile) {
-        // If a new image is provided, upload and update
-        const storageRef = ref(storage, `promotions/${imageFile.name}`);
-        await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(storageRef); // Update URL
+        const filePath = `/promotions/${
+          updatedPromotion.title
+        }-${Date.now()}.jpg`; // Adjust path as needed
+        imageUrl = await useDataContext().uploadFile(filePath, imageFile);
+        if (!imageUrl) {
+          throw new Error("Image upload failed");
+        }
       }
-
-      const data: typePromotion = {
-        ...updatedPromotion,
-        imageUrl: imageUrl, // Update with the correct image URL
-      };
-
-      const promotionRef = doc(db, "promotions", data.uid);
-      await updateDoc(promotionRef, data); // No need to spread, just pass the updated object
-
+      const updatedPromo = { ...updatedPromotion, imageUrl };
+      await updateDocument<typePromotion>(
+        "promotions",
+        updatedPromotion.uid!,
+        updatedPromo
+      );
       setPromotionsData((prevData) =>
         prevData.map((promotion) =>
-          promotion.uid === data.uid
-            ? data // Directly use the updated promotion
-            : promotion
+          promotion.uid === updatedPromotion.uid ? updatedPromo : promotion
         )
       );
-
       toast("success", text[l].success_update);
     } catch (error) {
       console.error("Error updating promotion:", error);
@@ -197,27 +144,26 @@ export const PromotionsContextProvider = ({ children }: any) => {
     newPromotion: typePromotion,
     imageFile?: File
   ) => {
+    let imageUrl: string | null = null;
+
     try {
       loadingAlert(text[l].loading);
-      let imageUrl = "";
       if (imageFile) {
-        const storageRef = ref(storage, `promotions/${imageFile.name}`);
-        await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(storageRef);
+        const filePath = `/promotions/${newPromotion.title}-${Date.now()}.jpg`; // Adjust path as needed
+        imageUrl = await useDataContext().uploadFile(filePath, imageFile);
+        if (!imageUrl) {
+          throw new Error("Image upload failed");
+        }
       }
-
-      const data: typePromotion = {
-        ...newPromotion,
-        imageUrl: imageUrl,
-        createdAt: Timestamp.now(),
-      };
-
-      const docRef = await addDoc(collection(db, "promotions"), data);
-      data.uid = docRef.id;
-
-      setPromotionsData((prevData) => [...prevData, data]);
-
-      toast("success", text[l].success_creation);
+      const newPromo = { ...newPromotion, imageUrl };
+      const createdPromotion = await addDocument<typePromotion>(
+        "promotions",
+        newPromo
+      );
+      if (createdPromotion) {
+        setPromotionsData((prevData) => [...prevData, createdPromotion]);
+        toast("success", text[l].success_creation);
+      }
     } catch (error) {
       console.error("Error creating promotion:", error);
       toast("danger", text[l].error_creation);
@@ -225,27 +171,12 @@ export const PromotionsContextProvider = ({ children }: any) => {
       dismissLoadingAlert();
     }
   };
-
   const handleAddTarget = async (newTarget: string) => {
     try {
       loadingAlert(text[l].loading);
-      // 1. Check if target already exists
-      const targetRef = doc(db, "customersTarget", newTarget);
-      const targetSnap = await getDoc(targetRef);
-
-      if (targetSnap.exists()) {
-        // Target already exists, do not add it and throw an error
-        toast("danger", text[l].error_target_exists);
-        throw new Error("Target already exists"); // Or handle differently
-      } else {
-        // 2. Add new target if it doesn't exist
-        await setDoc(targetRef, { name: newTarget }); // Add other fields as needed
-
-        setTargets((prevTargets) => [...prevTargets, newTarget]); // Update targets state
-
-        // 3. Refetch targets and show success toast
-        toast("success", text[l].success_target_add);
-      }
+      await addDocument("customersTarget", { name: newTarget });
+      setTargets((prevTargets) => [...prevTargets, newTarget]);
+      toast("success", text[l].success_target_add);
     } catch (error) {
       console.error("Error adding target:", error);
       toast("danger", text[l].error_target_add);
@@ -256,10 +187,8 @@ export const PromotionsContextProvider = ({ children }: any) => {
 
   const deletePromotion = async (promotionToDelete: typePromotion) => {
     try {
-      loadingAlert(text[l].deleting); // Show loading alert
-      const promotionRef = doc(db, "promotions", promotionToDelete.uid);
-      await deleteDoc(promotionRef);
-
+      loadingAlert(text[l].deleting);
+      await deleteDocument("promotions", promotionToDelete.uid!);
       setPromotionsData((prevData) =>
         prevData.filter((promotion) => promotion.uid !== promotionToDelete.uid)
       );
@@ -268,9 +197,10 @@ export const PromotionsContextProvider = ({ children }: any) => {
       console.error("Error deleting promotion:", error);
       toast("danger", text[l].error_delete);
     } finally {
-      dismissLoadingAlert(); // Dismiss loading alert in all cases
+      dismissLoadingAlert();
     }
   };
+
   const handleDeletePromotion = async (dataToDelete: typePromotion) => {
     presentAlert({
       header: text[l].delete__alert__header,
@@ -284,7 +214,6 @@ export const PromotionsContextProvider = ({ children }: any) => {
           text: text[l].btn__delete,
           role: "confirm",
           cssClass: "alert-button-delete",
-
           handler: () => {
             deletePromotion(dataToDelete);
           },
@@ -295,9 +224,13 @@ export const PromotionsContextProvider = ({ children }: any) => {
 
   const togglePinPromotion = async (promotionToToggle: typePromotion) => {
     try {
-      const promotionRef = doc(db, "promotions", promotionToToggle.uid);
-      await updateDoc(promotionRef, { isPinned: !promotionToToggle.isPinned });
-
+      await updateDocument<typePromotion>(
+        "promotions",
+        promotionToToggle.uid!,
+        {
+          isPinned: !promotionToToggle.isPinned,
+        }
+      );
       setPromotionsData((prevData) =>
         prevData.map((promotion) =>
           promotion.uid === promotionToToggle.uid
@@ -305,14 +238,13 @@ export const PromotionsContextProvider = ({ children }: any) => {
             : promotion
         )
       );
-
       toast(
         "success",
         promotionToToggle.isPinned ? text[l].success_unpin : text[l].success_pin
-      ); // Show appropriate toast message
+      );
     } catch (error) {
       console.error("Error toggling pin on promotion:", error);
-      toast("danger", text[l].error_pin); // Generic error message
+      toast("danger", text[l].error_pin);
     }
   };
 
@@ -320,28 +252,28 @@ export const PromotionsContextProvider = ({ children }: any) => {
     promotionToToggle: typePromotion
   ) => {
     try {
-      const promotionRef = doc(db, "promotions", promotionToToggle.uid);
-      await updateDoc(promotionRef, {
-        isVisible: !promotionToToggle.isVisible,
-      });
-
+      await updateDocument<typePromotion>(
+        "promotions",
+        promotionToToggle.uid!,
+        {
+          isArchived: !promotionToToggle.isArchived,
+        }
+      );
       setPromotionsData((prevData) =>
         prevData.map((promotion) =>
           promotion.uid === promotionToToggle.uid
-            ? { ...promotion, isVisible: !promotion.isVisible }
+            ? { ...promotion, isVisible: !promotion.isArchived }
             : promotion
         )
       );
-
       toast(
         "success",
-        promotionToToggle.isVisible
+        promotionToToggle.isArchived
           ? text[l].success_hide
           : text[l].success_show
-      ); // Show appropriate toast message
+      );
     } catch (error) {
       console.error("Error toggling visibility on promotion:", error);
-
       toast("danger", text[l].error_visibility);
     }
   };
@@ -351,8 +283,7 @@ export const PromotionsContextProvider = ({ children }: any) => {
   };
 
   const openCreationModal = () => {
-    console.log("openCreationModal");
-    setIsModalOpen({ isOpen: true, mode: "create" });
+    setIsModalOpen({ isOpen: true, mode: "create", promotion: undefined });
   };
 
   // RETURN ---------------------------------
@@ -373,7 +304,6 @@ export const PromotionsContextProvider = ({ children }: any) => {
         }}
       >
         {children}
-        {/* ----------- MODALS ------- */}
         <PromotionsModalUpdate
           showModal={isModalOpen.isOpen}
           setShowModal={() =>

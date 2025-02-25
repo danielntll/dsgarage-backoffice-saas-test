@@ -331,16 +331,11 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
 export default PromotionsModalUpdate;
 
 const emptyValue: typePromotion = {
-  uid: "",
-  target: "",
   title: "",
-  subtitle: "",
-  imageUrl: "",
-  category: "",
   description: "",
-  isVisible: false,
-  isPinned: false,
-  startAt: Timestamp.now(),
-  endAt: Timestamp.now(),
-  createdAt: Timestamp.now(),
+  category: "",
+  target: "",
+  startAt: Timestamp.fromDate(new Date()),
+  endAt: Timestamp.fromDate(new Date()),
+  subtitle: "",
 };
