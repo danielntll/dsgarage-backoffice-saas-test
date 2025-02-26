@@ -21,7 +21,7 @@ import {
   listOutline,
 } from "ionicons/icons";
 import { usePromotionsContext } from "../../context/promotions/contextPromotions";
-import { typePromotion } from "../../types/typeTarghet";
+import { typePromotion } from "../../types/typePromotion";
 import PromotionsItem from "../Promotions__Item/PromotionsItem";
 
 interface ContainerProps {

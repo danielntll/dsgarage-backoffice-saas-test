@@ -1,6 +1,3 @@
-import styles from "./CarPromotionList.module.css";
-import { useContextLanguage } from "../../context/contextLanguage";
-import { text } from "./text";
 import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
 import { IonList } from "@ionic/react";
 import CarPromotionItem from "../CarPromotion__Item/CarPromotionItem";
@@ -17,7 +14,6 @@ interface ContainerProps {
 
 const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   //VARIABLES ------------------------
-  const { l } = useContextLanguage();
   const { carPromotions, initData, statusFetch } = useCarPromotionContext();
   //USE STATES -----------------------
   const [filteredPromotions, setFilteredPromotions] =

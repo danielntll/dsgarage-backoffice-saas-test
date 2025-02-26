@@ -1,5 +1,11 @@
 export const textDataManaging = {
   it_IT: {
+    notInitializzed: {
+      fetch: "",
+      upload: "",
+      update: "",
+      delete: "",
+    },
     loading: {
       fetch: "Caricamento in corso...",
       upload: "Registrazione dei dati in corso...",
@@ -20,6 +26,12 @@ export const textDataManaging = {
     },
   },
   en_GB: {
+    notInitializzed: {
+      fetch: "",
+      upload: "",
+      update: "",
+      delete: "",
+    },
     loading: {
       fetch: "Loading...",
       upload: "Saving data...",

@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../contextAuth";
 import { typeService } from "../../types/typeService";
 import { ContextToast } from "../systemEvents/contextToast";
 import { ContextLanguage } from "../contextLanguage";
@@ -29,9 +28,9 @@ type dataContext = {
 
 export const ServicesContext = React.createContext<dataContext>({
   services: [],
-  statusFetch: { status: "success", message: "" },
-  statusUpdate: { status: "success", message: "" },
-  statusCreate: { status: "success", message: "" },
+  statusFetch: { status: "notInitializzed", message: "" },
+  statusUpdate: { status: "notInitializzed", message: "" },
+  statusCreate: { status: "notInitializzed", message: "" },
   fetchServices: async () => {},
   createService: async () => {},
   updateService: async () => {},
@@ -46,7 +45,6 @@ export const useServicesContext = () => React.useContext(ServicesContext);
 export const ServicesContextProvider = ({ children }: any) => {
   // VARIABLES ------------------------------
   const DEFALUT_PATH = "services";
-  const { authenticateUser } = useContext(AuthContext);
   const { toast, loadingAlert, dismissLoadingAlert } = useContext(ContextToast);
   const { l } = useContext(ContextLanguage);
   const {
@@ -59,13 +57,13 @@ export const ServicesContextProvider = ({ children }: any) => {
   } = useDataContext();
 
   const [statusFetch, setStatusFetch] = useState<typeContextStatus>(
-    getStatusFetch("loading", "fetch", l)
+    getStatusFetch("notInitializzed", "fetch", l)
   );
   const [statusUpdate, setStatusUpdate] = useState<typeContextStatus>(
-    getStatusFetch("success", "update", l)
+    getStatusFetch("notInitializzed", "update", l)
   );
   const [statusCreate, setStatusCreate] = useState<typeContextStatus>(
-    getStatusFetch("success", "upload", l)
+    getStatusFetch("notInitializzed", "upload", l)
   );
 
   // USE STATE ------------------------------
@@ -79,11 +77,6 @@ export const ServicesContextProvider = ({ children }: any) => {
   >(undefined);
 
   // USE EFFECT -----------------------------
-  useEffect(() => {
-    if (authenticateUser !== undefined) {
-      fetchServices();
-    }
-  }, [authenticateUser]);
   // FUNCTIONS ------------------------------
   const handleUpdateService = (srvToUpdate: typeService) => {
     if (srvToUpdate) {

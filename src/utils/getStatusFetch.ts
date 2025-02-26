@@ -3,7 +3,7 @@ import { typeAvailableLanguages } from "../types/typeAvailableLanguage";
 import { typeContextStatus } from "../types/typeContextStatus";
 
 export const getStatusFetch = (
-  status: "loading" | "error" | "success",
+  status: "notInitializzed" | "loading" | "error" | "success",
   type: "fetch" | "upload" | "update" | "delete",
   language: typeAvailableLanguages,
   message?: string

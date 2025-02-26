@@ -25,7 +25,6 @@ const GalleryList: React.FC<ContainerProps> = ({ searchTerm, filter }) => {
   );
   //USE EFFECTS ----------------------
   useEffect(() => {
-    console.log("useEffect GalleryList");
     initState();
   }, []);
 

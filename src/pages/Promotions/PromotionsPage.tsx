@@ -2,9 +2,12 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonLabel,
   IonMenuButton,
   IonPage,
   IonSearchbar,
+  IonSegment,
+  IonSegmentButton,
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
@@ -17,6 +20,8 @@ import PromotionsAll from "../../components/Promotions__All/PromotionsAll";
 import { PromotionsContextProvider } from "../../context/promotions/contextPromotions";
 import PromotionButtonNew from "../../components/Promotion__Button__New/PromotionButtonNew";
 import { ServicesContextProvider } from "../../context/services/contextServices";
+import { enumPromotions } from "../../enum/enumPromotions";
+import PromotionsList from "../../components/Promotions__List/PromotionsList";
 
 interface PageProps {}
 
@@ -25,11 +30,12 @@ const PromotionsPage: React.FC<PageProps> = ({}) => {
   const { l } = useContext(ContextLanguage);
   //CONDITIONS -----------------------
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [segment, setSegment] = useState<enumPromotions>(enumPromotions.all);
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------
   return (
-    <PromotionsContextProvider>
-      <ServicesContextProvider>
+    <ServicesContextProvider>
+      <PromotionsContextProvider>
         <IonPage>
           <IonHeader>
             <IonToolbar>
@@ -54,16 +60,44 @@ const PromotionsPage: React.FC<PageProps> = ({}) => {
                   onIonInput={(e) => setSearchTerm(e.detail.value!)}
                 />
               </IonToolbar>
+              {/* -------- */}
+              <IonToolbar>
+                <IonSegment
+                  value={segment}
+                  onIonChange={(e) =>
+                    setSegment(e.detail.value as enumPromotions)
+                  }
+                >
+                  <IonSegmentButton value={enumPromotions.all}>
+                    <IonLabel>{text[l].segment__all}</IonLabel>
+                  </IonSegmentButton>
+                  <IonSegmentButton value={enumPromotions.pinned}>
+                    <IonLabel>{text[l].segment__pinned}</IonLabel>
+                  </IonSegmentButton>
+                  <IonSegmentButton value={enumPromotions.inProgress}>
+                    <IonLabel>{text[l].segment__inProgress}</IonLabel>
+                  </IonSegmentButton>
+                  <IonSegmentButton value={enumPromotions.notStarted}>
+                    <IonLabel>{text[l].segment__notStarted}</IonLabel>
+                  </IonSegmentButton>
+                  <IonSegmentButton value={enumPromotions.expired}>
+                    <IonLabel>{text[l].segment__expired}</IonLabel>
+                  </IonSegmentButton>
+                  <IonSegmentButton value={enumPromotions.archived}>
+                    <IonLabel>{text[l].segment__archived}</IonLabel>
+                  </IonSegmentButton>
+                </IonSegment>
+              </IonToolbar>
             </IonHeader>
             {/* ----------------- PAGE CONTENT ------------------*/}
             <div className={styles.content + " ion-padding"}>
-              <PromotionsAll searchTerm={searchTerm} />
+              <PromotionsList filter={segment} searchTerm={searchTerm} />
             </div>
             {/* ----------------- EXTRA UI ----------------------*/}
           </IonContent>
         </IonPage>
-      </ServicesContextProvider>
-    </PromotionsContextProvider>
+      </PromotionsContextProvider>
+    </ServicesContextProvider>
   );
 };
 

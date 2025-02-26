@@ -2,81 +2,124 @@ import React, { useContext, useEffect, useState } from "react";
 import { ContextLanguage } from "../contextLanguage";
 import { AuthContext } from "../contextAuth";
 import { ContextToast } from "../systemEvents/contextToast";
-import { typePromotion } from "../../types/typeTarghet";
+import { typePromotion } from "../../types/typePromotion";
 import { text } from "./text";
 import { useDataContext } from "../contextData";
-import PromotionsModalUpdate from "../../components/Promotions__Modal__Update/PromotionsModalUpdate";
 import { typePromotionModal } from "../../types/typePromotionModal";
-import { ServicesContextProvider } from "../services/contextServices";
+import {
+  ServicesContextProvider,
+  useServicesContext,
+} from "../services/contextServices";
 import { useIonAlert } from "@ionic/react";
 import { getStatusFetch } from "../../utils/getStatusFetch";
 import { typeContextStatus } from "../../types/typeContextStatus";
+import PromotionsModalCreateAndUpdate from "../../components/Promotions__Modal__CreateAndUpdate/PromotionsModalCreateAndUpdate";
+import { typeTarget } from "../../types/typeTarget";
 
 type dataContext = {
   promotionsData: typePromotion[];
-  targets: string[];
+  targets: typeTarget[];
+  statusInitPromotionData: typeContextStatus;
+  statusFetchPromotions: typeContextStatus;
+  statusFetchTarghets: typeContextStatus;
   handleCreatePromotion: (
     newPromotion: typePromotion,
     imageFile?: File
   ) => Promise<void>;
   handleAddTarget: (newTarget: string) => Promise<void>;
   handleDeletePromotion: (t: typePromotion) => Promise<void>;
-  togglePinPromotion: (t: typePromotion) => Promise<void>;
-  toggleVisibilityPromotion: (t: typePromotion) => Promise<void>;
+  toggleIsPinned: (t: typePromotion) => Promise<void>;
+  toggleIsArchived: (t: typePromotion) => Promise<void>;
   handleEditPromotion: (t: typePromotion, imageFile?: File) => Promise<void>;
-  openPromotionModal: (t: typePromotion) => void;
+  openUpdateModal: (t: typePromotion) => void;
   openCreationModal: () => void;
+  initData: () => void;
 };
 
 export const PromotionsContext = React.createContext<dataContext>({
   promotionsData: [],
   targets: [],
+  statusInitPromotionData: { message: "", status: "notInitializzed" },
+  statusFetchPromotions: { message: "", status: "notInitializzed" },
+  statusFetchTarghets: { message: "", status: "notInitializzed" },
   handleCreatePromotion: async () => {},
   handleAddTarget: async () => {},
   handleDeletePromotion: async () => {},
-  togglePinPromotion: async () => {},
-  toggleVisibilityPromotion: async () => {},
+  toggleIsPinned: async () => {},
+  toggleIsArchived: async () => {},
   handleEditPromotion: async () => {},
-  openPromotionModal: () => {},
+  openUpdateModal: () => {},
   openCreationModal: () => {},
+  initData: () => {},
 });
 
 export const usePromotionsContext = () => React.useContext(PromotionsContext);
 
 export const PromotionsContextProvider = ({ children }: any) => {
   // VARIABLES ------------------------------
+  const DEFAULT_PATH = "promotions";
+  const DEFAULT_PATH_TARGHETS = "customersTarget";
   const { l } = useContext(ContextLanguage);
   const { authenticateUser } = useContext(AuthContext);
   const { toast, loadingAlert, dismissLoadingAlert } = useContext(ContextToast);
-  const { getCollectionData, addDocument, updateDocument, deleteDocument } =
-    useDataContext();
+  const {
+    getCollectionData,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    uploadFile,
+  } = useDataContext();
 
-  const [statusFetch, setStatusFetch] = useState<typeContextStatus>(
-    getStatusFetch("loading", "fetch", l)
-  );
+  const { statusFetch, fetchServices } = useServicesContext();
+
+  const [statusInitPromotionData, setStatusInitPromotionsData] =
+    useState<typeContextStatus>(getStatusFetch("notInitializzed", "fetch", l));
+  const [statusFetchPromotions, setStatusFetchPromotions] =
+    useState<typeContextStatus>(getStatusFetch("notInitializzed", "fetch", l));
   const [statusFetchTarghets, setStatusFetchTarghets] =
-    useState<typeContextStatus>(getStatusFetch("loading", "fetch", l));
+    useState<typeContextStatus>(getStatusFetch("notInitializzed", "fetch", l));
   // USE STATE -----------------------------
   const [promotionsData, setPromotionsData] = useState<typePromotion[]>([]);
-  const [targets, setTargets] = useState<string[]>([]);
+  const [targets, setTargets] = useState<typeTarget[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<typePromotionModal>({
     isOpen: false,
     mode: "create",
   });
   const [presentAlert] = useIonAlert();
   // USE EFFECT ------------------------------
-  useEffect(() => {
-    if (authenticateUser !== undefined) {
-      fetchPromotionsData();
-      fetchTargets();
-    }
-  }, [authenticateUser]);
   // FUNCTIONS ------------------------------
+  async function initData() {
+    if (authenticateUser !== undefined) {
+      setStatusInitPromotionsData(getStatusFetch("loading", "fetch", l));
+      try {
+        console.log("statusFetch.status: ", statusFetch.status);
+        if (statusFetch.status === "notInitializzed") {
+          console.log("DO THIS");
+          await Promise.all([
+            fetchPromotionsData(),
+            fetchTargets(),
+            fetchServices(),
+          ]);
+        } else {
+          await Promise.all([fetchPromotionsData(), fetchTargets()]);
+        }
+        setStatusInitPromotionsData(getStatusFetch("success", "fetch", l));
+      } catch (error) {
+        console.error("Error during initData:", error);
+        setStatusInitPromotionsData(getStatusFetch("error", "fetch", l));
+      }
+    } else {
+      setStatusFetchPromotions(getStatusFetch("error", "fetch", l));
+      setStatusInitPromotionsData(getStatusFetch("error", "fetch", l));
+    }
+  }
 
   const fetchTargets = async () => {
     try {
       setStatusFetchTarghets(getStatusFetch("loading", "fetch", l));
-      const targetsData = await getCollectionData<string>("customersTarget");
+      const targetsData = await getCollectionData<typeTarget>(
+        DEFAULT_PATH_TARGHETS
+      );
       setTargets(targetsData || []);
     } catch (error) {
       console.error("Error fetching targets:", error);
@@ -86,19 +129,18 @@ export const PromotionsContextProvider = ({ children }: any) => {
       setStatusFetchTarghets(getStatusFetch("success", "fetch", l));
     }
   };
-
   const fetchPromotionsData = async () => {
-    loadingAlert(text[l].loading);
+    loadingAlert(text[l].loadingFetching);
     try {
-      setStatusFetch(getStatusFetch("loading", "fetch", l));
-      const promotions = await getCollectionData<typePromotion>("promotions");
+      setStatusFetchPromotions(getStatusFetch("loading", "fetch", l));
+      const promotions = await getCollectionData<typePromotion>(DEFAULT_PATH);
       setPromotionsData(promotions || []);
     } catch (err) {
-      setStatusFetch(getStatusFetch("error", "fetch", l));
+      setStatusFetchPromotions(getStatusFetch("error", "fetch", l));
       console.error("Error fetching promozioni data:", err);
       toast("danger", text[l].error_loading);
     } finally {
-      setStatusFetch(getStatusFetch("success", "fetch", l));
+      setStatusFetchPromotions(getStatusFetch("success", "fetch", l));
       dismissLoadingAlert();
     }
   };
@@ -112,17 +154,17 @@ export const PromotionsContextProvider = ({ children }: any) => {
     try {
       loadingAlert(text[l].updating);
       if (imageFile) {
-        const filePath = `/promotions/${
+        const filePath = `/${DEFAULT_PATH}/${
           updatedPromotion.title
         }-${Date.now()}.jpg`; // Adjust path as needed
-        imageUrl = await useDataContext().uploadFile(filePath, imageFile);
+        imageUrl = await uploadFile(filePath, imageFile);
         if (!imageUrl) {
           throw new Error("Image upload failed");
         }
       }
       const updatedPromo = { ...updatedPromotion, imageUrl };
       await updateDocument<typePromotion>(
-        "promotions",
+        DEFAULT_PATH,
         updatedPromotion.uid!,
         updatedPromo
       );
@@ -145,19 +187,20 @@ export const PromotionsContextProvider = ({ children }: any) => {
     imageFile?: File
   ) => {
     let imageUrl: string | null = null;
-
     try {
-      loadingAlert(text[l].loading);
+      loadingAlert(text[l].loadingCreate);
       if (imageFile) {
-        const filePath = `/promotions/${newPromotion.title}-${Date.now()}.jpg`; // Adjust path as needed
-        imageUrl = await useDataContext().uploadFile(filePath, imageFile);
+        const filePath = `/${DEFAULT_PATH}/${
+          newPromotion.title
+        }-${Date.now()}.jpg`; // Adjust path as needed
+        imageUrl = await uploadFile(filePath, imageFile);
         if (!imageUrl) {
           throw new Error("Image upload failed");
         }
       }
       const newPromo = { ...newPromotion, imageUrl };
       const createdPromotion = await addDocument<typePromotion>(
-        "promotions",
+        DEFAULT_PATH,
         newPromo
       );
       if (createdPromotion) {
@@ -171,11 +214,15 @@ export const PromotionsContextProvider = ({ children }: any) => {
       dismissLoadingAlert();
     }
   };
+
   const handleAddTarget = async (newTarget: string) => {
     try {
-      loadingAlert(text[l].loading);
-      await addDocument("customersTarget", { name: newTarget });
-      setTargets((prevTargets) => [...prevTargets, newTarget]);
+      loadingAlert(text[l].loadingTarger);
+      const newTargetObj: typeTarget = {
+        name: newTarget,
+      };
+      await addDocument(DEFAULT_PATH_TARGHETS, newTargetObj);
+      setTargets((prevTargets) => [...prevTargets, newTargetObj]);
       toast("success", text[l].success_target_add);
     } catch (error) {
       console.error("Error adding target:", error);
@@ -188,7 +235,7 @@ export const PromotionsContextProvider = ({ children }: any) => {
   const deletePromotion = async (promotionToDelete: typePromotion) => {
     try {
       loadingAlert(text[l].deleting);
-      await deleteDocument("promotions", promotionToDelete.uid!);
+      await deleteDocument(DEFAULT_PATH, promotionToDelete.uid!);
       setPromotionsData((prevData) =>
         prevData.filter((promotion) => promotion.uid !== promotionToDelete.uid)
       );
@@ -222,10 +269,10 @@ export const PromotionsContextProvider = ({ children }: any) => {
     });
   };
 
-  const togglePinPromotion = async (promotionToToggle: typePromotion) => {
+  const toggleIsPinned = async (promotionToToggle: typePromotion) => {
     try {
       await updateDocument<typePromotion>(
-        "promotions",
+        DEFAULT_PATH,
         promotionToToggle.uid!,
         {
           isPinned: !promotionToToggle.isPinned,
@@ -248,12 +295,10 @@ export const PromotionsContextProvider = ({ children }: any) => {
     }
   };
 
-  const toggleVisibilityPromotion = async (
-    promotionToToggle: typePromotion
-  ) => {
+  const toggleIsArchived = async (promotionToToggle: typePromotion) => {
     try {
       await updateDocument<typePromotion>(
-        "promotions",
+        DEFAULT_PATH,
         promotionToToggle.uid!,
         {
           isArchived: !promotionToToggle.isArchived,
@@ -262,13 +307,13 @@ export const PromotionsContextProvider = ({ children }: any) => {
       setPromotionsData((prevData) =>
         prevData.map((promotion) =>
           promotion.uid === promotionToToggle.uid
-            ? { ...promotion, isVisible: !promotion.isArchived }
+            ? { ...promotion, isArchived: !promotion.isArchived }
             : promotion
         )
       );
       toast(
         "success",
-        promotionToToggle.isArchived
+        !promotionToToggle.isArchived
           ? text[l].success_hide
           : text[l].success_show
       );
@@ -278,7 +323,7 @@ export const PromotionsContextProvider = ({ children }: any) => {
     }
   };
 
-  const openPromotionModal = (t: typePromotion) => {
+  const openUpdateModal = (t: typePromotion) => {
     setIsModalOpen({ isOpen: true, mode: "update", promotion: t });
   };
 
@@ -288,35 +333,37 @@ export const PromotionsContextProvider = ({ children }: any) => {
 
   // RETURN ---------------------------------
   return (
-    <ServicesContextProvider>
-      <PromotionsContext.Provider
-        value={{
-          promotionsData,
-          handleAddTarget,
-          targets,
-          handleCreatePromotion,
-          handleDeletePromotion,
-          togglePinPromotion,
-          toggleVisibilityPromotion,
-          handleEditPromotion,
-          openPromotionModal,
-          openCreationModal,
-        }}
-      >
-        {children}
-        <PromotionsModalUpdate
-          showModal={isModalOpen.isOpen}
-          setShowModal={() =>
-            setIsModalOpen({
-              isOpen: false,
-              mode: "create",
-              promotion: undefined,
-            })
-          }
-          type={isModalOpen.mode}
-          promotionToUpdate={isModalOpen.promotion}
-        />
-      </PromotionsContext.Provider>
-    </ServicesContextProvider>
+    <PromotionsContext.Provider
+      value={{
+        promotionsData,
+        targets,
+        statusInitPromotionData,
+        statusFetchPromotions,
+        statusFetchTarghets,
+        handleAddTarget,
+        handleCreatePromotion,
+        handleDeletePromotion,
+        toggleIsPinned,
+        toggleIsArchived,
+        handleEditPromotion,
+        openUpdateModal,
+        openCreationModal,
+        initData,
+      }}
+    >
+      {children}
+      <PromotionsModalCreateAndUpdate
+        showModal={isModalOpen.isOpen}
+        setShowModal={() =>
+          setIsModalOpen({
+            isOpen: false,
+            mode: "create",
+            promotion: undefined,
+          })
+        }
+        type={isModalOpen.mode}
+        promotionToUpdate={isModalOpen.promotion}
+      />
+    </PromotionsContext.Provider>
   );
 };
