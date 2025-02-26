@@ -8,4 +8,5 @@ export type typeRoute = {
     active: string;
     notActive: string;
   };
+  description?: string;
 };

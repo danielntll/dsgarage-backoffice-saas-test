@@ -19,6 +19,13 @@ export const appRoutes: typeRoute[] = [
   route_ImpostazioniPage,
 ];
 
+export const homeRoutes: typeRoute[] = [
+  route_CarPromotionPage,
+  route_GalleryPage,
+  route_ServicesPage,
+  route_PromotionsPage,
+];
+
 export const allRoutes = {
   route_HomePage,
   route_ImpostazioniPage,

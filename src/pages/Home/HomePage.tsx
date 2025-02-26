@@ -1,7 +1,10 @@
 import {
+  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
+  IonLabel,
   IonMenuButton,
   IonPage,
   IonTitle,
@@ -11,10 +14,8 @@ import styles from "./HomePage.module.css";
 import { useContext, useEffect, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { useLocation } from "react-router";
-import { appRoutes } from "../../routes/routes";
+import { appRoutes, homeRoutes } from "../../routes/routes";
 import { typeRoute } from "../../types/typeRoute";
-import GalleryHandler from "../../components/Gallery__Handler/GalleryHandler";
-import { GalleryContextProvider } from "../../context/gallery/contextGallery";
 import { typeImage } from "../../types/typeImage";
 
 interface PageProps {}
@@ -53,6 +54,30 @@ const HomePage: React.FC<PageProps> = ({}) => {
           </IonToolbar>
         </IonHeader>
         {/* ----------------- PAGE CONTENT ------------------*/}
+        <div className="ion-padding">
+          {homeRoutes.map((route: typeRoute, index: number) => {
+            return (
+              <>
+                <IonButton
+                  fill="outline"
+                  key={index}
+                  expand="block"
+                  routerLink={route.path}
+                >
+                  <IonIcon
+                    className="ion-margin-end"
+                    icon={route.icons.notActive}
+                  />
+                  {route.tab[l]}
+                </IonButton>
+                <IonLabel>
+                  <p>{route.description}</p>
+                </IonLabel>
+                <br />
+              </>
+            );
+          })}
+        </div>
         {/* ----------------- EXTRA UI ----------------------*/}
       </IonContent>
     </IonPage>
