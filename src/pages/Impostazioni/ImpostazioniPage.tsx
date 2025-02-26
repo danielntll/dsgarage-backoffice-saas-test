@@ -53,9 +53,9 @@ import { useLocation } from "react-router";
 import { typeRoute } from "../../types/typeRoute";
 import { typeAvailableLanguages } from "../../types/typeAvailableLanguage";
 
-interface PageProps { }
+interface PageProps {}
 
-const ImpostazioniPage: React.FC<PageProps> = ({ }) => {
+const ImpostazioniPage: React.FC<PageProps> = ({}) => {
   //VARIABLES ------------------------
   const { l, updateLanguage } = useContext(ContextLanguage);
   const { authenticateUser, auth } = useContext(AuthContext);
@@ -129,9 +129,9 @@ const ImpostazioniPage: React.FC<PageProps> = ({ }) => {
     setIsModalDeleteAccount(true);
   };
 
-  const handlePremium = () => { }; // TODO !!!
-  const handleDettagliAbbonamento = () => { }; // TODO !!!
-  const handleStoricoAbbonamento = () => { }; // TODO !!!
+  const handlePremium = () => {}; // TODO !!!
+  const handleDettagliAbbonamento = () => {}; // TODO !!!
+  const handleStoricoAbbonamento = () => {}; // TODO !!!
 
   // --- notifiche
   const handleEnableVantaggi = async () => {
@@ -332,7 +332,7 @@ const ImpostazioniPage: React.FC<PageProps> = ({ }) => {
           </IonList>
 
           {/* -------- DELETE ACCOUNT ------ */}
-          <IonList inset>
+          {/* <IonList inset>
             <IonItem button onClick={openDeleteModal} detail={false}>
               <IonLabel>
                 <IonText color={"danger"}>{text[l].btn__delete}</IonText>
@@ -341,7 +341,7 @@ const ImpostazioniPage: React.FC<PageProps> = ({ }) => {
                 <IonIcon icon={trashOutline} />
               </IonButton>
             </IonItem>
-          </IonList>
+          </IonList> */}
         </div>
         {/* ----------------- EXTRA UI ----------------------*/}
         {/* ---- Request change Email ----  */}
