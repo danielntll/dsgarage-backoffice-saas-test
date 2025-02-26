@@ -16,7 +16,6 @@ import { text } from "./text";
 import styles from "./PromotionsPage.module.css";
 import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
-import PromotionsAll from "../../components/Promotions__All/PromotionsAll";
 import { PromotionsContextProvider } from "../../context/promotions/contextPromotions";
 import PromotionButtonNew from "../../components/Promotion__Button__New/PromotionButtonNew";
 import { ServicesContextProvider } from "../../context/services/contextServices";
@@ -63,6 +62,7 @@ const PromotionsPage: React.FC<PageProps> = ({}) => {
               {/* -------- */}
               <IonToolbar>
                 <IonSegment
+                  scrollable={true}
                   value={segment}
                   onIonChange={(e) =>
                     setSegment(e.detail.value as enumPromotions)
