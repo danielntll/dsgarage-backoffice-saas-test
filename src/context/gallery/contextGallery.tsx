@@ -407,11 +407,7 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
   };
 
-  const handleSaveEdit = async (
-    editedImage: typeImage,
-    editedAlt: string,
-    editedDescription: string
-  ): Promise<boolean> => {
+  const handleSaveEdit = async (editedImage: typeImage): Promise<boolean> => {
     if (!editedImage) return false;
     presentLoading({
       message: text[l].loading,
@@ -419,15 +415,19 @@ export const GalleryContextProvider = ({ children }: any) => {
     try {
       const imageRef = doc(db, "gallery", editedImage.uid!);
       await updateDoc(imageRef, {
-        alt: editedAlt,
-        description: editedDescription,
+        alt: editedImage.alt,
+        description: editedImage.description,
       });
 
       // Update local state directly
       setGalleryData((prevData) =>
         prevData!.map((item) =>
           item.uid === editedImage.uid
-            ? { ...item, alt: editedAlt, description: editedDescription }
+            ? {
+                ...item,
+                alt: editedImage.alt,
+                description: editedImage.description,
+              }
             : item
         )
       );
@@ -437,7 +437,11 @@ export const GalleryContextProvider = ({ children }: any) => {
         setPinnedData((prevData) =>
           prevData.map((item) =>
             item.uid === editedImage.uid
-              ? { ...item, alt: editedAlt, description: editedDescription }
+              ? {
+                  ...item,
+                  alt: editedImage.alt,
+                  description: editedImage.description,
+                }
               : item
           )
         );
@@ -480,7 +484,7 @@ export const GalleryContextProvider = ({ children }: any) => {
           <ImageOverlay
             showOverlay={showOverlay}
             overlayImage={overlayImage}
-            closeOverlay={closeOverlay}
+            callbackCloseOverlay={closeOverlay}
           />
         )}
         <ImageModalModify
