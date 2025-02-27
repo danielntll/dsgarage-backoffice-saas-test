@@ -16,7 +16,6 @@ import styles from "./ServicesPage.module.css";
 import { useContext, useState } from "react";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { route_ServicesPage } from "../../routes/singleRoute";
-import ServicesAll from "../../components/Services__All/ServicesAll";
 import { ServicesContextProvider } from "../../context/services/contextServices";
 import ServicesButtonCreate from "../../components/Services__Button__Create/ServicesButtonCreate";
 import { enumServices } from "../../enum/enumServices";

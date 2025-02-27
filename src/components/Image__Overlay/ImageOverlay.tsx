@@ -28,7 +28,7 @@ const ImageOverlay: React.FC<ContainerProps> = ({
   const [image, setImage] = useState<typeImage | null>(overlayImage);
   //FUNCTIONS ------------------------
   useEffect(() => {
-    if (overlayImage) {
+    if (overlayImage && galleryData) {
       setImage(galleryData.filter((item) => item.uid === overlayImage.uid)[0]);
     }
   }, [galleryData]);
