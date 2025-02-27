@@ -28,7 +28,7 @@ const ServicesCard: React.FC<ContainerProps> = ({ service }) => {
   return (
     <IonCard className={styles.container}>
       <div className={`${styles.imageContainer} ion-padding-top`}>
-        <img className={styles.image} src={service.imageUrl} alt="" />
+        <img className={styles.image} src={service.image.url} alt="" />
       </div>
       <IonCardHeader>
         <IonCardSubtitle>
