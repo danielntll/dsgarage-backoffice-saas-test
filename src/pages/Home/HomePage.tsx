@@ -57,10 +57,9 @@ const HomePage: React.FC<PageProps> = ({}) => {
         <div className="ion-padding">
           {homeRoutes.map((route: typeRoute, index: number) => {
             return (
-              <>
+              <div key={index + route.path}>
                 <IonButton
                   fill="outline"
-                  key={index}
                   expand="block"
                   routerLink={route.path}
                 >
@@ -74,7 +73,7 @@ const HomePage: React.FC<PageProps> = ({}) => {
                   <p>{route.description}</p>
                 </IonLabel>
                 <br />
-              </>
+              </div>
             );
           })}
         </div>
