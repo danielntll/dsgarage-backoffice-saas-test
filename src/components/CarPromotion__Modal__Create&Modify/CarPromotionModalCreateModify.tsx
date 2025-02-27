@@ -45,7 +45,6 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
   const { addData, updateInfo } = useCarPromotionContext();
-  const { handleUploadImages } = useGalleryContext();
   //USE STATES -----------------------
   const [formIsValid, setFormIsValid] = useState(elementToModify != null);
   const [carInfo, setCarInfo] = useState<CarInfo>(
@@ -342,13 +341,10 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
               </IonLabel>
             </IonListHeader>
             <GalleryHandler
-              selectedImages={[]}
-              setSelectedImages={(els) => {}}
               imagesToUpload={imagesToUpload}
               setImagesToUpload={setImagesToUpload}
               imageDetails={imageDetails}
               setImageDetails={setImageDetails}
-              callbackReset={resetImages}
             />
           </IonList>
         </form>

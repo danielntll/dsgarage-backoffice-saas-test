@@ -3,7 +3,8 @@ import styles from "./PromotionButtonNew.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import { usePromotionsContext } from "../../context/promotions/contextPromotions";
-import { IonButton, IonSpinner } from "@ionic/react";
+import { IonButton, IonIcon, IonSpinner } from "@ionic/react";
+import { add } from "ionicons/icons";
 
 interface ContainerProps {}
 
@@ -20,8 +21,12 @@ const PromotionButtonNew: React.FC<ContainerProps> = ({}) => {
         disabled={statusInitPromotionData.status !== "success" ? true : false}
         onClick={() => openCreationModal()}
       >
-        {statusInitPromotionData.status !== "success" && <IonSpinner />}
         {text[l].create_promotion}
+        {statusInitPromotionData.status !== "success" ? (
+          <IonSpinner />
+        ) : (
+          <IonIcon icon={add} />
+        )}
       </IonButton>
     </>
   );

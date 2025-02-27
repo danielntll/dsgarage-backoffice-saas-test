@@ -41,7 +41,6 @@ type galleryContext = {
   pinnedImages: typeImage[];
   isLoadingMore: boolean;
   lastVisible: DocumentSnapshot<DocumentData> | undefined | null;
-  fetchGalleryData: () => Promise<void>;
   togglePinImage: (image: typeImage) => Promise<void>;
   toggleVisibilityImage: (image: typeImage) => Promise<void>;
   handleSaveEdit: (
@@ -68,7 +67,6 @@ export const GalleryContext = React.createContext<galleryContext>({
   pinnedImages: [],
   isLoadingMore: false,
   lastVisible: null,
-  fetchGalleryData: async () => {},
   togglePinImage: async () => {},
   toggleVisibilityImage: async () => {},
   handleSaveEdit: async () => {
@@ -92,7 +90,8 @@ export const GalleryContextProvider = ({ children }: any) => {
   const { l } = useContextLanguage();
   const { authenticateUser } = useAuthContext();
   const { toast } = useContextToast();
-  const { getPaginationCollectionData, updateDocument } = useDataContext();
+  const { getPaginationCollectionData, updateDocument, deleteDocument } =
+    useDataContext();
   const perPage = 10;
   // USE STATE -----------------------------
   const [galleryData, setGalleryData] = useState<typeImage[]>([]);
@@ -196,8 +195,7 @@ export const GalleryContextProvider = ({ children }: any) => {
     });
     try {
       // 2. Delete from Firestore
-      const imageRef = doc(db, "gallery", image.uid);
-      await deleteDoc(imageRef);
+      await deleteDocument("gallery", image.uid!);
 
       // 3. Update local state (Important: Update state *after* successful deletion)
       setGalleryData((prevData) =>
@@ -315,71 +313,6 @@ export const GalleryContextProvider = ({ children }: any) => {
     }
   }
 
-  const fetchPinnedImages = async () => {
-    try {
-      const pinnedImagesRef = collection(db, "gallery");
-      const q = query(pinnedImagesRef, where("isPinned", "==", true)); // Query for pinned images only
-      const pinnedImagesSnapshot = await getDocs(q);
-
-      const pinnedImagesList: typeImage[] = [];
-      pinnedImagesSnapshot.docs.forEach((doc) => {
-        const data = doc.data() as typeImage; // Type assertion for safety
-        data.uid = doc.id;
-        pinnedImagesList.push(data);
-      });
-
-      setPinnedData(pinnedImagesList);
-    } catch (error) {
-      console.error("Error fetching pinned images:", error);
-      toast("danger", "Error loading pinned images"); // Assuming you have a toast function
-    }
-  };
-
-  const fetchGalleryData = async () => {
-    presentLoading({
-      message: text[l].loading,
-      duration: 3000,
-    });
-    try {
-      setLoading(true);
-
-      const galleryRef = collection(db, "gallery");
-      let q = query(galleryRef, orderBy("createdAt"));
-
-      if (currentPage > 1 && galleryData !== null && galleryData.length > 0) {
-        const lastVisible = galleryData![galleryData!.length - 1];
-        q = query(q, startAfter(lastVisible.createdAt));
-      }
-
-      q = query(q, limit(perPage));
-
-      const gallerySnapshot = await getDocs(q);
-
-      const newData = gallerySnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        uid: doc.id,
-      })) as typeImage[];
-
-      const allGalleryData =
-        currentPage === 1 ? newData : [...(galleryData ?? []), ...newData];
-      setGalleryData(allGalleryData);
-
-      const allPinnedImages = allGalleryData.filter((item) => item.isPinned);
-      setPinnedData(allPinnedImages);
-      dismissLoading();
-      newData.length === 0 &&
-        toast("success", "Hai scaricato tutte le immagini");
-    } catch (err) {
-      dismissLoading();
-      setError(err);
-      console.error("Error fetching gallery data:", err);
-      toast("danger", "Error loading gallery data");
-    } finally {
-      dismissLoading();
-      setLoading(false);
-    }
-    dismissLoading();
-  };
   const togglePinImage = async (image: typeImage) => {
     try {
       const newIsPinnedValue = !image.isPinned; // Toggle the isPinned value
@@ -491,7 +424,7 @@ export const GalleryContextProvider = ({ children }: any) => {
       message: text[l].loading,
     });
     try {
-      const imageRef = doc(db, "gallery", editedImage.uid);
+      const imageRef = doc(db, "gallery", editedImage.uid!);
       await updateDoc(imageRef, {
         alt: editedAlt,
         description: editedDescription,
@@ -537,7 +470,6 @@ export const GalleryContextProvider = ({ children }: any) => {
         pinnedImages,
         isLoadingMore,
         lastVisible,
-        fetchGalleryData,
         togglePinImage,
         toggleVisibilityImage,
         handleSaveEdit,

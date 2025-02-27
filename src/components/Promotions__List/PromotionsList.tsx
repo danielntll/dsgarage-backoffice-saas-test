@@ -87,8 +87,8 @@ const PromotionsList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
         ) : filteredData.length === 0 ? (
           <ItemEmpty />
         ) : (
-          filteredData.map((car: typePromotion, index: number) => {
-            return <PromotionsItem data={car} key={index} />;
+          filteredData.map((item: typePromotion, index: number) => {
+            return <PromotionsItem data={item} key={index} />;
           })
         )}
       </IonList>
