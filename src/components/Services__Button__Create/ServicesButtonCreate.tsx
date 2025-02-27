@@ -13,6 +13,7 @@ import {
   IonLabel,
   IonList,
   IonModal,
+  IonSpinner,
   IonTextarea,
   IonTitle,
   IonToolbar,
@@ -28,7 +29,7 @@ interface ContainerProps {
 const ServicesButtonCreate: React.FC<ContainerProps> = ({ onlyIcon }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { createService } = useServicesContext();
+  const { createService, statusCreate } = useServicesContext();
   //CONDITIONS -----------------------
   const [showModal, setShowModal] = useState(false);
   const [newService, setNewService] = useState<typeService>(emptyService);
@@ -95,7 +96,11 @@ const ServicesButtonCreate: React.FC<ContainerProps> = ({ onlyIcon }) => {
             </IonButtons>
             <IonTitle>{text[l].new_service_modal_title}</IonTitle>
             <IonButtons slot="end">
-              <IonButton onClick={handleCreate} disabled={!isValid}>
+              <IonButton
+                onClick={handleCreate}
+                disabled={!isValid || statusCreate.status === "loading"}
+              >
+                {statusCreate.status === "loading" && <IonSpinner />}
                 {text[l].btn__create}
               </IonButton>
             </IonButtons>
@@ -158,7 +163,10 @@ export default ServicesButtonCreate;
 
 const emptyService: typeService = {
   uid: "",
-  imageUrl: "",
+  image: {
+    url: "",
+    uid: "",
+  },
   title: "",
   subtitle: "",
   description: "",

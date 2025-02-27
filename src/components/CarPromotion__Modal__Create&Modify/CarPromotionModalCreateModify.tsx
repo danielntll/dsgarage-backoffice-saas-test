@@ -45,7 +45,6 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   //VARIABLES ------------------------
   const { l } = useContextLanguage();
   const { addData, updateInfo } = useCarPromotionContext();
-  const { handleUploadImages } = useGalleryContext();
   //USE STATES -----------------------
   const [formIsValid, setFormIsValid] = useState(elementToModify != null);
   const [carInfo, setCarInfo] = useState<CarInfo>(
@@ -56,9 +55,7 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
       features: [],
     }
   );
-  const [images, setImages] = useState<typeImage[]>(
-    elementToModify?.images ?? []
-  );
+  const [images, setImages] = useState<string[]>(elementToModify?.images ?? []);
 
   const [featureInput, setFeatureInput] = useState(""); //State for the feature input
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
@@ -138,22 +135,18 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   // --------- handleSubmit
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
-    // Delay di 2 secondi
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const imgs = await handleImagesUpload();
 
     const newCarPromotion: CarPromotion = {
       carInfo: carInfo,
       carDetails: carDetails,
-      images: imgs != undefined ? imgs : images,
+      images: [],
     };
 
     try {
       if (elementToModify) {
         await updateInfo(elementToModify.uid!, newCarPromotion);
       } else {
-        await addData(newCarPromotion);
+        await addData(newCarPromotion, imagesToUpload);
       }
 
       closeModal();
@@ -186,24 +179,6 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     setImages(elementToModify?.images ?? []);
     setImagesToUpload([]);
     setImageDetails({});
-  };
-
-  // --------- handleImagesUpload
-  const handleImagesUpload = async (): Promise<typeImage[] | undefined> => {
-    if (imagesToUpload.length === 0) return undefined;
-    const images = await handleUploadImages(imagesToUpload, imageDetails);
-
-    if (images) {
-      // Check if upload was successful
-      imagesToUpload.forEach((image) =>
-        URL.revokeObjectURL(URL.createObjectURL(image))
-      );
-      setImagesToUpload([]);
-      setImages(images);
-      return images;
-    } else {
-      return undefined;
-    }
   };
 
   // ---------- closeModal
@@ -366,15 +341,10 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
               </IonLabel>
             </IonListHeader>
             <GalleryHandler
-              selectedImages={images}
-              setSelectedImages={(els) => {
-                setImages(els);
-              }}
               imagesToUpload={imagesToUpload}
               setImagesToUpload={setImagesToUpload}
               imageDetails={imageDetails}
               setImageDetails={setImageDetails}
-              callbackReset={resetImages}
             />
           </IonList>
         </form>

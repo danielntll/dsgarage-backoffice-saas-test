@@ -16,8 +16,8 @@ const CarPromotionButtonCreate: React.FC<ContainerProps> = ({}) => {
   //RETURN COMPONENT -----------------
   return (
     <IonButton onClick={handleOpenModal}>
-      <IonIcon icon={add} />
       {text[l].componentTitle}
+      <IonIcon icon={add} />
     </IonButton>
   );
 };

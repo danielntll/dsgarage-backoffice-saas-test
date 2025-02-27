@@ -66,66 +66,82 @@ const ImagesAdd: React.FC<ContainerProps> = ({
           {`${text[l].text1}: ${selectedFiles.length}`}
         </p>
       </IonLabel>
-      <IonAccordionGroup>
-        {selectedFiles.map((image: File, index: number) => {
-          const imageUrl = URL.createObjectURL(image);
-          const imageSize = (image.size / 1024).toFixed(2);
-          return (
-            <IonAccordion
-              key={index}
-              value={`${index}`}
-              onClick={() => handleAccordionClick(index)}
-            >
-              <IonItem
-                slot="header"
-                color={expandedIndex === index ? "light" : "medium"}
-              >
-                <IonThumbnail slot="start" className={styles.thumbnail}>
-                  <img src={imageUrl} alt={image.name} />
-                </IonThumbnail>
-                <IonLabel>
-                  <h3>{image.name}</h3>
-                  <p>
-                    {image.type}, {imageSize} KB
-                  </p>
-                </IonLabel>
-              </IonItem>
-              <div slot="content" className={styles.accordionContent}>
-                <IonItem>
-                  <IonLabel position="stacked">{"ALT"}</IonLabel>
-                  <IonInput
-                    value={imageDetails[index]?.alt || image.name.split(".")[0]}
-                    onIonChange={(e) =>
-                      setImageDetails({
-                        ...imageDetails,
-                        [index]: {
-                          ...imageDetails[index],
-                          alt: e.detail.value!,
-                        },
-                      })
-                    }
-                  />
-                </IonItem>
-                <IonItem>
-                  <IonLabel position="stacked">{"DESC"}</IonLabel>
-                  <IonInput
-                    value={imageDetails[index]?.description || ""}
-                    onIonChange={(e) =>
-                      setImageDetails({
-                        ...imageDetails,
-                        [index]: {
-                          ...imageDetails[index],
-                          description: e.detail.value!,
-                        },
-                      })
-                    }
-                  />
-                </IonItem>
-              </div>
-            </IonAccordion>
+      {selectedFiles.map((image: File, index: number) => {
+        const imageUrl = URL.createObjectURL(image);
+        const imageSize = (image.size / 1024).toFixed(2);
+        return (
+          <IonItem
+            slot="header"
+            color={expandedIndex === index ? "light" : "medium"}
+          >
+            <IonThumbnail slot="start" className={styles.thumbnail}>
+              <img src={imageUrl} alt={image.name} />
+            </IonThumbnail>
+            <IonLabel>
+              <h3>{image.name}</h3>
+              <p>
+                {image.type}, {imageSize} KB
+              </p>
+            </IonLabel>
+          </IonItem>
+        );
+      })}
+      {/* <IonAccordionGroup>
+            // <IonAccordion
+            //   key={index}
+            //   value={`${index}`}
+            //   onClick={() => handleAccordionClick(index)}
+            // >
+            //   <IonItem
+            //     slot="header"
+            //     color={expandedIndex === index ? "light" : "medium"}
+            //   >
+            //     <IonThumbnail slot="start" className={styles.thumbnail}>
+            //       <img src={imageUrl} alt={image.name} />
+            //     </IonThumbnail>
+            //     <IonLabel>
+            //       <h3>{image.name}</h3>
+            //       <p>
+            //         {image.type}, {imageSize} KB
+            //       </p>
+            //     </IonLabel>
+            //   </IonItem>
+            //   <div slot="content" className={styles.accordionContent}>
+            //     <IonItem>
+            //       <IonLabel position="stacked">{"ALT"}</IonLabel>
+            //       <IonInput
+            //         value={imageDetails[index]?.alt || image.name.split(".")[0]}
+            //         onIonChange={(e) =>
+            //           setImageDetails({
+            //             ...imageDetails,
+            //             [index]: {
+            //               ...imageDetails[index],
+            //               alt: e.detail.value!,
+            //             },
+            //           })
+            //         }
+            //       />
+            //     </IonItem>
+            //     <IonItem>
+            //       <IonLabel position="stacked">{"DESC"}</IonLabel>
+            //       <IonInput
+            //         value={imageDetails[index]?.description || ""}
+            //         onIonChange={(e) =>
+            //           setImageDetails({
+            //             ...imageDetails,
+            //             [index]: {
+            //               ...imageDetails[index],
+            //               description: e.detail.value!,
+            //             },
+            //           })
+            //         }
+            //       />
+            //     </IonItem>
+            //   </div>
+            // </IonAccordion>
           );
-        })}
-      </IonAccordionGroup>
+        })} */}
+      {/* </IonAccordionGroup> */}
     </div>
   );
 };

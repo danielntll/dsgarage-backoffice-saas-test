@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import styles from "./PromotionsModalUpdate.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
@@ -20,7 +19,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { typePromotion } from "../../types/typeTarghet";
+import { typePromotion } from "../../types/typePromotion";
 import { Timestamp } from "firebase/firestore";
 import { usePromotionsContext } from "../../context/promotions/contextPromotions";
 import { useServicesContext } from "../../context/services/contextServices";
@@ -28,6 +27,7 @@ import { ContextToast } from "../../context/systemEvents/contextToast";
 import { typeService } from "../../types/typeService";
 import { addOutline } from "ionicons/icons";
 import { typeModePromotionModal } from "../../types/typePromotionModal";
+import { typeTarget } from "../../types/typeTarget";
 
 interface ContainerProps {
   showModal: boolean;
@@ -36,7 +36,7 @@ interface ContainerProps {
   promotionToUpdate?: typePromotion;
 }
 
-const PromotionsModalUpdate: React.FC<ContainerProps> = ({
+const PromotionsModalCreateAndUpdate: React.FC<ContainerProps> = ({
   showModal,
   setShowModal,
   type,
@@ -64,7 +64,6 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | undefined>(
     undefined
   );
-
   //EFFECTS --------------------------
   useEffect(() => {
     if (promotionToUpdate) {
@@ -75,21 +74,37 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
-    if (name === "startAt" || name === "endAt") {
-      setPromotionSelected({
-        ...promotionSelected,
-        [name]: Timestamp.fromDate(new Date(value)),
-      });
-    } else {
-      setPromotionSelected({ ...promotionSelected, [name]: value });
+
+    if (!(name in promotionSelected)) {
+      console.error(`Invalid input name: ${name}`);
+      return;
     }
 
-    if (type == "create") {
+    let updatedPromotion: any = { ...promotionSelected };
+    if (name === "startAt" || name === "endAt") {
+      updatedPromotion[name] = Timestamp.fromDate(new Date(value));
+    } else {
+      updatedPromotion[name] = value;
+    }
+
+    // Date validation
+    const start = updatedPromotion.startAt.toDate();
+    const end = updatedPromotion.endAt.toDate();
+
+    if (end < start) {
+      toast("danger", text[l].error_end_date_before_start, 5000); // Assuming you have this text
+      return; // Stop further processing if end date is invalid
+    }
+
+    setPromotionSelected(updatedPromotion);
+
+    if (type === "create") {
       setIsValid(
-        promotionSelected.title !== "" &&
-          promotionSelected.description !== "" &&
-          promotionSelected.category !== "" &&
-          promotionSelected.target !== ""
+        updatedPromotion.title !== "" &&
+          updatedPromotion.description !== "" &&
+          updatedPromotion.category !== "" &&
+          updatedPromotion.target !== "" &&
+          end >= start // Add date validation to isValid
       );
     } else {
       setIsValid(true);
@@ -262,9 +277,12 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
               interface="alert"
               cancelText={text[l].btn__cancel}
             >
-              {targets.map((target, index) => (
-                <IonSelectOption key={target + index + type} value={target}>
-                  {target}
+              {targets.map((target: typeTarget, index) => (
+                <IonSelectOption
+                  key={target.uid! + index + type}
+                  value={target}
+                >
+                  {target.name}
                 </IonSelectOption>
               ))}
             </IonSelect>
@@ -328,19 +346,14 @@ const PromotionsModalUpdate: React.FC<ContainerProps> = ({
   );
 };
 
-export default PromotionsModalUpdate;
+export default PromotionsModalCreateAndUpdate;
 
 const emptyValue: typePromotion = {
-  uid: "",
-  target: "",
   title: "",
-  subtitle: "",
-  imageUrl: "",
-  category: "",
   description: "",
-  isVisible: false,
-  isPinned: false,
-  startAt: Timestamp.now(),
-  endAt: Timestamp.now(),
-  createdAt: Timestamp.now(),
+  category: "",
+  target: "",
+  startAt: Timestamp.fromDate(new Date()),
+  endAt: Timestamp.fromDate(new Date()),
+  subtitle: "",
 };

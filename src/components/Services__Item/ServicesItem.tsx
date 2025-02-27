@@ -1,9 +1,8 @@
 import { useContext, useState } from "react";
-import styles from "./CarPromotionItem.module.css";
+import styles from "./ServicesItem.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
-  IonBadge,
   IonButton,
   IonContent,
   IonIcon,
@@ -13,45 +12,79 @@ import {
   IonPopover,
   IonThumbnail,
 } from "@ionic/react";
-import { CarPromotion } from "../../types/typeCarPromotion";
 import { ellipsisVertical, star } from "ionicons/icons";
-import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
+import { useServicesContext } from "../../context/services/contextServices";
+import { typeService } from "../../types/typeService";
 
 interface ContainerProps {
-  data: CarPromotion;
+  data: typeService;
 }
 
-const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
+const ServicesItem: React.FC<ContainerProps> = ({ data }) => {
   //VARIABLES ------------------------
   const { l } = useContext(ContextLanguage);
-  const { updateIsArchived, updateIsPinned, deleteData, handleUpdate } =
-    useCarPromotionContext();
+  const {
+    handleUpdateService,
+    toggleArchived,
+    togglePinned,
+    handleDeleteService,
+  } = useServicesContext();
   //CONDITIONS -----------------------
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [popoverEvent, setPopoverEvent] = useState<any>(null);
   //FUNCTIONS ------------------------
+  /**
+   * ----- handleOptionsClick
+   * Apre il menù opzioni
+   * @param e
+   */
   const handleOptionsClick = (e: any) => {
     e.persist();
     setPopoverEvent(e);
     setIsOpen(true);
   };
+
+  /**
+   * ----- handleOpenModifyData
+   */
+  const handleOpenModifyData = () => {
+    handleUpdateService(data);
+  };
+  /**
+   * ----- handleTogglePinned
+   */
+  const handleTogglePinned = () => {
+    togglePinned(data);
+  };
+
+  /**
+   * ----- handleToggleArchived
+   */
+  const handleToggleArchived = () => {
+    toggleArchived(data);
+  };
+
+  /**
+   * ----- handleDeleteData
+   */
+  const handleDeleteData = () => {
+    handleDeleteService(data);
+  };
+
   //RETURN COMPONENT -----------------
   return (
     <>
       <IonItem>
         <IonThumbnail className="ion-margin-end">
-          <img src={data.images[0]} alt="" />
+          <img src={data?.image?.url} alt="" />
         </IonThumbnail>
         <IonLabel>
           <h2 className={styles.title}>
-            {data.isPinned && <IonIcon color="primary" icon={star} />} Modello:{" "}
-            {data.carInfo.model}
+            {data.isPinned && <IonIcon color="primary" icon={star} />}
+            {data.title}
           </h2>
-          <p>
-            Km: {data.carInfo.km} - Prezzo: {data.carInfo.price} - Anno:{" "}
-            {data.carInfo.year}
-          </p>
-          <p>Caratteristiche: {data.carDetails.features?.join(", ")}</p>
+          <p>{data.subtitle}</p>
+          <p>{data.description}</p>
         </IonLabel>
         <IonButton fill="clear" onClick={handleOptionsClick}>
           <IonIcon icon={ellipsisVertical} />
@@ -67,28 +100,24 @@ const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
         <IonContent>
           <IonList>
             <IonItem
-              onClick={() => handleUpdate(data.uid!)}
+              onClick={handleOpenModifyData}
               button={true}
               detail={false}
             >
               Modifica
             </IonItem>
-            <IonItem
-              onClick={() => updateIsPinned(data.uid!, !data.isPinned)}
-              button={true}
-              detail={false}
-            >
+            <IonItem onClick={handleTogglePinned} button={true} detail={false}>
               Preferiti
             </IonItem>
             <IonItem
-              onClick={() => updateIsArchived(data.uid!, !data.isArchived)}
+              onClick={handleToggleArchived}
               button={true}
               detail={false}
             >
               Archivia
             </IonItem>
             <IonItem
-              onClick={() => deleteData(data.uid!)}
+              onClick={handleDeleteData}
               color={"danger"}
               button={true}
               detail={false}
@@ -102,4 +131,4 @@ const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
   );
 };
 
-export default CarPromotionItem;
+export default ServicesItem;

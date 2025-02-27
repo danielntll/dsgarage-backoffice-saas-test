@@ -4,7 +4,8 @@ import CarPromotionItem from "../CarPromotion__Item/CarPromotionItem";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { enumCarPromotionSegments } from "../../enum/enumCarPromotionSegments";
 import { useEffect, useState } from "react";
-import StatusData from "../Status__Data/StatusData";
+import ItemLoading from "../Item__Loading/ItemLoading";
+import ItemEmpty from "../Item__Empty/ItemEmpty";
 
 interface ContainerProps {
   filter: enumCarPromotionSegments;
@@ -24,9 +25,10 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
 
   useEffect(() => {
     filterPromotions(
-      carPromotions.filter((item) =>
-        item.carInfo.model?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      carPromotions
+      // carPromotions.filter((item) =>
+      //   item.carInfo.model?.toLowerCase().includes(searchTerm.toLowerCase())
+      // )
     );
   }, [filter, carPromotions, searchTerm]);
 
@@ -60,11 +62,15 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   return (
     <>
       <IonList inset>
-        <StatusData status={statusFetch} dataLength={filteredPromotions.length}>
-          {filteredPromotions.map((car: CarPromotion, index: number) => {
+        {statusFetch.status === "loading" ? (
+          <ItemLoading />
+        ) : filteredPromotions.length === 0 ? (
+          <ItemEmpty />
+        ) : (
+          filteredPromotions.map((car: CarPromotion, index: number) => {
             return <CarPromotionItem data={car} key={index} />;
-          })}
-        </StatusData>
+          })
+        )}
       </IonList>
     </>
   );

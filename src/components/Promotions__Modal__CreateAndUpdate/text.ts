@@ -30,6 +30,8 @@ export const text = {
     image__label: "Immagine copertina",
     image__description:
       "Seleziona un'immagine di copertina. Se non selezioni nulla verrà visualizzata in automatico l'immagine di copertina del Servizio.",
+    error_end_date_before_start:
+      "Attenzione selezionare una data di fine che sia dopo la data di inizio.",
   },
   en_GB: {
     create_promotion: "Create Promotion",
@@ -60,5 +62,7 @@ export const text = {
     image__label: "Immagine copertina",
     image__description:
       "Seleziona un'immagine di copertina. Se non selezioni nulla verrà visualizzata in automatico l'immagine di copertina del Servizio.",
+    error_end_date_before_start:
+      "Attenzione selezionare una data di fine che sia dopo la data di inizio.",
   },
 };

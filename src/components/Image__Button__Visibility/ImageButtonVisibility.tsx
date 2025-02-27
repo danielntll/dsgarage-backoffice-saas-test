@@ -35,7 +35,7 @@ const ImageButtonVisibility: React.FC<ContainerProps> = ({
   //RETURN COMPONENT -----------------
   return (
     <IonButton
-      fill={image!.isVisible ? "solid" : "outline"}
+      fill={image!.isArchived ? "solid" : "outline"}
       onClick={onClick}
       size="small"
       expand="block"
@@ -43,9 +43,13 @@ const ImageButtonVisibility: React.FC<ContainerProps> = ({
     >
       <IonIcon
         className="ion-margin-end"
-        icon={image!.isVisible ? eye : eyeOffOutline}
+        icon={image!.isArchived ? eye : eyeOffOutline}
       />
-      {onlyIcon ? null : image!.isVisible ? text[l].not_active : text[l].active}
+      {onlyIcon
+        ? null
+        : image!.isArchived
+        ? text[l].not_active
+        : text[l].active}
     </IonButton>
   );
 };

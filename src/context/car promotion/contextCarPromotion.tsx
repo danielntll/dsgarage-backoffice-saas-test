@@ -3,7 +3,6 @@ import { useAuthContext } from "../contextAuth";
 import { CarPromotion } from "../../types/typeCarPromotion";
 import { useDataContext } from "../contextData";
 import CarPromotionModalCreateModify from "../../components/CarPromotion__Modal__Create&Modify/CarPromotionModalCreateModify";
-import { typeFirebaseDataStructure } from "../../types/typeFirebaseDataStructure";
 import { useIonAlert } from "@ionic/react";
 import { typeContextStatus } from "../../types/typeContextStatus";
 import { useContextLanguage } from "../contextLanguage";
@@ -11,11 +10,8 @@ import { getStatusFetch } from "../../utils/getStatusFetch";
 
 type dataContext = {
   carPromotions: CarPromotion[];
-  statusFetch: typeContextStatus | null;
-  statusUpload: typeContextStatus | null;
-  statusUpdate: typeContextStatus | null;
-  statusDelete: typeContextStatus | null;
-  addData: (data: CarPromotion) => Promise<void>;
+  statusFetch: typeContextStatus;
+  addData: (data: CarPromotion, imageFiles: File[]) => Promise<void>;
   handleUpdate: (id: string) => void;
   updateInfo: (id: string, updatedData: Partial<CarPromotion>) => Promise<void>;
   updateIsArchived: (id: string, isArchived: boolean) => Promise<void>;
@@ -28,9 +24,6 @@ type dataContext = {
 export const CarPromotionContext = React.createContext<dataContext>({
   carPromotions: [],
   statusFetch: { status: "loading", message: "" },
-  statusUpload: { status: "success", message: "" },
-  statusUpdate: { status: "success", message: "" },
-  statusDelete: { status: "success", message: "" },
   addData: async () => Promise.resolve(),
   handleUpdate: async () => {},
   updateInfo: async () => Promise.resolve(),
@@ -49,22 +42,18 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   const DOC_PATH = "carpromotions";
   const { l } = useContextLanguage();
   const { authenticateUser } = useAuthContext();
-  const { getCollectionData, addDocument, updateDocument, deleteDocument } =
-    useDataContext();
+  const {
+    getCollectionData,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    uploadFile,
+  } = useDataContext();
   const [presentAlert] = useIonAlert();
   // USE STATE -----------------------------
   const [carPromotions, setCarPromotions] = useState<CarPromotion[]>([]);
-  const [statusFetch, setStatusFetch] = useState<typeContextStatus | null>(
+  const [statusFetch, setStatusFetch] = useState<typeContextStatus>(
     getStatusFetch("loading", "fetch", l)
-  );
-  const [statusUpload, setStatusUpload] = useState<typeContextStatus | null>(
-    getStatusFetch("success", "upload", l)
-  );
-  const [statusUpdate, setStatusUpdate] = useState<typeContextStatus | null>(
-    getStatusFetch("success", "update", l)
-  );
-  const [statusDelete, setStatusDelete] = useState<typeContextStatus | null>(
-    getStatusFetch("success", "delete", l)
   );
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [elementToModify, setElementToModify] = useState<CarPromotion | null>(
@@ -92,32 +81,54 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         setStatusFetch(getStatusFetch("success", "fetch", l));
       }
     } else {
-      setStatusFetch(
-        getStatusFetch("error", "fetch", l, "Utente non autenticato.")
-      );
+      setStatusFetch(getStatusFetch("error", "fetch", l));
     }
   }, [authenticateUser]);
 
   /**
    *
    */
-  const addData = useCallback(async (data: CarPromotion) => {
-    setStatusUpload(getStatusFetch("loading", "upload", l));
-    try {
-      const doc: (CarPromotion & typeFirebaseDataStructure) | undefined =
-        await addDocument<CarPromotion>(DOC_PATH, data);
-      if (doc !== undefined) {
-        setCarPromotions((prevPromotions) => [...prevPromotions, doc]);
-      } else {
-        setStatusUpload(getStatusFetch("error", "upload", l));
+  const addData = useCallback(
+    async (data: CarPromotion, imageFiles: File[]) => {
+      setStatusFetch(getStatusFetch("loading", "upload", l));
+      try {
+        const imageUrls: string[] = [];
+        // Upload images concurrently
+        await Promise.all(
+          imageFiles.map(async (file, index) => {
+            const filePath = `carpromotions/${file.name + index}-${Date.now()}`;
+            const url = await uploadFile(filePath, file);
+            if (url) {
+              imageUrls.push(url);
+            } else {
+              throw new Error("Image upload failed");
+            }
+          })
+        );
+
+        const carPromotionDataWithImages: CarPromotion = {
+          ...data,
+          images: imageUrls,
+        };
+        const doc: any = await addDocument<CarPromotion>(
+          DOC_PATH,
+          carPromotionDataWithImages
+        );
+        if (doc !== undefined) {
+          setCarPromotions((prevPromotions) => [...prevPromotions, doc]);
+        } else {
+          setStatusFetch(getStatusFetch("error", "upload", l));
+          throw new Error("Failed to add document");
+        }
+      } catch (error) {
+        console.error("Error adding car promotion:", error);
+        setStatusFetch(getStatusFetch("error", "upload", l));
+      } finally {
+        setStatusFetch(getStatusFetch("success", "upload", l));
       }
-    } catch (error) {
-      console.error("Error fetching car promotions:", error);
-      setStatusUpload(getStatusFetch("error", "upload", l));
-    } finally {
-      setStatusUpload(getStatusFetch("success", "upload", l));
-    }
-  }, []);
+    },
+    []
+  );
 
   /**
    *
@@ -135,7 +146,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    */
   const updateInfo = useCallback(
     async (id: string, updatedData: Partial<CarPromotion>) => {
-      setStatusUpdate(getStatusFetch("loading", "update", l));
+      setStatusFetch(getStatusFetch("loading", "update", l));
       try {
         await updateDocument<CarPromotion>(DOC_PATH, id, updatedData);
 
@@ -147,9 +158,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         );
       } catch (error) {
         console.error("Error fetching car promotions:", error);
-        setStatusUpdate(getStatusFetch("error", "update", l));
+        setStatusFetch(getStatusFetch("error", "update", l));
       } finally {
-        setStatusUpdate(getStatusFetch("success", "update", l));
+        setStatusFetch(getStatusFetch("success", "update", l));
       }
     },
     []
@@ -160,7 +171,6 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    */
   const updateIsArchived = useCallback(
     async (id: string, isArchived: boolean) => {
-      setStatusUpdate(getStatusFetch("loading", "update", l));
       try {
         await updateDocument<CarPromotion>(DOC_PATH, id, { isArchived });
 
@@ -172,9 +182,6 @@ export const CarPromotionContextProvider = ({ children }: any) => {
         );
       } catch (error) {
         console.error("Error fetching car promotions:", error);
-        setStatusUpdate(getStatusFetch("error", "update", l));
-      } finally {
-        setStatusUpdate(getStatusFetch("success", "update", l));
       }
     },
     []
@@ -184,7 +191,6 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    *
    */
   const updateIsPinned = useCallback(async (id: string, isPinned: boolean) => {
-    setStatusUpdate(getStatusFetch("loading", "update", l));
     try {
       await updateDocument<CarPromotion>(DOC_PATH, id, { isPinned });
       setCarPromotions((prevPromotions) =>
@@ -194,10 +200,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
       );
     } catch (error) {
       console.error("Error fetching car promotions:", error);
-
-      setStatusUpdate(getStatusFetch("error", "update", l));
     } finally {
-      setStatusUpdate(getStatusFetch("success", "update", l));
     }
   }, []);
 
@@ -221,7 +224,7 @@ export const CarPromotionContextProvider = ({ children }: any) => {
           text: "OK",
           role: "confirm",
           handler: async () => {
-            setStatusDelete(getStatusFetch("loading", "delete", l));
+            setStatusFetch(getStatusFetch("loading", "delete", l));
             try {
               await deleteDocument(DOC_PATH, id);
               setCarPromotions((prevPromotions) =>
@@ -229,9 +232,9 @@ export const CarPromotionContextProvider = ({ children }: any) => {
               );
             } catch (error) {
               console.error("Error fetching car promotions:", error);
-              setStatusDelete(getStatusFetch("error", "delete", l));
+              setStatusFetch(getStatusFetch("error", "delete", l));
             } finally {
-              setStatusDelete(getStatusFetch("success", "delete", l));
+              setStatusFetch(getStatusFetch("success", "delete", l));
             }
           },
         },
@@ -251,9 +254,6 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     <CarPromotionContext.Provider
       value={{
         statusFetch,
-        statusDelete,
-        statusUpdate,
-        statusUpload,
         carPromotions,
         addData,
         handleUpdate,

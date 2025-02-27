@@ -2,7 +2,7 @@ export const text = {
   it_IT: {
     btn__update: "Aggiorna",
     btn__close: "Annulla",
-    new_service_modal_title: "Nuovo servizio",
+    new_service_modal_title: "Modifica servizio",
     service_title_label: "Titolo",
     service_title_placeholder: "Manutenzione",
     service_subtitle_label: "Sottotitolo",
@@ -17,7 +17,7 @@ export const text = {
     btn__update: "Aggiorna",
     btn__close: "Annulla",
     componentTitle: "DefaultComponent",
-    new_service_modal_title: "Nuovo servizio",
+    new_service_modal_title: "Modifica servizio",
     service_title_label: "Titolo",
     service_title_placeholder: "Manutenzione",
     service_subtitle_label: "Sottotitolo",

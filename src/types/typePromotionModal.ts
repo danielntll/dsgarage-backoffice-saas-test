@@ -1,4 +1,4 @@
-import { typePromotion } from "./typeTarghet";
+import { typePromotion } from "./typePromotion";
 
 export type typePromotionModal = {
   isOpen: boolean;

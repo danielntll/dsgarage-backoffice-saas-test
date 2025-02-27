@@ -1,28 +1,17 @@
 import { useContext, useState } from "react";
-import styles from "./ImageItem.module.css";
 import { ContextLanguage } from "../../context/contextLanguage";
-import { text } from "./text";
 import {
+  IonButton,
+  IonContent,
   IonIcon,
   IonItem,
   IonLabel,
+  IonList,
   IonPopover,
   IonThumbnail,
-  IonContent,
-  IonList,
-  IonButton,
 } from "@ionic/react";
 import { typeImage } from "../../types/typeImage";
-import {
-  archive,
-  archiveOutline,
-  eye,
-  eyeOff,
-  pencil,
-  star,
-  starHalf,
-  trashBinOutline,
-} from "ionicons/icons";
+import { ellipsisVertical, star } from "ionicons/icons";
 import { useGalleryContext } from "../../context/gallery/contextGallery";
 
 interface ContainerProps {
@@ -35,33 +24,48 @@ const ImageItem: React.FC<ContainerProps> = ({ image }) => {
   const {
     handleShowImageOverlay,
     handleDeleteImage,
-    handleEditImage,
-    handleToggleArchiveImage,
-    handleTogglePinImage,
+    handleEditClick,
+    togglePinImage,
+    toggleVisibilityImage,
   } = useGalleryContext();
   //CONDITIONS -----------------------
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [popoverEvent, setPopoverEvent] = useState<any>(null);
+
   //FUNCTIONS ------------------------
   const handleOptionsClick = (e: any) => {
+    e.stopPropagation();
     e.persist();
     setPopoverEvent(e);
     setIsOpen(true);
   };
-
   //RETURN COMPONENT -----------------
   return (
     <>
-      <IonItem button onClick={() => handleShowImageOverlay(image)}>
+      <IonItem
+        button
+        onClick={() => {
+          handleShowImageOverlay(image);
+        }}
+      >
         <IonThumbnail className="ion-margin-end">
           <img src={image.imageUrl} alt={image.alt} />
         </IonThumbnail>
         <IonLabel>
-          <h2>{image.name}</h2>
-          <p>{image.alt}</p>
+          <h2>
+            {image.isPinned && <IonIcon color="primary" icon={star} />} Alt:{" "}
+            {image.alt}
+          </h2>
+          <p>
+            Descrizione:{" "}
+            {image.description?.length === 0
+              ? "Nessuna descrizione"
+              : image.description}
+          </p>
+          <p>Nome: {image.name}</p>
         </IonLabel>
         <IonButton fill="clear" onClick={handleOptionsClick}>
-          <IonIcon icon={pencil} />
+          <IonIcon icon={ellipsisVertical} />
         </IonButton>
       </IonItem>
       {/* ------- */}
@@ -74,30 +78,33 @@ const ImageItem: React.FC<ContainerProps> = ({ image }) => {
         <IonContent>
           <IonList>
             <IonItem
-              button
-              onClick={() => handleDeleteImage(image)}
-              color="danger"
+              onClick={() => handleEditClick(image)}
+              button={true}
+              detail={false}
             >
-              <IonIcon icon={trashBinOutline} slot="icon-only" /> Elimina
+              Modifica
             </IonItem>
-            <IonItem button onClick={() => handleTogglePinImage(image)}>
-              <IonIcon
-                icon={image.isPinned ? star : starHalf}
-                slot="icon-only"
-              />
-              {image.isPinned
-                ? "Rimuovi dai preferiti"
-                : "Aggiungi ai preferiti"}
+            <IonItem
+              onClick={() => togglePinImage(image)}
+              button={true}
+              detail={false}
+            >
+              Preferiti
             </IonItem>
-            <IonItem button onClick={() => handleToggleArchiveImage(image)}>
-              <IonIcon
-                icon={image.isArchived ? archive : archiveOutline}
-                slot="icon-only"
-              />
-              {image.isArchived ? "Nascondi" : "Mostra"}
+            <IonItem
+              onClick={() => toggleVisibilityImage(image)}
+              button={true}
+              detail={false}
+            >
+              Archivia
             </IonItem>
-            <IonItem button onClick={() => handleEditImage(image)}>
-              <IonIcon icon={pencil} slot="icon-only" /> Modifica
+            <IonItem
+              onClick={() => handleDeleteImage(image)}
+              color={"danger"}
+              button={true}
+              detail={false}
+            >
+              Elimina
             </IonItem>
           </IonList>
         </IonContent>

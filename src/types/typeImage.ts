@@ -5,4 +5,5 @@ export interface typeImage extends typeFirebaseDataStructure {
   description?: string;
   imageUrl: string;
   name: string;
+  isGallery: boolean;
 }

@@ -3,6 +3,7 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonLabel,
   IonMenuButton,
   IonPage,
@@ -21,6 +22,7 @@ import { route_GalleryPage } from "../../routes/singleRoute";
 import ModalImagesUpload from "../../components/Modal__Images__Upload/ModalImagesUpload";
 import { enumPageGallerySegment } from "../../enum/enumPageGallerySegment";
 import GalleryList from "../../components/Gallery__List/GalleryList";
+import { add } from "ionicons/icons";
 
 interface PageProps {}
 
@@ -51,6 +53,7 @@ const GalleryPage: React.FC<PageProps> = ({}) => {
               color={"primary"}
             >
               {text[l].uploadImages}
+              <IonIcon icon={add} />
             </IonButton>
           </IonButtons>
         </IonToolbar>

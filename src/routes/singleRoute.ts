@@ -29,6 +29,7 @@ export const route_CarPromotionPage: typeRoute = {
     active: carSport,
     notActive: carSportOutline,
   },
+  description: "Aggiungi annunci di auto",
 };
 export const route_ServicesPage: typeRoute = {
   path: "/servizi",
@@ -40,6 +41,7 @@ export const route_ServicesPage: typeRoute = {
     active: storefront,
     notActive: storefrontOutline,
   },
+  description: "Aggiungi servizi offerti ai clienti",
 };
 export const route_PromotionsPage: typeRoute = {
   path: "/promozioni",
@@ -51,6 +53,7 @@ export const route_PromotionsPage: typeRoute = {
     active: pricetags,
     notActive: pricetagsOutline,
   },
+  description: "Aggiungi promozioni per i tuoi clienti",
 };
 export const route_GalleryPage: typeRoute = {
   path: "/galleria",
@@ -62,6 +65,7 @@ export const route_GalleryPage: typeRoute = {
     active: images,
     notActive: imagesOutline,
   },
+  description: "Aggiungi immagini alla galleria",
 };
 export const route_HomePage: typeRoute = {
   path: "/home",

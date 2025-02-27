@@ -1,4 +1,4 @@
 export type typeContextStatus = {
-  status: "loading" | "error" | "success";
+  status: "notInitializzed" | "loading" | "error" | "success";
   message: string;
 };
