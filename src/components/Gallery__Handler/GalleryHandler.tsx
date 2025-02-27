@@ -42,7 +42,7 @@ const GalleryHandler: React.FC<ContainerProps> = ({
   const { initState, galleryData, loadMoreData, loading } = useGalleryContext();
   //USE STATES -----------------------
   const [segment, setSegment] = useState<enumImagesHandler>(
-    enumImagesHandler.select
+    enumImagesHandler.add
   );
   //USE EFFECTS ----------------------
   useEffect(() => {
@@ -78,16 +78,16 @@ const GalleryHandler: React.FC<ContainerProps> = ({
               handleSegmentChange(e.detail.value as enumImagesHandler)
             }
           >
-            <IonSegmentButton value={enumImagesHandler.select}>
+            {/* <IonSegmentButton value={enumImagesHandler.select}>
               <IonLabel>{text[l].segment__select}</IonLabel>
-            </IonSegmentButton>
+            </IonSegmentButton> */}
             <IonSegmentButton value={enumImagesHandler.add}>
               <IonLabel>{text[l].segment__add}</IonLabel>
             </IonSegmentButton>
           </IonSegment>
         </IonToolbar>
       </IonHeader>
-      {segment === enumImagesHandler.select && (
+      {/* {segment === enumImagesHandler.select && (
         <>
           <div className={styles.imageGrid}>
             {loading ? (
@@ -125,7 +125,7 @@ const GalleryHandler: React.FC<ContainerProps> = ({
             {text[l].load__more}
           </IonButton>
         </>
-      )}
+      )} */}
       {segment === enumImagesHandler.add && (
         <>
           <ImagesAdd
