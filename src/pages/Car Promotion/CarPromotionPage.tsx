@@ -50,13 +50,13 @@ const CarPromotionPage: React.FC<PageProps> = ({}) => {
         <IonHeader collapse="condense">
           <IonToolbar>
             <IonTitle size="large">{route_CarPromotionPage.tab[l]}</IonTitle>
-            <IonToolbar>
+            {/* <IonToolbar>
               <IonSearchbar
                 placeholder="Cerca annuncio per modello"
                 value={searchTerm}
                 onIonInput={(e) => setSearchTerm(e.detail.value!)}
               />
-            </IonToolbar>
+            </IonToolbar> */}
           </IonToolbar>
           {/* -------- */}
           <IonToolbar>

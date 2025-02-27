@@ -72,19 +72,19 @@ const GalleryHandler: React.FC<ContainerProps> = ({
     <div className={styles.container}>
       <IonHeader>
         <IonToolbar>
-          <IonSegment
+          {/* <IonSegment
             value={segment}
             onIonChange={(e) =>
               handleSegmentChange(e.detail.value as enumImagesHandler)
             }
           >
-            {/* <IonSegmentButton value={enumImagesHandler.select}>
+            <IonSegmentButton value={enumImagesHandler.select}>
               <IonLabel>{text[l].segment__select}</IonLabel>
-            </IonSegmentButton> */}
+            </IonSegmentButton>
             <IonSegmentButton value={enumImagesHandler.add}>
               <IonLabel>{text[l].segment__add}</IonLabel>
             </IonSegmentButton>
-          </IonSegment>
+          </IonSegment> */}
         </IonToolbar>
       </IonHeader>
       {/* {segment === enumImagesHandler.select && (

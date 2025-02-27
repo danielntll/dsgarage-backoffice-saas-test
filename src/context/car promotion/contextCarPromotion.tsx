@@ -13,7 +13,7 @@ import { getStatusFetch } from "../../utils/getStatusFetch";
 type dataContext = {
   carPromotions: CarPromotion[];
   statusFetch: typeContextStatus;
-  addData: (data: CarPromotion) => Promise<void>;
+  addData: (data: CarPromotion, imageFiles: File[]) => Promise<void>;
   handleUpdate: (id: string) => void;
   updateInfo: (id: string, updatedData: Partial<CarPromotion>) => Promise<void>;
   updateIsArchived: (id: string, isArchived: boolean) => Promise<void>;
@@ -44,8 +44,13 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   const DOC_PATH = "carpromotions";
   const { l } = useContextLanguage();
   const { authenticateUser } = useAuthContext();
-  const { getCollectionData, addDocument, updateDocument, deleteDocument } =
-    useDataContext();
+  const {
+    getCollectionData,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    uploadFile,
+  } = useDataContext();
   const [presentAlert] = useIonAlert();
   // USE STATE -----------------------------
   const [carPromotions, setCarPromotions] = useState<CarPromotion[]>([]);
@@ -85,23 +90,47 @@ export const CarPromotionContextProvider = ({ children }: any) => {
   /**
    *
    */
-  const addData = useCallback(async (data: CarPromotion) => {
-    setStatusFetch(getStatusFetch("loading", "upload", l));
-    try {
-      const doc: (CarPromotion & typeFirebaseDataStructure) | undefined =
-        await addDocument<CarPromotion>(DOC_PATH, data);
-      if (doc !== undefined) {
-        setCarPromotions((prevPromotions) => [...prevPromotions, doc]);
-      } else {
+  const addData = useCallback(
+    async (data: CarPromotion, imageFiles: File[]) => {
+      setStatusFetch(getStatusFetch("loading", "upload", l));
+      try {
+        const imageUrls: string[] = [];
+        // Upload images concurrently
+        await Promise.all(
+          imageFiles.map(async (file, index) => {
+            const filePath = `carpromotions/${file.name + index}-${Date.now()}`;
+            const url = await uploadFile(filePath, file);
+            if (url) {
+              imageUrls.push(url);
+            } else {
+              throw new Error("Image upload failed");
+            }
+          })
+        );
+
+        const carPromotionDataWithImages: CarPromotion = {
+          ...data,
+          images: imageUrls,
+        };
+        const doc: any = await addDocument<CarPromotion>(
+          DOC_PATH,
+          carPromotionDataWithImages
+        );
+        if (doc !== undefined) {
+          setCarPromotions((prevPromotions) => [...prevPromotions, doc]);
+        } else {
+          setStatusFetch(getStatusFetch("error", "upload", l));
+          throw new Error("Failed to add document");
+        }
+      } catch (error) {
+        console.error("Error adding car promotion:", error);
         setStatusFetch(getStatusFetch("error", "upload", l));
+      } finally {
+        setStatusFetch(getStatusFetch("success", "upload", l));
       }
-    } catch (error) {
-      console.error("Error fetching car promotions:", error);
-      setStatusFetch(getStatusFetch("error", "upload", l));
-    } finally {
-      setStatusFetch(getStatusFetch("success", "upload", l));
-    }
-  }, []);
+    },
+    []
+  );
 
   /**
    *

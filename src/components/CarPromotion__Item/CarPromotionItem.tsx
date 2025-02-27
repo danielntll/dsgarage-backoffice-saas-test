@@ -40,7 +40,7 @@ const CarPromotionItem: React.FC<ContainerProps> = ({ data }) => {
     <>
       <IonItem>
         <IonThumbnail className="ion-margin-end">
-          <img src={data.images[0].imageUrl} alt="" />
+          <img src={data.images[0]} alt="" />
         </IonThumbnail>
         <IonLabel>
           <h2 className={styles.title}>

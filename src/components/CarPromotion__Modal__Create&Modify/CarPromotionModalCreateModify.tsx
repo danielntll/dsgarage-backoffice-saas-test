@@ -56,9 +56,7 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
       features: [],
     }
   );
-  const [images, setImages] = useState<typeImage[]>(
-    elementToModify?.images ?? []
-  );
+  const [images, setImages] = useState<string[]>(elementToModify?.images ?? []);
 
   const [featureInput, setFeatureInput] = useState(""); //State for the feature input
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
@@ -138,19 +136,18 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
   // --------- handleSubmit
   const handleSubmit = useCallback(async () => {
     setIsLoading(true);
-    const imgs = await handleImagesUpload();
 
     const newCarPromotion: CarPromotion = {
       carInfo: carInfo,
       carDetails: carDetails,
-      images: imgs != undefined ? imgs : images,
+      images: [],
     };
 
     try {
       if (elementToModify) {
         await updateInfo(elementToModify.uid!, newCarPromotion);
       } else {
-        await addData(newCarPromotion);
+        await addData(newCarPromotion, imagesToUpload);
       }
 
       closeModal();
@@ -183,28 +180,6 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     setImages(elementToModify?.images ?? []);
     setImagesToUpload([]);
     setImageDetails({});
-  };
-
-  // --------- handleImagesUpload
-  const handleImagesUpload = async (): Promise<typeImage[] | undefined> => {
-    if (imagesToUpload.length === 0) return undefined;
-    const images = await handleUploadImages(
-      imagesToUpload,
-      imageDetails,
-      false
-    );
-
-    if (images) {
-      // Check if upload was successful
-      imagesToUpload.forEach((image) =>
-        URL.revokeObjectURL(URL.createObjectURL(image))
-      );
-      setImagesToUpload([]);
-      setImages(images);
-      return images;
-    } else {
-      return undefined;
-    }
   };
 
   // ---------- closeModal
@@ -367,10 +342,8 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
               </IonLabel>
             </IonListHeader>
             <GalleryHandler
-              selectedImages={images}
-              setSelectedImages={(els) => {
-                setImages(els);
-              }}
+              selectedImages={[]}
+              setSelectedImages={(els) => {}}
               imagesToUpload={imagesToUpload}
               setImagesToUpload={setImagesToUpload}
               imageDetails={imageDetails}

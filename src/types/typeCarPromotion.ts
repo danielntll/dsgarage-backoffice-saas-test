@@ -18,5 +18,5 @@ export interface CarDetails {
 export interface CarPromotion extends typeFirebaseDataStructure {
   carInfo: CarInfo;
   carDetails: CarDetails;
-  images: typeImage[];
+  images: string[];
 }
