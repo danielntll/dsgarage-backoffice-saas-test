@@ -7,13 +7,18 @@ import { useIonAlert } from "@ionic/react";
 import { typeContextStatus } from "../../types/typeContextStatus";
 import { useContextLanguage } from "../contextLanguage";
 import { getStatusFetch } from "../../utils/getStatusFetch";
+import { typeImageSimple } from "../../types/typeImageSimple";
 
 type dataContext = {
   carPromotions: CarPromotion[];
   statusFetch: typeContextStatus;
   addData: (data: CarPromotion, imageFiles: File[]) => Promise<void>;
   handleUpdate: (id: string) => void;
-  updateInfo: (id: string, updatedData: Partial<CarPromotion>) => Promise<void>;
+  updateInfo: (
+    id: string,
+    updatedData: Partial<CarPromotion>,
+    imageFiles: File[]
+  ) => Promise<void>;
   updateIsArchived: (id: string, isArchived: boolean) => Promise<void>;
   updateIsPinned: (id: string, isPinned: boolean) => Promise<void>;
   deleteData: (id: string) => Promise<void>;
@@ -92,14 +97,18 @@ export const CarPromotionContextProvider = ({ children }: any) => {
     async (data: CarPromotion, imageFiles: File[]) => {
       setStatusFetch(getStatusFetch("loading", "upload", l));
       try {
-        const imageUrls: string[] = [];
+        const imageUrls: typeImageSimple[] = [];
         // Upload images concurrently
         await Promise.all(
           imageFiles.map(async (file, index) => {
-            const filePath = `carpromotions/${file.name + index}-${Date.now()}`;
-            const url = await uploadFile(filePath, file);
-            if (url) {
-              imageUrls.push(url);
+            const fileUID = file.name + index + new Date().getTime();
+            const imageUrl =
+              (await uploadFile(`${DOC_PATH}/${fileUID}`, file)) || "";
+            if (imageUrl) {
+              imageUrls.push({
+                url: imageUrl,
+                uid: fileUID,
+              });
             } else {
               throw new Error("Image upload failed");
             }
@@ -145,10 +154,53 @@ export const CarPromotionContextProvider = ({ children }: any) => {
    *
    */
   const updateInfo = useCallback(
-    async (id: string, updatedData: Partial<CarPromotion>) => {
+    async (
+      id: string,
+      updatedData: Partial<CarPromotion>,
+      imageFiles: File[]
+    ) => {
       setStatusFetch(getStatusFetch("loading", "update", l));
       try {
-        await updateDocument<CarPromotion>(DOC_PATH, id, updatedData);
+        let imageUrls: typeImageSimple[] = [];
+
+        // Check if there are new images to upload
+        if (imageFiles.length > 0) {
+          // Upload images concurrently
+          imageUrls = await Promise.all(
+            imageFiles.map(async (file, index) => {
+              const fileUID = file.name + index + new Date().getTime();
+              const imageUrl =
+                (await uploadFile(`${DOC_PATH}/${fileUID}`, file)) || "";
+              if (imageUrl) {
+                return {
+                  url: imageUrl,
+                  uid: fileUID,
+                };
+              } else {
+                throw new Error("Image upload failed");
+              }
+            })
+          ).then((imageSimple) =>
+            imageSimple.filter(
+              (imageSimple): imageSimple is typeImageSimple =>
+                imageSimple.url !== undefined
+            )
+          );
+        }
+
+        //Get old images
+        const oldImages: typeImageSimple[] = updatedData.images ?? [];
+
+        //merge new images with old images
+        const allImages = [...oldImages, ...imageUrls];
+
+        // Update data with new images url
+        const updatedDataWithImages: Partial<CarPromotion> = {
+          ...updatedData,
+          images: allImages,
+        };
+
+        await updateDocument<CarPromotion>(DOC_PATH, id, updatedDataWithImages);
 
         // Update the local state directly
         setCarPromotions((prevPromotions) =>

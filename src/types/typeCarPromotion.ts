@@ -1,5 +1,5 @@
 import { typeFirebaseDataStructure } from "./typeFirebaseDataStructure";
-import { typeImage } from "./typeImage";
+import { typeImageSimple } from "./typeImageSimple";
 
 export interface CarInfo {
   model?: string;
@@ -18,5 +18,5 @@ export interface CarDetails {
 export interface CarPromotion extends typeFirebaseDataStructure {
   carInfo: CarInfo;
   carDetails: CarDetails;
-  images: string[];
+  images: typeImageSimple[];
 }

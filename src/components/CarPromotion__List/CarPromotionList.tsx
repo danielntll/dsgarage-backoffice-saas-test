@@ -24,12 +24,7 @@ const CarPromotionList: React.FC<ContainerProps> = ({ filter, searchTerm }) => {
   }, []);
 
   useEffect(() => {
-    filterPromotions(
-      carPromotions
-      // carPromotions.filter((item) =>
-      //   item.carInfo.model?.toLowerCase().includes(searchTerm.toLowerCase())
-      // )
-    );
+    filterPromotions(carPromotions);
   }, [filter, carPromotions, searchTerm]);
 
   //FUNCTIONS ------------------------

@@ -1,24 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import {
-  Auth,
-  onAuthStateChanged,
-  sendEmailVerification,
-  signOut,
-  User,
-} from "firebase/auth";
+import { Auth, onAuthStateChanged, User } from "firebase/auth";
 
 import { auth } from "../firebase/firebaseConfig";
-import {
-  IonButton,
-  IonContent,
-  IonLabel,
-  IonLoading,
-  IonModal,
-} from "@ionic/react";
+import { IonLoading } from "@ionic/react";
 import { useHistory } from "react-router";
 import { authenticatedRoutesOutlet, loginRoutesOutlet } from "../App";
-import { textAuthContext } from "../text/textAuthContext";
 import { ContextLanguage } from "./contextLanguage";
 import { ContextToast } from "./systemEvents/contextToast";
 import { DataContextProvider } from "./contextData";
@@ -48,8 +35,7 @@ export const AuthContextProvider = () => {
   );
   const [currentAuth, setCurrentAuth] = useState<Auth>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isModalVerifyEmailSend, setIsModalVerifyEmailSend] =
-    useState<boolean>(false);
+
   // USE EFFECTS -----------------------------
   useEffect(() => {
     if (currentAuth != null || currentAuth != undefined) {
@@ -60,13 +46,7 @@ export const AuthContextProvider = () => {
       setCurrentAuth(auth);
       setIsLoading(false);
       if (user) {
-        if (user?.emailVerified) {
-          setAuthenticateUser(user);
-          setIsModalVerifyEmailSend(false);
-        } else {
-          setIsModalVerifyEmailSend(true);
-          signOut(auth);
-        }
+        setAuthenticateUser(user);
         history.push("/");
       } else {
         history.replace("/");
@@ -74,15 +54,6 @@ export const AuthContextProvider = () => {
     });
   }, [currentAuth]);
   // FUNCTIONS ------------------------------
-  const handleSendAgainVerification = async () => {
-    try {
-      await sendEmailVerification(currentAuth!.currentUser!).then(() => {
-        toast("success", textAuthContext[l].success_verificationAgain);
-      });
-    } catch (error) {
-      toast("danger", textAuthContext[l].error_generico);
-    }
-  };
   // RETURN ----------------------------------
   return (
     <AuthContext.Provider
@@ -94,7 +65,7 @@ export const AuthContextProvider = () => {
       {isLoading ? (
         <IonLoading isOpen={isLoading} message="Loading..." spinner="circles" />
       ) : null}
-      {authenticateUser?.emailVerified == true ? (
+      {authenticateUser ? (
         <DataContextProvider>
           <GalleryContextProvider>
             <CarPromotionContextProvider>
@@ -105,43 +76,6 @@ export const AuthContextProvider = () => {
       ) : (
         loginRoutesOutlet()
       )}
-
-      {!authenticateUser?.emailVerified ? (
-        <IonModal
-          isOpen={isModalVerifyEmailSend}
-          onDidDismiss={() => setIsModalVerifyEmailSend(false)}
-          initialBreakpoint={0.35}
-          breakpoints={[0.35, 0.5]}
-        >
-          <IonContent>
-            <IonLabel>
-              <h2 className={"forgotTitle"}>
-                {textAuthContext[l].modalVerifySendTitle}
-              </h2>
-            </IonLabel>
-            <div className="ion-padding">
-              <IonLabel>
-                <p>{textAuthContext[l].modalVerifySendParagraph}</p>
-              </IonLabel>
-
-              <IonLabel>
-                <p className="ion-padding-top">
-                  {textAuthContext[l].modalVerifyCheck}
-                </p>
-              </IonLabel>
-              <div className="ion-padding">
-                <IonButton
-                  expand="block"
-                  fill="clear"
-                  onClick={handleSendAgainVerification}
-                >
-                  {textAuthContext[l].btn_sendVerifyAgain}
-                </IonButton>
-              </div>
-            </div>
-          </IonContent>
-        </IonModal>
-      ) : null}
     </AuthContext.Provider>
   );
 };

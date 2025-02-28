@@ -1,4 +1,3 @@
-import styles from "./CarPromotionModalCreateModify.module.css";
 import { useContextLanguage } from "../../context/contextLanguage";
 import { text } from "./text";
 import {
@@ -27,9 +26,8 @@ import {
 import { useCarPromotionContext } from "../../context/car promotion/contextCarPromotion";
 import { add, removeCircleOutline } from "ionicons/icons";
 import GalleryHandler from "../Gallery__Handler/GalleryHandler";
-import { typeImage } from "../../types/typeImage";
-import { useGalleryContext } from "../../context/gallery/contextGallery";
 import { typeImageUploadData } from "../../types/typeImageUploadData";
+import { typeImageSimple } from "../../types/typeImageSimple";
 
 interface ContainerProps {
   isModalOpen: boolean;
@@ -55,7 +53,9 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
       features: [],
     }
   );
-  const [images, setImages] = useState<string[]>(elementToModify?.images ?? []);
+  const [images, setImages] = useState<typeImageSimple[]>(
+    elementToModify?.images ?? []
+  );
 
   const [featureInput, setFeatureInput] = useState(""); //State for the feature input
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
@@ -139,12 +139,11 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     const newCarPromotion: CarPromotion = {
       carInfo: carInfo,
       carDetails: carDetails,
-      images: [],
+      images: elementToModify?.images ?? [],
     };
-
     try {
       if (elementToModify) {
-        await updateInfo(elementToModify.uid!, newCarPromotion);
+        await updateInfo(elementToModify.uid!, newCarPromotion, imagesToUpload);
       } else {
         await addData(newCarPromotion, imagesToUpload);
       }
@@ -174,12 +173,6 @@ const CarPromotionModalCreateModify: React.FC<ContainerProps> = ({
     setImageDetails,
     setFormIsValid,
   ]);
-
-  const resetImages = () => {
-    setImages(elementToModify?.images ?? []);
-    setImagesToUpload([]);
-    setImageDetails({});
-  };
 
   // ---------- closeModal
   const closeModal = () => {
