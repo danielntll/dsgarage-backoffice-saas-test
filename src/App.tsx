@@ -56,6 +56,7 @@ setupIonicReact({
 
 const App: React.FC = () => {
   //VARIABLES ------------------------
+  console.log("TEST - TEST");
   //CONDITIONS -----------------------
   //FUNCTIONS ------------------------
   //RETURN COMPONENT -----------------

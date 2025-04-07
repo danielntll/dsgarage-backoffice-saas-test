@@ -74,7 +74,7 @@ export const DataContextProvider = ({ children }: any) => {
   const { authenticateUser } = useAuthContext();
   // USE STATE -----------------------------
   // USE EFFECT ------------------------------
-  //test
+  console.log("TEST- TEST");
   // FUNCTIONS ------------------------------
   // ---  getCollectionData
   async function getCollectionData<T>(
